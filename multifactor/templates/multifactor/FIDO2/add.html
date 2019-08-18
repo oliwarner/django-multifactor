@@ -1,0 +1,54 @@
+{% extends "multifactor/base.html" %}{% load static %}
+
+{% block card_title %}FIDO2 Security Key{% endblock %}
+{% block card_classes %}card-login mx-auto{% endblock %}
+
+{% block content %}
+<div class="alert alert-success mb-0" id="res">
+	Your broswer should ask you to confirm you indentity.
+</div>
+{% endblock %}
+
+{% block head %}
+<script type="application/javascript" src="{% static 'multifactor/js/cbor.js'%}"></script>
+<script type="application/javascript">
+function begin_reg() {
+	fetch('{% url 'multifactor:fido2_begin_reg' %}', {})
+	.then(function(response) {
+		if(response.ok)
+			return response.arrayBuffer();
+		throw new Error('Error getting registration data!');
+	})
+	.then(CBOR.decode)
+	.then(function(options) {
+		options.publicKey.attestation = "direct"
+		console.log(options)
+		return navigator.credentials.create(options);
+	})
+	.then(function(attestation) {
+		return fetch('{% url 'multifactor:fido2_complete_reg' %}', {
+			method: 'POST',
+			headers: {'Content-Type': 'application/cbor'},
+			body: CBOR.encode({
+				"attestationObject": new Uint8Array(attestation.response.attestationObject),
+				"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
+			})
+		});
+	})
+	.then(function(response) {
+		var stat = response.ok ? 'successful' : 'unsuccessful';
+		return response.json();
+	})
+	.then(function (res) {
+		if (res["status"] =='OK')
+			$("#res").html("<div class='alert alert-success'>Registered Successfully, <a href='{% url 'multifactor:home' %}'> Go to Security Home</a></div>");
+		else
+			$("#res").html("<div class='alert alert-danger'>Registration Failed as " + res["message"] + ", <a href='javascript:void(0)' onclick='begin_reg()'> try again or <a href='{% url 'multifactor:home' %}'> Go to Security Home</a></div>");
+	}, function(reason) {
+		$("#res").html("<div class='alert alert-danger'>Registration Failed as " +reason +", <a href='javascript:void(0)' onclick='begin_reg()'> try again </a> or <a href='{% url 'multifactor:home' %}'> Go to Security Home</a></div>");
+	});
+}
+setTimeout(begin_reg,500);
+</script>
+{% endblock %}
+
