@@ -57,12 +57,15 @@ At this stage any authenticated user can add a secondary factor to their account
 
     from multifactor.decorators import multifactor_protected
 
-    @multifactor_protected(user_filter=None, force=False)
+    @multifactor_protected(user_filter=None, max_age=None, force=False, advertise=False)
     def my_view(request):
         ...
 
  - `user_filter` can be a dictonary to be passed to `User.objects.filter()` to see if the current user matches these conditions. If empty or None, it will match all users.
+ - `max_age=600` will ensure the the user has authenticated with their secondary factor within 10 minutes. You can tweak this for higher security at the cost of inconvenience.
  - `force=True` would force a user (who matched `user_filter`) to add a secondary factor and authenticate. If `force=False`, users who have not yet added a multifactor token will be allowed unimpeded.
+ - `advertise=True` will send an info-level message via django.contrib.messages with a link to the main django-multifactor page that allows them to add factors for future use. This is useful to increase optional uptake when introducing multifactor to an organisation.
+
 
  You can also wrap entire branches of your URLs using [`django-decorator-include`](https://pypi.org/project/django-decorator-include/):
 

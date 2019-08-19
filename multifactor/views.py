@@ -8,24 +8,27 @@ from django.utils.html import format_html
 from django.urls import reverse
 
 from .models import UserKey, KEY_CHOICES
-from .common import render, method_url
+from .common import render, method_url, active_factors, has_multifactor
 from .app_settings import mf_settings
 from .decorators import multifactor_protected
-from .helpers import is_mfa
 
 
 @login_required
 def index(request):
-    authed = is_mfa(request)
+    authed = bool(active_factors(request))
     methods = [
         (f"multifactor:{value.lower()}_start", label)
         for value, label in KEY_CHOICES
     ]
 
-    if methods and not authed:
+    can_edit = not has_multifactor(request) or authed
+
+    print(active_factors(request))
+
+    if not can_edit:
         messages.warning(request, format_html(
             'You will not be able to change these settings or add new '
-            'factors until until you <a href="{}">authenticate</a> with '
+            'factors until until you <a href="{}" class="alert-link">authenticate</a> with '
             'one of your existing secondary factors.',
             reverse('multifactor:authenticate')
         ))
@@ -33,7 +36,7 @@ def index(request):
     return render(request, "multifactor/home.html", {
         "keys": UserKey.objects.filter(user=request.user),
         "available_methods": methods,
-        "authed": authed,
+        "can_edit": can_edit,
     })
 
 
@@ -46,7 +49,6 @@ def authenticate(request):
         messages.warning(request, 'You have no keys to authenticate with. Please add one (or more).')
         return redirect('multifactor:home')
 
-    request.session["multifactor_methods"] = methods
     if len(methods) == 1:
         return redirect(method_url(methods[0]))
 
@@ -67,7 +69,7 @@ def reset_cookie(request):
 
 
 @login_required
-@multifactor_protected()
+@multifactor_protected(max_age=600)
 def del_key(request, key_id):
     try:
         key = UserKey.objects.get(user=request.user, pk=key_id)
@@ -81,7 +83,7 @@ def del_key(request, key_id):
 
 
 @login_required
-@multifactor_protected()
+@multifactor_protected(max_age=600)
 def toggle_key(request, key_id):
     try:
         key = UserKey.objects.get(user=request.user, pk=key_id)

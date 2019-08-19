@@ -12,14 +12,15 @@
 	<script src="{% static 'multifactor/js/jquery.min.js' %}"></script>
 	<style>
 		.card > .alert { border-radius: 0; border-left: 0; border-right: 0; margin:0; }
+		.card > .card-header { font-size: 1.5rem; }
 	</style>
 </head>
 
 <body class="bg-dark">
 	{% block page %}
 	<div class="container">
-		<div class="card {% block card_classes %}mx-auto{% endblock %} my-5">
-			<div class="card-header">{% block card_title %}Login{% endblock %}</div>
+		<div class="card border-dark {% block card_classes %}mx-auto{% endblock %} my-5">
+			<h1 class="card-header">{% block card_title %}Login{% endblock %}</h1>
 			{% for message in messages %}
 			<div class="card-body alert alert-{{message.tags}}">
 				{{ message }}

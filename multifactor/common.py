@@ -5,10 +5,29 @@ from django.shortcuts import render as dj_render, redirect
 import random
 
 from .app_settings import mf_settings
+from .models import UserKey
+
+
+
+def has_multifactor(request):
+    return UserKey.objects.filter(user=request.user, enabled=True).exists()
+
+
+def active_factors(request):
+    # automatically expire old factors
+    now = timezone.now().timestamp()
+    factors = request.session["multifactor"] = [
+        *filter(
+            lambda tup: tup[3] > now,
+            request.session.get('multifactor', [])
+        ),
+    ]
+    print(request.session["multifactor"] )
+    return factors
 
 
 def next_check():
-    return int(timezone.now().strftime("%s")) + random.randint(
+    return timezone.now().timestamp() + random.randint(
         mf_settings['RECHECK_MIN'],
         mf_settings['RECHECK_MAX']
     )
@@ -26,17 +45,20 @@ def method_url(method):
 
 def write_session(request, key):
     """Write the multifactor session with the verified key"""
+    request.session["multifactor"] = [
+        (
+            key.key_type,
+            key.id,
+            timezone.now().timestamp(),
+            next_check() if mf_settings["RECHECK"] else False
+        ),
+        *filter(
+            lambda tup: tup[1] != key.id,
+            request.session.get('multifactor', [])
+        ),
+    ]
 
-    multifactor = {
-        "verified": True,
-        "method": key.key_type,
-        "id": key.id,
-    }
-
-    if mf_settings["RECHECK"]:
-        multifactor["next_check"] = next_check()
-
-    request.session["multifactor"] = multifactor
+    print(request.session["multifactor"])
 
     key.last_used = timezone.now()
     key.save()
