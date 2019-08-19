@@ -1,4 +1,6 @@
-# django-multifactor - Additive, granular multifactor authentication for Django
+![](https://raw.githubusercontent.com/oliwarner/django-multifactor/logo.svg)
+
+###Easy multi-factor authentication for Django
 
 Supports TOTP, U2F, FIDO2 U2F (WebAuthn), Email Tokens as well as custom handlers for OTP token exchange (eg SMS plugins).  
 This is ***not*** a passwordless authentication system, rather adding to your existing authentication format.
@@ -57,13 +59,13 @@ At this stage any authenticated user can add a secondary factor to their account
 
     from multifactor.decorators import multifactor_protected
 
-    @multifactor_protected(user_filter=None, max_age=None, force=False, advertise=False)
+    @multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=False)
     def my_view(request):
         ...
 
+ - `factors` is the minimum number of active, authenticated secondary factors. 0 will mean users will only be prompted if they have keys. It can also accept a lambda/function with one request argument that returns a number. This allows you to tune whether factors are required based on custom logic (eg if local IP return 0 else return 1)
  - `user_filter` can be a dictonary to be passed to `User.objects.filter()` to see if the current user matches these conditions. If empty or None, it will match all users.
  - `max_age=600` will ensure the the user has authenticated with their secondary factor within 10 minutes. You can tweak this for higher security at the cost of inconvenience.
- - `force=True` would force a user (who matched `user_filter`) to add a secondary factor and authenticate. If `force=False`, users who have not yet added a multifactor token will be allowed unimpeded.
  - `advertise=True` will send an info-level message via django.contrib.messages with a link to the main django-multifactor page that allows them to add factors for future use. This is useful to increase optional uptake when introducing multifactor to an organisation.
 
 
@@ -74,7 +76,7 @@ At this stage any authenticated user can add a secondary factor to their account
 
     urlpatterns = [
         path('admin/multifactor/', include('multifactor.urls')),
-        path('admin/', decorator_include(multifactor_protected(force=True), admin.site.urls)),
+        path('admin/', decorator_include(multifactor_protected(factors=1), admin.site.urls)),
         ...
     ]
 
