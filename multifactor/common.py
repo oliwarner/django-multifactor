@@ -22,7 +22,6 @@ def active_factors(request):
             request.session.get('multifactor', [])
         ),
     ]
-    print(request.session["multifactor"] )
     return factors
 
 
@@ -57,8 +56,6 @@ def write_session(request, key):
             request.session.get('multifactor', [])
         ),
     ]
-
-    print(request.session["multifactor"])
 
     key.last_used = timezone.now()
     key.save()
