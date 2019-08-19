@@ -1,12 +1,11 @@
 from django.http import JsonResponse
 
-from .views import authenticate
 from .models import UserKey
-from .factors import u2f, fido2, totp
 
 
 def has_mfa(request):
     if UserKey.objects.filter(user=request.user, enabled=True).exists():
+        from .views import authenticate
         return authenticate(request)
     return False
 
@@ -20,6 +19,8 @@ def is_mfa(request):
 
 
 def recheck(request):
+    from .factors import u2f, fido2, totp
+
     method = request.session.get("multifactor", {}).get("method", None)
     if not method:
         return JsonResponse({"res": False})

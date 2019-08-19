@@ -9,6 +9,9 @@ from .helpers import is_mfa, has_mfa_keys
 from .common import method_url
 
 
+__all__ = ['multifactor_protected']
+
+
 def multifactor_protected(user_filter=None, force=False):
     def _func_wrapper(view_func, *args, **kwargs):
         @functools.wraps(view_func)

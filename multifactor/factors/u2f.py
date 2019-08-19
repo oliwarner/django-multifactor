@@ -11,8 +11,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.serialization import Encoding
 
 from ..models import UserKey, KEY_TYPE_U2F
-from ..views import login
-from ..common import render, write_session
+from ..common import render, write_session, login
 from ..app_settings import mf_settings
 
 

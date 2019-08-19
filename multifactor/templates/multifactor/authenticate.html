@@ -1,9 +1,11 @@
 {% extends "multifactor/base.html" %}
 
-{% block card_title %}Select Second Verification Method{% endblock %}
+{% block card_title %}Secondy Factor Verification{% endblock %}
 {% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
+
+<p>The page you're trying to access requires secondary authentication. Pick one of your secondary factor types from the list below to continue.</p>
 {% for link, label in methods %}
 <a class="btn btn-block btn-primary" href="{% url link %}">{{label}} →</a>
 {% endfor %}

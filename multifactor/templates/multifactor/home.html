@@ -5,6 +5,7 @@
 {% block card_classes %}{% endblock %}
 
 {% block content %}
+{% if authed %}
 <div class="btn-group mb-4 ml-4 float-right">
 	<button class="btn btn-success dropdown-toggle" data-toggle="dropdown">
 		Add Method&nbsp;<span class="caret"></span>
@@ -15,6 +16,7 @@
 		{% endfor %}
 	</div>
 </div>
+{% endif %}
 
 <p>To keep your account secure, you can add one or more secondary authentication factors. These are commonly USB keys, or codes acquired through a secure mechanism like an authenticator. </p>
 
@@ -38,8 +40,10 @@
 				Last used: {{ key.last_used|default:"Never" }}
 			</td>
 			<td class="align-middle text-right" style="width:10%;white-space: nowrap;">
+				{% if authed %}
 				<a href="{% url 'multifactor:toggle_key' key.pk %}" class="btn btn-{{key.enabled|yesno:'success,warning'}}">{{key.enabled|yesno:'Enabled,Disabled'}}</a>
 				<a class="btn btn-danger delete" href="{% url 'multifactor:delete_key' key.pk %}" onclick="return confirm('Are you sure you want to delete this key?')">Delete</a>
+				{% endif %}
 			</td>
 		</tr>
 		{% empty %}

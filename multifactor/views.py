@@ -4,21 +4,36 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils.html import format_html
+from django.urls import reverse
 
 from .models import UserKey, KEY_CHOICES
 from .common import render, method_url
 from .app_settings import mf_settings
-# from .decorators import multifactor_protected
+from .decorators import multifactor_protected
+from .helpers import is_mfa
 
 
 @login_required
 def index(request):
+    authed = is_mfa(request)
+    methods = [
+        (f"multifactor:{value.lower()}_start", label)
+        for value, label in KEY_CHOICES
+    ]
+
+    if methods and not authed:
+        messages.warning(request, format_html(
+            'You will not be able to change these settings or add new '
+            'factors until until you <a href="{}">authenticate</a> with '
+            'one of your existing secondary factors.',
+            reverse('multifactor:authenticate')
+        ))
+
     return render(request, "multifactor/home.html", {
         "keys": UserKey.objects.filter(user=request.user),
-        "available_methods": [
-            (f"multifactor:{value.lower()}_start", label)
-            for value, label in KEY_CHOICES
-        ]
+        "available_methods": methods,
+        "authed": authed,
     })
 
 
@@ -51,20 +66,8 @@ def reset_cookie(request):
     return redirect(settings.LOGIN_URL)
 
 
-def login(request):
-    if 'multifactor-next' in request.session:
-        return redirect(request.session['multifactor-next'])
-
-    callback = mf_settings['LOGIN_CALLBACK']
-    if callback:
-        callable_func = import_string(callback)
-        return callable_func(request, username=request.session["base_username"])
-
-    # punch back to the login URL and let it decide what to do with you
-    return redirect(settings.LOGIN_URL)
-
-
 @login_required
+@multifactor_protected()
 def del_key(request, key_id):
     try:
         key = UserKey.objects.get(user=request.user, pk=key_id)
@@ -78,6 +81,7 @@ def del_key(request, key_id):
 
 
 @login_required
+@multifactor_protected()
 def toggle_key(request, key_id):
     try:
         key = UserKey.objects.get(user=request.user, pk=key_id)
@@ -89,4 +93,3 @@ def toggle_key(request, key_id):
         messages.error(request, f'{key.get_key_type_display()} not found.')
 
     return redirect('multifactor:home')
-

@@ -1,6 +1,9 @@
-# django-multifactor
+# django-multifactor - Additive, granular multifactor authentication for Django
 
-A Django app that handles multifactor authentication. It supports TOTP, U2F, FIDO2 U2F (WebAuthn), Email Tokens as well as custom handlers for OTP token exchange (eg SMS plugins). This project is based on [`django-mfa2`](https://pypi.org/project/django-mfa2/), but has and will continue to diverge from it, and eventually become a complete rewrite.
+Supports TOTP, U2F, FIDO2 U2F (WebAuthn), Email Tokens as well as custom handlers for OTP token exchange (eg SMS plugins).  
+This is ***not*** a passwordless authentication system, rather adding to your existing authentication format.
+
+Based on [`django-mfa2`](https://pypi.org/project/django-mfa2/) but quickly diverging.
 
 [![PyPI version](https://badge.fury.io/py/django-multifactor.svg)](https://badge.fury.io/py/django-multifactor)
 
@@ -12,7 +15,7 @@ FIDO2/WebAuthn is the big-ticket item for MFA. It allows the browser to interfac
  * **android-safetynet** (Chrome 70+)
  * **NFC devices using PCSC** (Not Tested, but as supported in fido2)
 
-This project targets modern stacks of Django 2.2+ and Python 3.5+.
+This project targets modern stacks. Django 2.2+ and Python 3.5+.
 
 
 ## Installation:
@@ -21,7 +24,7 @@ Install the package:
 
     pip install django-multifactor
 
-Add `multifactor` to your settings.INSTALLED_APPS.
+Add `multifactor` to `settings.INSTALLED_APPS`.
 
 Add and customise the following settings block:
 
@@ -37,7 +40,9 @@ Add and customise the following settings block:
         'U2F_APPID': 'https://example.com',  # U2F request issuer
     }
 
-Add multifactor to your URLs. I suggest somewhere similar to your login URLs, or underneath them, eg:
+Ensure that [`django.contrib.messages`](https://docs.djangoproject.com/en/2.2/ref/contrib/messages/) is installed.
+
+Include `multifactor.urls` in your URLs. You can do this anywhere but I suggest somewhere similar to your login URLs, or underneath them, eg:
 
     urlpatterns = [
         path('admin/multifactor/', include('multifactor.urls')),
@@ -48,7 +53,7 @@ Add multifactor to your URLs. I suggest somewhere similar to your login URLs, or
 
 ## Usage
 
-By this point any authenticated user can add a secondary factor to their account by visiting (eg) `/admin/multifactor/`, but no view will *require* users be multi-factor authenticated. django-multifactor gives you granular control to conditionally require certain users need a secondary factor on certain views. This is accomplished through the `multifactor.decorators.multifactor_protected` decorator.
+At this stage any authenticated user can add a secondary factor to their account by visiting (eg) `/admin/multifactor/`, but no view will *require* secondary authentication. django-multifactor gives you granular control to conditionally require certain users need a secondary factor on certain views. This is accomplished through the `multifactor.decorators.multifactor_protected` decorator.
 
     from multifactor.decorators import multifactor_protected
 

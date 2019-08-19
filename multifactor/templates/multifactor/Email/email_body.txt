@@ -1,0 +1,3 @@
+Dear {{ user.get_full_name }},
+
+Your one-time-password is: {{ otp }}

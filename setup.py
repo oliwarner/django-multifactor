@@ -2,9 +2,11 @@
 
 from setuptools import find_packages, setup
 
+import multifactor
+
 setup(
     name='django-multifactor',
-    version='0.1.2',
+    version=multifactor.__version__,
     description='Drop-in multifactor authentication subsystem for Django.',
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

@@ -10,8 +10,7 @@ from fido2.utils import websafe_decode, websafe_encode
 from fido2.ctap2 import AttestedCredentialData
 
 from ..models import UserKey, KEY_TYPE_FIDO2
-from ..views import login
-from ..common import render, write_session
+from ..common import render, write_session, login
 from ..app_settings import mf_settings
 
 

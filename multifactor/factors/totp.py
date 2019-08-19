@@ -5,8 +5,7 @@ from django.contrib.auth.decorators import login_required
 import pyotp
 
 from ..models import UserKey, KEY_TYPE_TOPT
-from ..views import login
-from ..common import render, write_session
+from ..common import render, write_session, login
 from ..app_settings import mf_settings
 
 
