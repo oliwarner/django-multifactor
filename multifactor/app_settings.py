@@ -9,5 +9,6 @@ mf_settings['RECHECK_MAX'] = mf_settings.get('RECHECK_MAX', 60 * 60 * 6)
 
 mf_settings['FIDO_SERVER_ID'] = mf_settings.get('FIDO_SERVER_ID', 'example.com')
 mf_settings['FIDO_SERVER_NAME'] = mf_settings.get('FIDO_SERVER_NAME', 'Django App')
+mf_settings['FIDO_SERVER_ICON'] = mf_settings.get('FIDO_SERVER_ICON', None)
 mf_settings['TOKEN_ISSUER_NAME'] = mf_settings.get('TOKEN_ISSUER_NAME', 'Django App')
 mf_settings['U2F_APPID'] = mf_settings.get('U2F_APPID', 'https://example.com')

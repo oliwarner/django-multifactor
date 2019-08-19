@@ -1,4 +1,3 @@
-from django.template.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -18,30 +17,16 @@ from ..app_settings import mf_settings
 
 @login_required
 def start(request):
-    return render(request, "multifactor/FIDO2/add.html", {
-        **csrf(request),
-        'mode': 'auth',
-    })
+    return render(request, "multifactor/FIDO2/add.html", {})
 
 
 @login_required
 def auth(request):
-    return render(request, "multifactor/FIDO2/check.html", {
-        **csrf(request),
-        'mode': 'auth'
-    })
-
-
-@login_required
-def recheck(request):
-    return render(request, "multifactor/FIDO2/check.html", {
-        **csrf(request),
-        "mode": "recheck",
-    })
+    return render(request, "multifactor/FIDO2/check.html", {})
 
 
 def get_server():
-    rp = RelyingParty(mf_settings['FIDO_SERVER_ID'], mf_settings['FIDO_SERVER_NAME'])
+    rp = RelyingParty(mf_settings['FIDO_SERVER_ID'], mf_settings['FIDO_SERVER_NAME'], mf_settings['FIDO_SERVER_ICON'])
     return Fido2Server(rp)
 
 
