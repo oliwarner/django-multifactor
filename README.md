@@ -37,7 +37,7 @@ Add and customise the following settings block:
         'U2F_APPID': 'https://example.com',  # U2F request issuer
     }
 
-Add the multifactor to your URLs. I suggest somewhere similar to your login URLs, or underneath them, eg:
+Add multifactor to your URLs. I suggest somewhere similar to your login URLs, or underneath them, eg:
 
     urlpatterns = [
         path('admin/multifactor/', include('multifactor.urls')),
@@ -48,9 +48,9 @@ Add the multifactor to your URLs. I suggest somewhere similar to your login URLs
 
 ## Usage
 
-By this point any authenticated user can add a secondary factor to their account by visiting (eg) `/admin/multifactor/`, but no view will *require* users be multi-factor authenticated. django-multifactor give you granular control to conditionally require certain users need a secondary factor on certain views. This is accomplished through the `multifactor.decorators.multifactor_protected` decorator.
+By this point any authenticated user can add a secondary factor to their account by visiting (eg) `/admin/multifactor/`, but no view will *require* users be multi-factor authenticated. django-multifactor gives you granular control to conditionally require certain users need a secondary factor on certain views. This is accomplished through the `multifactor.decorators.multifactor_protected` decorator.
 
-from multifactor.decorators import multifactor_protected
+    from multifactor.decorators import multifactor_protected
 
     @multifactor_protected(user_filter=None, force=False)
     def my_view(request):

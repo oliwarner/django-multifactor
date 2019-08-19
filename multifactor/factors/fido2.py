@@ -1,7 +1,7 @@
 from django.template.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
-from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
 from fido2 import cbor
 from fido2.client import ClientData
@@ -12,10 +12,11 @@ from fido2.ctap2 import AttestedCredentialData
 
 from ..models import UserKey, KEY_TYPE_FIDO2
 from ..views import login
-from ..common import next_check, render
+from ..common import render, write_session
 from ..app_settings import mf_settings
 
 
+@login_required
 def start(request):
     return render(request, "multifactor/FIDO2/add.html", {
         **csrf(request),
@@ -23,6 +24,7 @@ def start(request):
     })
 
 
+@login_required
 def auth(request):
     return render(request, "multifactor/FIDO2/check.html", {
         **csrf(request),
@@ -30,6 +32,7 @@ def auth(request):
     })
 
 
+@login_required
 def recheck(request):
     return render(request, "multifactor/FIDO2/check.html", {
         **csrf(request),
@@ -42,6 +45,7 @@ def get_server():
     return Fido2Server(rp)
 
 
+@login_required
 def begin_registration(request):
     server = get_server()
     registration_data, state = server.register_begin(
@@ -58,6 +62,7 @@ def begin_registration(request):
 
 
 @csrf_exempt
+@login_required
 def complete_reg(request):
     try:
         data = cbor.decode(request.body)
@@ -71,11 +76,12 @@ def complete_reg(request):
             att_obj
         )
         encoded = websafe_encode(auth_data.credential_data)
-        UserKey.objects.create(
+        key = UserKey.objects.create(
             user=request.user,
             properties={"device": encoded, "type": att_obj.fmt},
             key_type=KEY_TYPE_FIDO2,
         )
+        write_session(request, key)
         return JsonResponse({'status': 'OK'})
 
     except Exception as e:
@@ -86,6 +92,7 @@ def complete_reg(request):
         })
 
 
+@login_required
 def get_user_credentials(request):
     return [
         AttestedCredentialData(websafe_decode(uk.properties["device"]))
@@ -93,6 +100,7 @@ def get_user_credentials(request):
     ]
 
 
+@login_required
 def authenticate_begin(request):
     server = get_server()
     auth_data, state = server.authenticate_begin(get_user_credentials(request))
@@ -101,6 +109,7 @@ def authenticate_begin(request):
 
 
 @csrf_exempt
+@login_required
 def authenticate_complete(request):
     server = get_server()
     data = cbor.decode(request.body)
@@ -118,14 +127,9 @@ def authenticate_complete(request):
         signature
     )
 
-    for k in UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_FIDO2, enabled=1):
-        if AttestedCredentialData(websafe_decode(k.properties["device"])).credential_id == cred.credential_id:
-            k.last_used = timezone.now()
-            k.save()
-            mfa = {"verified": True, "method": "FIDO2", 'id': k.id}
-            if mf_settings['RECHECK']:
-                mfa["next_check"] = next_check()
-            request.session["multifactor"] = mfa
+    for key in UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_FIDO2, enabled=1):
+        if AttestedCredentialData(websafe_decode(key.properties["device"])).credential_id == cred.credential_id:
+            write_session(request, key)
             res = login(request)
             return JsonResponse({'status': "OK", "redirect": res["location"]})
 

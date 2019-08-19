@@ -31,3 +31,21 @@ def render(request, template_name, context, **kwargs):
 
 def method_url(method):
     return f'multifactor:{method.lower()}_auth'
+
+
+def write_session(request, key):
+    """Write the multifactor session with the verified key"""
+
+    multifactor = {
+        "verified": True,
+        "method": key.key_type,
+        "id": key.id,
+    }
+
+    if mf_settings["RECHECK"]:
+        multifactor["next_check"] = next_check()
+
+    request.session["multifactor"] = multifactor
+
+    key.last_used = timezone.now()
+    key.save()

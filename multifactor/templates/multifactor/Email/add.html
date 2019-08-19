@@ -5,10 +5,8 @@
 {% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
-<form method="POST" action="" id="formLogin"  onSubmit="" name="FrontPage_Form1">
+<form method="POST" action="">
 	{% csrf_token %}
-	{% if invalid %}<div class="alert alert-danger">Sorry, The provided token is not valid.</div>{% endif %}
-	{% if quota %}<div class="alert alert-warning">{{ quota }}</div>{% endif %}
 	<fieldset>
 		<p>An email has been sent to you containing an One-Time-Password of 6 digits.</p>
 		<p>Please enter the 6-digits sent to your email.</p>
@@ -18,11 +16,11 @@
 				<span class="input-group-addon">
 					<i class="glyphicon glyphicon-lock"></i>
 				</span>
-				<input class="form-control" size="6" MaxLength="6" value="" placeholder="e.g 55552" name="otp" type="text" id="otp" autofocus>
+				<input class="form-control" size="6" MaxLength="6" value="" placeholder="e.g 55552" name="otp" type="text" id="otp" autocomplete="off" autofocus>
 			</div>
 		</div>
 
-		<input type="submit" class="btn btn-lg btn-success btn-block" value="Verify">
+		<button type="submit" class="btn btn-lg btn-success btn-block">Verify</button>
 	</fieldset>
 </form>
 {% endblock %}

@@ -1,77 +1,61 @@
-from django.http import JsonResponse, HttpResponse
-from django.template.context_processors import csrf
-from django.utils import timezone
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
 
 import pyotp
 
 from ..models import UserKey, KEY_TYPE_TOPT
 from ..views import login
-from ..common import next_check, render
+from ..common import render, write_session
 from ..app_settings import mf_settings
 
 
-def verify_login(request, token):
-    for key in UserKey.objects.filter(user=request.user, key_type="TOTP"):
-        if pyotp.TOTP(key.properties["secret_key"]).verify(token, valid_window=30):
-            key.last_used = timezone.now()
-            key.save()
-            return [True, key.id]
-    return [False]
+@login_required
+def create(request):
+    """Create new key."""
+    secret_key = request.POST.get("key", pyotp.random_base32())
 
-
-def recheck(request):
-    context = csrf(request)
-    context["mode"] = "recheck"
     if request.method == "POST":
-        if verify_login(request, token=request.POST["otp"]):
-            return JsonResponse({"recheck": True})
-        else:
-            return JsonResponse({"recheck": False})
-    return render(request, "multifactor/TOTP/check.html", context)
+        answer = request.POST["answer"]
+        totp = pyotp.TOTP(secret_key)
 
+        if totp.verify(answer, valid_window=60):
+            key = UserKey.objects.create(
+                user=request.user,
+                properties={"secret_key": secret_key},
+                key_type=KEY_TYPE_TOPT
+            )
+            write_session(request, key)
+            messages.success(request, 'Authenticator added.')
+            return redirect("multifactor:home")
 
-def auth(request):
-    context = csrf(request)
-    if request.method == "POST":
-        res = verify_login(request, token=request.POST["otp"])
-        if res[0]:
-            mfa = {"verified": True, "method": "TOTP", "id": res[1]}
-            if mf_settings["RECHECK"]:
-                mfa["next_check"] = next_check()
-            request.session["mfa"] = mfa
-            return login(request)
-        context["invalid"] = True
-    return render(request, "multifactor/TOTP/check.html", context)
+        messages.error(request, 'Could not validate key, please try again.')
 
-
-def get_token(request):
-    secret_key = pyotp.random_base32()
     totp = pyotp.TOTP(secret_key)
-    request.session["new_mfa_answer"] = totp.now()
-    return JsonResponse({
+
+    return render(request, "multifactor/TOTP/add.html", {
         "qr": totp.provisioning_uri(
             request.user.get_username(),
             issuer_name=mf_settings['TOKEN_ISSUER_NAME']
         ),
-        "secret_key": secret_key
+        "secret_key": secret_key,
     })
 
 
-def verify(request):
-    answer = request.GET["answer"]
-    secret_key = request.GET["key"]
-    totp = pyotp.TOTP(secret_key)
+@login_required
+def auth(request):
+    def verify_login(request, token):
+        for key in UserKey.objects.filter(user=request.user, key_type="TOTP"):
+            if pyotp.TOTP(key.properties["secret_key"]).verify(token, valid_window=60):
+                return True, key
+        return False, None
 
-    if not totp.verify(answer, valid_window=60):
-        return HttpResponse("Error")
+    if request.method == "POST":
+        success, key = verify_login(request, token=request.POST["answer"])
+        if success:
+            write_session(request, key)
+            return login(request)
 
-    UserKey.objects.create(
-        user=request.user,
-        properties={"secret_key": secret_key},
-        key_type=KEY_TYPE_TOPT
-    )
-    return HttpResponse("Success")
+        messages.error(request, 'Could not validate key, please try again.')
 
-
-def start(request):
-    return render(request, "multifactor/TOTP/add.html", {})
+    return render(request, "multifactor/TOTP/check.html", {})

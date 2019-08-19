@@ -7,6 +7,11 @@
 <div class="alert alert-success mb-0" id="res">
     Your secure Key should be flashing now, please press button.
 </div>
+
+<form action="" method="POST" id="u2f_login">
+    {% csrf_token %}
+    <input type="hidden" id="response" name="response" value=""/>
+</form>
 {% endblock %}
 
 {% block head %}
@@ -14,21 +19,8 @@
 <script type="text/javascript">
 data = JSON.parse('{{ token|safe }}');
 u2f.register(data.appId, data.registerRequests, data.registeredKeys, function (response) {
-    $.ajax({
-        url: "{% url 'multifactor:u2f_bind' %}",
-        method:"POST",
-        data: {
-            csrfmiddlewaretoken: "{{ csrf_token }}",
-            response: JSON.stringify(response)
-        },
-        success:function (data) {
-            if (data == "OK")
-            {
-                alert("Your device is added successfully.");
-                window.location.href = "{% url 'multifactor:home' %}";
-            }
-        }
-    });
+    $('#response').val(JSON.stringify(response))
+    $('#u2f_login').submit()
 }, 5000);
 </script>
 {% endblock %}

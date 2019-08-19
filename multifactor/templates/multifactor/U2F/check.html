@@ -7,9 +7,10 @@
 <div class="alert alert-success mb-0" id="res">
     Your secure Key should be flashing now, please press button.
 </div>
-<form id="u2f_login" action="{% url 'multifactor:u2f_verify' %}" method="post">
+
+<form action="" method="POST" id="u2f_login">
 	{% csrf_token %}
-	<input type="hidden" name="response" id="response" value=""/>
+	<input type="hidden" id="response" name="response" value=""/>
 </form>
 {% endblock %}
 
@@ -36,32 +37,10 @@ else {
 				 alert("Unspecified error, please try again later or try another browser.")
 			}
 		}
-		{% if mode == "auth" %}
 		else {
 			$("#response").val(JSON.stringify(response))
 			$("#u2f_login").submit();
 		}
-		{% elif mode == "recheck" %}
-		else {
-			$.ajax({
-				"url":"{% url 'u2f_recheck' %}",
-				method: "POST",
-				data: {
-					"csrfmiddlewaretoken": "{{ csrf_token }}",
-					"response": JSON.stringify(response)
-				},
-				success:function (data) {
-					if (data["recheck"]) {
-						mfa_success_function();
-					}
-					else {
-						mfa_failed_function();
-					}
-				}
-			})
-
-		}
-		{% endif %}
 	}, 5000)
 }
 </script>

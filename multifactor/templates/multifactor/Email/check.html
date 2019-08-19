@@ -3,34 +3,9 @@
 {% block card_title %}Enter Token by Email{% endblock %}
 {% block card_classes %}card-login mx-auto{% endblock %}
 
-{% block head %}
-<script type="application/javascript">
-function send_totp() {
-	$.ajax({
-		"url": "{% url 'multifactor:totp_recheck' %}",
-		method: "POST",
-		dataType: "JSON",
-		data: {
-			"csrfmiddlewaretoken": "{{ csrf_token }}",
-			"otp": $("#otp").val()
-		},
-		success: function (data) {
-			if (data["recheck"])
-				mfa_success_function();
-			else 
-				mfa_failed_function();
-		}
-	})
-
-}
-</script>
-{% endblock %}
-
 {% block content %}
-<form method="POST" action="" id="formLogin" onSubmit="">
+<form method="POST" action="">
 	{% csrf_token %}
-	{%  if invalid %}<div class="alert alert-danger">Sorry, The provided token is not valid.</div>{% endif %}
-	{% if quota %}<div class="alert alert-warning">{{ quota }}</div>{% endif %}
 	<fieldset>
 		<p>Enter the 6-digits sent to your email.</p>
 		<div class="form-group">
@@ -38,14 +13,13 @@ function send_totp() {
 				<span class="input-group-addon">
 					<i class="glyphicon glyphicon-lock"></i>
 				</span>
-				<input class="form-control" size="6" MaxLength="6" value="" placeholder="e.g 55552" name="otp" type="text" id="otp" autofocus>
+				<input class="form-control" size="6" MaxLength="6" value="" placeholder="e.g 55552" name="otp" type="text" id="otp" autocomplete="off" autofocus>
 			</div>
 		</div>
 
-		<div class="form-group">
-			<input type="{% if mode == "auth" %}submit{% elif mode == 'recheck'  %}button{% endif %}" {% if mode == "recheck" %}onclick="send_totp()" {% endif %} class="btn btn-lg btn-success btn-block" value="Sign in">
-		</div>
+		<button type="submit" class="btn btn-lg btn-success btn-block">Verify</button>
 	</fieldset>
 </form>
 {% endblock %}
 
+{% block head %}{% endblock %}

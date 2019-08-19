@@ -15,8 +15,16 @@
 <body class="bg-dark">
 	{% block page %}
 	<div class="container">
-		<div class="card {% block card_classes %}mx-auto{% endblock %} mt-5">
+		<div class="card {% block card_classes %}mx-auto{% endblock %} my-5">
 			<div class="card-header">{% block card_title %}Login{% endblock %}</div>
+			{% for message in messages %}
+			<div class="card-body alert alert-{{message.tags}}">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				{{ message }}
+			</div>
+			{% endfor %}
 			<div class="card-body">
 				{% block content %}{% endblock %}
 			</div>

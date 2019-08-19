@@ -4,15 +4,14 @@ from setuptools import find_packages, setup
 
 setup(
     name='django-multifactor',
-    version='0.1',
+    version='0.1.2',
     description='Drop-in multifactor authentication subsystem for Django.',
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-
     author='Oli Warner',
     author_email='oli@thepcspy.com',
-    url='https://github.com/oliwarner/django-multifactor/',
-    download_url='https://github.com/oliwarner/django-multifactor/',
+    url='https://github.com/oliwarner/django-multifactor',
+    download_url='https://github.com/oliwarner/django-multifactor',
     license='MIT',
     packages=find_packages(),
     install_requires=[

@@ -11,58 +11,37 @@
 	<li>Chrome <a href='https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai?hl=en'>Google Authenticator</a>
 </ul>
 
-<div class="text-center"><img id="qr" /></div>
+<div class="text-center">
+	<img id="qr" />
+	<p><code>{{secret_key}}</code></p>
+</div>
 
 <p>Use your Authenticator to scan in this QR Code. It should give you a six-digit code in return. Enter this code below and click Verify.</p>
 
-<div class="form-group">
-	<div class="input-group">
-		<input maxlength="6" size="6" class="form-control" id="answer" placeholder="e.g 123456"/>
+<form action="" method="POST">
+	{% csrf_token %}
+	<input type="hidden" name="key" value="{{secret_key|safe}}">
+	<div class="form-group">
+		<div class="input-group">
+			<input maxlength="6" size="6" class="form-control" name="answer" placeholder="e.g 123456" autocomplete="off" autofocus/>
+		</div>
 	</div>
-</div>
 
-<button class="btn btn-lg btn-success btn-block" onclick="verify()">Verify</button>
-<a class="btn btn-block" href="{% url 'multifactor:home' %}">Cancel</a>
+	<button type="submit" class="btn btn-lg btn-success btn-block">Verify</button>
+	<a class="btn btn-block" href="{% url 'multifactor:home' %}">Cancel</a>
+</form>
 {% endblock %}
 
 {% block head %}
 <script src="{% static 'multifactor/js/qrious.min.js' %}" type="text/javascript"></script>
 <script type="text/javascript">
-var key="";
-$(document).ready(function addToken() {
-	$.ajax({
-		"url": "{% url 'multifactor:totp_get' %}",
-		dataType:"JSON",
-		success: function (data) {
-			window.key = data.secret_key;
-			var qr = new QRious({
-				element: document.getElementById('qr'),
-				value: data.qr,
-				size: 250,
-			});
-			$("#second_step").show()
-		}
-	})
+var key="{{secret_key|safe}}";
+
+var qr = new QRious({
+	element: document.getElementById('qr'),
+	value: "{{qr|safe}}",
+	size: 250,
 });
 
-function showKey() {
-	alert(window.key)
-}
-
-function verify() {
-	answer=$("#answer").val()
-	$.ajax({
-		"url":"{% url 'multifactor:totp_verify' %}?key="+key+ "&answer="+answer,
-		success:function (data) {
-			if (data == "Error")
-				alert("You entered wrong numbers, please try again")
-			else
-			{
-				alert("Your authenticator is added successfully.")
-				window.location.href = "{% url 'multifactor:home' %}"
-			}
-		}
-	})
-}
 </script>
 {% endblock %}

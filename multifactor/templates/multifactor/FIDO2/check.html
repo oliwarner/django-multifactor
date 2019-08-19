@@ -4,17 +4,12 @@
 {% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
-{% if mode == "auth" %}
-<p class="text-center">Welcome back {{ request.session.base_username }}</p>
-<p class="text-center"><a href="{% url 'multifactor:reset_cookie' %}">Not me...</a></p>
-{% endif %}
 
-<p style="color: green">Please press the button on your security key to prove it is you.</p>
-{% if mode == "auth" %}
-<form id="u2f_login" action="{% url 'multifactor:fido2_complete_auth' %}" method="post" enctype="multipart/form-data">
-{% elif mode == "recheck" %}
-<form id="u2f_login" action="{% url 'multifactor:u2f_recheck' %}" method="post">
-{% endif %}
+<div class="alert alert-success mb-0" id="res">
+	Please press the button on your security key to prove it is you.
+</div>
+
+<form action="{% url 'multifactor:fido2_complete_auth' %}" method="post" enctype="multipart/form-data">
 	{% csrf_token %}
 	<input type="hidden" name="response" id="response" value=""/>
 </form>
@@ -57,19 +52,11 @@ function authen() {
 		})
 		.then(function (res) {
 			if (res.status=="OK") {
-				{%  if mode == "auth" %}
 				window.location.href = res.redirect;
-				{% elif mode == "recheck" %}
-				mfa_success_function();
-				{% endif %}
 			}
 			else {
-				{%  if mode == "auth" %}
 				alert("Error occured, please try again")
 				login()
-				{% elif mode == "recheck" %}
-				mfa_failed_function();
-				{% endif %}
 			}
 		})
 	})
