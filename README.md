@@ -1,4 +1,4 @@
-# ![](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo.png)
+# ![](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo2.png)
 
 ## Easy multi-factor authentication for Django
 
