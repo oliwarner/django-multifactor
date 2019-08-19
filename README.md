@@ -1,6 +1,6 @@
-#![](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo.png)
+# ![](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo.png)
 
-##Easy multi-factor authentication for Django
+## Easy multi-factor authentication for Django
 
 Supports TOTP, U2F, FIDO2 U2F (WebAuthn), Email Tokens as well as custom handlers for OTP token exchange (eg SMS plugins).  
 This is ***not*** a passwordless authentication system, rather adding to your existing authentication format.
