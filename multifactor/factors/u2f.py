@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.http import HttpResponse
 
 import json
 import hashlib
@@ -24,12 +25,11 @@ def start(request):
             [mf_settings['U2F_APPID']]
         )
         cert = x509.load_der_x509_certificate(cert, default_backend())
-        cert_hash = hashlib.md5(cert.public_bytes(Encoding.PEM)).hexdigest()
+        cert_hash = hashlib.sha384(cert.public_bytes(Encoding.PEM)).hexdigest()
 
-        # if UserKey.objects.filter(key_type=KEY_TYPE_U2F, properties__icontains=cert_hash).exists():
-        #     return HttpResponse("This key is registered before, it can't be registered again.")
+        if UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_U2F, properties__icontains=cert_hash).exists():
+            return HttpResponse("You already have this key on your account.")
 
-        UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_U2F).delete()
         key = UserKey.objects.create(
             user=request.user,
             properties={

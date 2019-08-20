@@ -1,15 +1,16 @@
 {% extends "multifactor/base.html" %}
 
-{% block card_title %}Enter Token by Email{% endblock %}
+{% block card_title %}Fallback OTP{% endblock %}
 {% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
 <form method="POST" action="">
 	{% csrf_token %}
 	<fieldset>
-		<p>Enter the 6-digits sent to your email.</p>
+		<p>A fallback one-time-password has been sent to you via {{succeeded}}.</p>
+		<p>Copy this code into the box below and click verify.</p>
 		<div class="form-group">
-			<input class="form-control" size="6" MaxLength="6" value="" placeholder="e.g 123456" name="otp" type="text" autocomplete="off" autofocus>
+			<input class="form-control" size="8" MaxLength="8" value="" placeholder="e.g 12345678" name="otp" type="text" autocomplete="off" autofocus>
 		</div>
 
 		<button type="submit" class="btn btn-lg btn-success btn-block">Verify</button>

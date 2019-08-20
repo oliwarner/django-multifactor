@@ -1,10 +1,11 @@
 # ![django-multifactor - Easy multi-factor authentication for Django](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo3.png)
 
-The easiest multi-factor for Django? Ships with opinionated defaults, standalone authentication 
-screens and very simple integration pathway to retrofit onto mature sites.
+Probably the easiest multi-factor for Django. Ships with standalone views, opinionated defaults 
+and a very simple integration pathway to retrofit onto mature sites. Supports [FIDO2/WebAuthn](https://en.wikipedia.org/wiki/WebAuthn)
+[U2F](https://en.wikipedia.org/wiki/Universal_2nd_Factor) and [TOTP authenticators](https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm), with removable fallbacks options for email, SMS, carrier pigeon, or whatever other token
+exchange you can think of.
 
-Supports TOTP, U2F, FIDO2 U2F (WebAuthn), Email Tokens. This is ***not*** a 
-passwordless authentication system. django-multifactor is purely additive.
+This is ***not*** a passwordless authentication system. django-multifactor is a second layer of defence.
 
 Based on [`django-mfa2`](https://pypi.org/project/django-mfa2/) but quickly diverging.
 
@@ -27,9 +28,7 @@ Install the package:
 
     pip install django-multifactor
 
-Add `multifactor` to `settings.INSTALLED_APPS`.
-
-Add and customise the following settings block:
+Add `multifactor` to `settings.INSTALLED_APPS` and override whichever setting you need.
 
     MULTIFACTOR = {
         'LOGIN_CALLBACK': False,             # False, or dotted import path to function to process after successful authentication
@@ -85,9 +84,45 @@ At this stage any authenticated user can add a secondary factor to their account
     ]
 
 
-## User Admin integration
+## Don't want to allow TOTP or U2F? Turn them off.
 
-It's often useful to monitor which of your users is using django-multifactor and, in emergencies, critical to be able to turn their secondary factors off. We ship a opinionated mixin class that you can add to your existing UserAdmin definition. 
+You can control the factors users can pick from in `settings.MULTIFACTOR`:
+
+    MULTIFACTOR = {
+        # ...
+        'FACTORS': ['FIDO2', 'U2F', 'TOTP'],  # <- this is the default
+    }
+
+
+## Extending OTP fallback with custom transports
+
+`django-multifactor` has a fallback system that allows the user to be contacted via a number of sub-secure methods **simultaneously**. The rationale is that if somebody hacks their email account, they'll still know something is going on when they get an SMS. Providing sane options for your users is critical to security here. A poor fallback can undermine otherwise solid factors.
+
+The included fallback uses `user.email` to send an email. You can plumb in additional functions to carry the OTP message over any
+other system you like. The function should look something like:
+
+    def send_carrier_pigeon(user, message):
+        bird = find_bird()
+        bird.attach(message)
+        bird.send(user.address)
+        return True  # to indicate it sent
+
+Then hook that into `settings.MULTIFACTOR`:
+
+    MULTIFACTOR = {
+        # ...
+        'FALLBACKS': {
+            'email': (lambda user: user.email, 'multifactor.factors.fallback.send_email'),
+            'pigeon': (lambda user: user.address, 'path.to.send_carrier_pigeon'),
+        }
+    }
+
+Now if the user selects the fallback option, they will receive an email *and* a pigeon. You can remove email by omitting that line. You can disable fallback entirely by setting FALLBACKS to an empty dict.
+
+
+## UserAdmin integration
+
+It's often useful to monitor which of your users is using django-multifactor and, in emergencies, critical to be able to turn their secondary factors off. We ship a opinionated mixin class that you can add to your existing UserAdmin definition.
 
     from multifactor.admin import MultifactorUserAdmin
 
@@ -97,9 +132,3 @@ It's often useful to monitor which of your users is using django-multifactor and
 
 It adds a column to show if that user has active factors, a filter to just show those with or without, and an inline to allow admins to turn certain keys off for their users.
 
-
-
-## TODO
-
- - Allow custom handlers for simple OTP sending.
- - Allow settings to limit what can be added.

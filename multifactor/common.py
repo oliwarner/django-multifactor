@@ -5,7 +5,7 @@ from django.shortcuts import render as dj_render, redirect
 import random
 
 from .app_settings import mf_settings
-from .models import UserKey
+from .models import UserKey, MultifactorProfile
 
 
 
@@ -41,24 +41,24 @@ def render(request, template_name, context, **kwargs):
 def method_url(method):
     return f'multifactor:{method.lower()}_auth'
 
-
 def write_session(request, key):
     """Write the multifactor session with the verified key"""
     request.session["multifactor"] = [
         (
-            key.key_type,
-            key.id,
+            key.key_type if key else None,
+            key.id if key else None,
             timezone.now().timestamp(),
             next_check() if mf_settings["RECHECK"] else False
         ),
         *filter(
-            lambda tup: tup[1] != key.id,
+            lambda tup: not key or tup[1] != key.id,
             request.session.get('multifactor', [])
         ),
     ]
 
-    key.last_used = timezone.now()
-    key.save()
+    if key:
+        key.last_used = timezone.now()
+        key.save()
 
 
 def login(request):
@@ -72,3 +72,10 @@ def login(request):
 
     # punch back to the login URL and let it decide what to do with you
     return redirect(settings.LOGIN_URL)
+
+def get_profile(request):
+    return getattr(
+        request.user,
+        'multifactor_profile',
+        MultifactorProfile(user=request.user)
+    )
