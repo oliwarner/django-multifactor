@@ -7,7 +7,7 @@
 {% block content %}
 {% if can_edit %}
 <div class="btn-group mb-4 ml-4 float-right">
-	<button class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+	<button class="btn btn-info dropdown-toggle" data-toggle="dropdown">
 		Add Method&nbsp;<span class="caret"></span>
 	</button>
 	<div class="dropdown-menu dropdown-menu-right">
@@ -24,8 +24,7 @@
 	<thead>
 		<tr>
 			<th>Type</th>
-			<th>Added</th>
-			<th></th>
+			<th class="text-right">Actions</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -33,16 +32,17 @@
 		<tr>
 			<td class="align-middle">
 				<strong>{{ key.get_key_type_display }}</strong>
-			</td>
-			<td class="align-middle">
-				Added: {{ key.added_on }}<br>
-				Expires: {{ key.expires|default:"Never" }}<br>
-				Last used: {{ key.last_used|default:"Never" }}
+				<p class="mb-0">Added {{ key.added_on.date }}. {% if key.last_used %}Used {{key.last_used|timesince}} ago.{% else %}Never used.{% endif %}</p>
 			</td>
 			<td class="align-middle text-right" style="width:10%;white-space: nowrap;">
+				{% if key.id in authed_kids %}
+					<a class="btn disabled mr-1" href="#" title="Unlocked">🔓</button>
+				{% elif key.enabled %}
+					<a class="btn btn-light mr-1" href="{% url key.auth_url %}" title="Locked, click to authenticate">🔒</button>
+				{% endif %}
 				{% if can_edit %}
-				<a href="{% url 'multifactor:toggle_key' key.pk %}" class="btn btn-{{key.enabled|yesno:'success,warning'}}">{{key.enabled|yesno:'Enabled,Disabled'}}</a>
-				<a class="btn btn-danger delete" href="{% url 'multifactor:delete_key' key.pk %}" onclick="return confirm('Are you sure you want to delete this key?')">Delete</a>
+				<a href="{% url 'multifactor:toggle_key' key.pk %}" class="btn btn-{{key.enabled|yesno:'success,warning'}} mr-1">{{key.enabled|yesno:'Enabled,Disabled'}}</a>
+				<a class="btn btn-danger delete mr-1" href="{% url 'multifactor:delete_key' key.pk %}" onclick="return confirm('Are you sure you want to delete this key?')">Delete</a>
 				{% endif %}
 			</td>
 		</tr>
@@ -62,35 +62,51 @@
 
 	<p>Traditionally you have logged in with a username and password,
 	maybe directly, maybe through a single sign-in portal. It's a tried
-	and tested authentication system <strong>but it has one key flaw...</strong> 
+	and tested authentication system <strong>but it has a key flaw...</strong> 
 	Anybody can pretend to be you, if they have your credentials.</p>
 
-	<p>Usernames, passwords, even "secret questions" are all *something you know*. 
-	This is a particularly weak factor as many people reuse or share passwords,
-	and recovery information like mothers' maiden names a reoften public record.</p>
+	<p>Usernames, passwords, even "secret questions" are all <strong>something you know</strong>. This is a weak factor as many people reuse or share passwords, and recovery information like mothers' maiden names a reoften public record. Strong password policies go some distance to secure accounts but they place increasing burden on you, the user.</p>
 
-	<p>Multi-factor authentication adds different <strong>types</strong> of factor:</p>
-	<ul>
-		<li><em>Something you have</em>, like a USB security token</li>
-		<li><em>Something you are</em>, like a fingerprint or voice scan</li>
-	</ul>
-
-	<p>Adding another factor makes it much harder for somebody to break into your account. It protects your
+	<p>Multi-factor authentication adds different <em>types</em> of factor. Rather than just relying on <strong>something you know</strong>, they layer on options like, <strong>something you have</strong> (USB security token, your phone), or <strong>something you are</strong> (fingerprint, voice scan, location). Adding another factor makes it much harder for somebody to break into your account. It protects your
 	account and the data your account has access to.</p>
 
 	<h4>Where to start? What factor should I add?</h4>
 
-	<p>An App-based TOTP Authenticator is the cheapest, most secure way to get started.
-	Download an Authenticator (eg Google Authenticator or Authy) on your phone.
-	Click the Add button above, and select TOTP Authenticator.
-	Scan in the barcode in your Authenticator app and then copy back the 6-digit code.</p>
+	<p>There are a few quick options to get started with...</p>
 
-	<p>That's it. In the future you will be asked for the current code the Authenticator
-	displays. Just copy, submit and carry on with your day.</p>
+	<div class="card-deck">
+		<div class="card mb-3">
+			<h5 class="card-header">TOPT Authenticators</h5>
+			<div class="card-body">
+				<p>Install Google Authenticator or Authy from your phone's marketplace. Click the Add button above, and select TOTP Authenticator. Scan in the barcode in your Authenticator app. It will give you a 6-digit code to type back into this website. That's it, you're paired.</p>
+				<p>The code will rotate every 30 seconds. To authenticate later, you will be asked what the current code is.</p>
+			</div>
+		</div>
+		<div class="card mb-3">
+			<h5 class="card-header">FIDO2 Devices</h5>
+			<div class="card-body">
+				<p>A broad range of devices:</p>
+				<ul>
+					<li>Computers with Windows Hello fingerprint or facial recognition</li>
+					<li>Google Chrome (logged into a Google account)</li>
+					<li>Google Android (logged into a Google account) via biometrics or location</li>
+					<li>FIDO2 USB and NFC keys</li>
+				</ul>
+				<p>Windows Hello is convenient but can tie you to one computer. Physical keys are useful for mobile usage.</p>
+			</div>
+		</div>
+		<div class="card mb-3">
+			<h5 class="card-header">U2F/FIDO1 USB devices</h5>
+			<div class="card-body">
+				<p>The predacessor to FIDO2, these are usually USB devices that start blinking when you need to authenticate. Press the button and you're done.</p>
+				<p>These are cheap and convenient for desktop-only installations.</p>
+			</div>
+		</div>
+	</div>
 
-	<p>If your computer has a Windows Hello-powered fingerprint reader, or facial
-	recognition, you can use these as a FIDO2 Security Device. You can also
-	purchase FIDO2 USB keys, or U2F USB buttons that you only need press to authenticate.</p>
+	<h4>What happens if I lose my factor or don't have access to it when I need it?</h4>
+	<p>Contact an administrator immediately. They can deactivate or remove your active factors, allowing you to add another.</p>
+	<p>We recommend you keep a backup secondary factor. Having a FIDO2 token is convenient (eg just leave your keys plugged in while you're at your computer) but having a TOPT authenticator will serve as a suitable backup if you misplace your keys. Additional factors can dilute over-all security.</p>
 
 </div>
 {% endblock %}

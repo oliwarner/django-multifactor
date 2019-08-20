@@ -5,9 +5,13 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 from random import randint
+import logging
 
 from ..models import UserKey, KEY_TYPE_EMAIL
 from ..common import render, write_session, login
+
+
+logger = logging.getLogger(__name__)
 
 
 def send_email(request, secret):
@@ -26,8 +30,8 @@ def send_email(request, secret):
             fail_silently=False
         )
         return True
-    except Exception as e:
-        print(e)
+    except Exception:
+        logger.exception('Could not send email.')
         return False
 
 

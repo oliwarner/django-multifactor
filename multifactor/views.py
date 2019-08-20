@@ -15,15 +15,13 @@ from .decorators import multifactor_protected
 
 @login_required
 def index(request):
-    authed = bool(active_factors(request))
+    authed = active_factors(request)
     methods = [
         (f"multifactor:{value.lower()}_start", label)
         for value, label in KEY_CHOICES
     ]
 
-    can_edit = not has_multifactor(request) or authed
-
-    print(active_factors(request))
+    can_edit = not has_multifactor(request) or bool(authed)
 
     if not can_edit:
         messages.warning(request, format_html(
@@ -35,6 +33,7 @@ def index(request):
 
     return render(request, "multifactor/home.html", {
         "keys": UserKey.objects.filter(user=request.user),
+        'authed_kids': [k[1] for k in authed],
         "available_methods": methods,
         "can_edit": can_edit,
     })

@@ -8,10 +8,14 @@ from fido2.server import Fido2Server, RelyingParty
 from fido2.ctap2 import AttestationObject, AuthenticatorData
 from fido2.utils import websafe_decode, websafe_encode
 from fido2.ctap2 import AttestedCredentialData
+import logging
 
 from ..models import UserKey, KEY_TYPE_FIDO2
 from ..common import render, write_session, login
 from ..app_settings import mf_settings
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -68,8 +72,8 @@ def complete_reg(request):
         write_session(request, key)
         return JsonResponse({'status': 'OK'})
 
-    except Exception as e:
-        print(e)
+    except Exception:
+        logger.exception("Error completing FIDO2 registration.")
         return JsonResponse({
             'status': 'ERR',
             "message": "Error on server, please try again later",

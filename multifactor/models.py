@@ -36,3 +36,9 @@ class UserKey(models.Model):
         elif self.key_type == KEY_TYPE_U2F:
             return self.properties.get("device", "----")
         return ""
+
+    @property
+    def auth_url(self):
+        from .common import method_url
+        return method_url(self.key_type)
+    

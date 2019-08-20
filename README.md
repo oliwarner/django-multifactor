@@ -1,9 +1,10 @@
-# ![](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo2.png)
+# ![django-multifactor - Easy multi-factor authentication for Django](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo3.png)
 
-## Easy multi-factor authentication for Django
+The easiest multi-factor for Django? Ships with opinionated defaults, standalone authentication 
+screens and very simple integration pathway to retrofit onto mature sites.
 
-Supports TOTP, U2F, FIDO2 U2F (WebAuthn), Email Tokens as well as custom handlers for OTP token exchange (eg SMS plugins).  
-This is ***not*** a passwordless authentication system, rather adding to your existing authentication format.
+Supports TOTP, U2F, FIDO2 U2F (WebAuthn), Email Tokens. This is ***not*** a 
+passwordless authentication system. django-multifactor is purely additive.
 
 Based on [`django-mfa2`](https://pypi.org/project/django-mfa2/) but quickly diverging.
 
@@ -53,6 +54,9 @@ Include `multifactor.urls` in your URLs. You can do this anywhere but I suggest 
     ]
 
 
+And don't forget to run a `./manage.py collectstatic` before restarting Django.
+
+
 ## Usage
 
 At this stage any authenticated user can add a secondary factor to their account by visiting (eg) `/admin/multifactor/`, but no view will *require* secondary authentication. django-multifactor gives you granular control to conditionally require certain users need a secondary factor on certain views. This is accomplished through the `multifactor.decorators.multifactor_protected` decorator.
@@ -81,8 +85,21 @@ At this stage any authenticated user can add a secondary factor to their account
     ]
 
 
+## User Admin integration
+
+It's often useful to monitor which of your users is using django-multifactor and, in emergencies, critical to be able to turn their secondary factors off. We ship a opinionated mixin class that you can add to your existing UserAdmin definition. 
+
+    from multifactor.admin import MultifactorUserAdmin
+
+    @admin.register(User)
+    class StaffAdmin(UserAdmin, MultifactorUserAdmin):
+        ...
+
+It adds a column to show if that user has active factors, a filter to just show those with or without, and an inline to allow admins to turn certain keys off for their users.
+
+
+
 ## TODO
 
  - Allow custom handlers for simple OTP sending.
  - Allow settings to limit what can be added.
- - Allow `multifactor_protected` to require more than one secondary factor.
