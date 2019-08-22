@@ -1,6 +1,7 @@
-from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 
 from fido2 import cbor
 from fido2.client import ClientData
@@ -70,6 +71,7 @@ def complete_reg(request):
             key_type=KEY_TYPE_FIDO2,
         )
         write_session(request, key)
+        messages.success(request, 'FIDO2 Token added!')
         return JsonResponse({'status': 'OK'})
 
     except Exception:

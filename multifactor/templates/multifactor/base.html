@@ -19,14 +19,14 @@
 <body class="bg-dark">
 	{% block page %}
 	<div class="container">
-		<div class="card border-dark {% block card_classes %}mx-auto{% endblock %} my-5">
+		<div class="card border-dark {% block card_classes %}mx-auto{% endblock %} my-5" id="card">
 			<h1 class="card-header">{% block card_title %}Login{% endblock %}</h1>
 			{% for message in messages %}
 			<div class="card-body alert alert-{{message.tags}}">
 				{{ message }}
 			</div>
 			{% endfor %}
-			<div class="card-body">
+			<div class="card-body" id="content">
 				{% block content %}{% endblock %}
 			</div>
 		</div>
@@ -34,6 +34,15 @@
 	{% endblock page %}
 
 	<script src="{%static 'multifactor/js/bootstrap.bundle.js' %}"></script>
-	{% block head %}{% endblock %}
+	{% block head %}
+	<script>
+		function display_message(level, msg) {
+			document.getElementById('card').classList.add('bg-' + level, 'text-white');
+			document.getElementById('content').innerHTML = msg;
+		}
+		function display_error(msg) { display_message('danger', msg); }
+		function display_succcess(msg) { display_message('success', msg); }
+	</script>
+	{% endblock %}
 </body>
 </html>

@@ -4,17 +4,63 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.module_loading import import_string
 from django.shortcuts import redirect
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from random import randint
 import logging
 
-from ..common import render, write_session, login, get_profile
+from ..common import render, write_session, login, disabled_fallbacks
 from ..app_settings import mf_settings
 
 
 logger = logging.getLogger(__name__)
 
 SESSION_KEY = 'multifactor-fallback-otp'
+
+
+class Auth(LoginRequiredMixin, TemplateView):
+    template_name = "multifactor/fallback/auth.html"
+    succeeded = []
+
+    def get(self, request):
+        otp = request.session[SESSION_KEY] = request.session.get(SESSION_KEY, str(randint(0, 100000000)))
+        message = f'Dear {request.user.get_full_name()},\nYour one-time-password is: {otp}'
+
+        disabled = disabled_fallbacks(request)
+        s = []
+        for name, (field, method) in mf_settings['FALLBACKS'].items():
+            if name in disabled:
+                continue
+            try:
+                imported_method = import_string(method)
+                if imported_method(request.user, message):
+                    s.append(name)
+            except:
+                logger.exception('Fallback exploded')
+                pass
+
+        if not s:
+            messages.error(request, 'No fallback OTP transport methods worked. Please contact an administrator.')
+            return redirect('multifactor:home')
+
+        self.succeeded = s[0] if len(s) == 1 else (', '.join(s[:-1]) + ' and ' + s[-1])
+        return super().get(request)
+
+    def get_context_data(self, **kwargs):
+        return {
+            'succeeded': self.succeeded,
+        }
+
+    def post(self, request):
+        if request.session[SESSION_KEY] == request.POST["otp"].strip():
+            request.session.pop(SESSION_KEY)
+            write_session(request, key=None)
+            return login(request)
+
+        self.succeeded = request.POST.get("succeeded")
+        messages.error(request, 'That key was not correct. Please try again.')
+        return super(TemplateView, self).get(request)
 
 
 def send_email(user, message):
@@ -30,49 +76,3 @@ def send_email(user, message):
     except Exception:
         logger.exception('Could not send email.')
         return False
-
-
-@login_required
-def auth(request):
-    profile = get_profile(request)
-    # TODO check profile to see if we're allowed to do this
-    fallbacks = {
-        k: v
-        for k, v in mf_settings['FALLBACKS'].items()
-        if k not in profile.disabled_fallbacks and v[0](request.user)
-    }
-
-    if request.method == "POST":
-        succeeded = request.POST.get("succeeded")
-        if request.session[SESSION_KEY] == request.POST["otp"].strip():
-            write_session(request, key=None)
-            return login(request)
-        messages.error(request, 'That key was not correct. Please try again.')
-
-    else:
-        otp = request.session[SESSION_KEY] = request.session.get(SESSION_KEY, str(randint(0, 100000000)))
-        message = f'Dear {request.user.get_full_name()},\nYour one-time-password is: {otp}'
-
-        succeeded = []
-        for name, (field, method) in fallbacks.items():
-            try:
-                imported_method = import_string(method)
-                if imported_method(request.user, message):
-                    succeeded.append(name)
-            except:
-                logger.exception('Fallback exploded')
-                pass
-
-        if not succeeded:
-            messages.error(request, 'No fallback OTP transport methods worked. Please contact an administrator.')
-            # return redirect('multifactor:home')
-
-        elif len(succeeded) == 1:
-            succeeded = succeeded[0]
-
-        else:
-            succeeded = ', '.join(succeeded[:-1]) + ' and ' + succeeded[-1]
-
-    return render(request, "multifactor/fallback/auth.html", {
-        'succeeded': succeeded
-    })

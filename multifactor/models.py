@@ -14,13 +14,6 @@ KEY_CHOICES = (
 )
 
 
-class MultifactorProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, models.CASCADE, related_name='multifactor_profile')
-
-    # allow users to turn off their fallback options
-    disabled_fallbacks = models.CharField(max_length=250)
-    log = models.TextField(blank=True)
-
 
 class UserKey(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='multifactor_keys')
@@ -48,3 +41,7 @@ class UserKey(models.Model):
         from .common import method_url
         return method_url(self.key_type)
 
+
+class DisabledFallback(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='+')
+    fallback = models.CharField(max_length=50)

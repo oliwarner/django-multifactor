@@ -9,4 +9,13 @@
 {% for link, label in methods %}
 <a class="btn btn-block btn-primary" href="{% url link %}">{{label}} →</a>
 {% endfor %}
+
+{% if fallbacks %}
+</div>
+<div class="card-footer">
+<a href="{% url 'multifactor:fallback_auth' %}" class="btn btn-block btn-secondary">
+	<strong>Send Fallback Token</strong>
+	<small class="d-block">{{fallbacks|join:" + "}}</small>
+</a>
+{% endif %}
 {% endblock %}

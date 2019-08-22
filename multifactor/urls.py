@@ -9,8 +9,9 @@ app_name = 'multifactor'
 urlpatterns = [
     path('', views.index, name="home"),
     path('authenticate/', views.authenticate, name="authenticate"),
-    path('toggle-key/<int:key_id>/', views.toggle_key, name="toggle_key"),
-    path('delete/<int:key_id>/', views.del_key, name="delete_key"),
+    path('toggle-factor/', views.toggle_factor, name="toggle_factor"),
+    path('toggle-fallback/', views.toggle_fallback, name="toggle_fallback"),
+    path('delete/', views.delete_factor, name="delete_factor"),
     path('reset/', views.reset_cookie, name="reset_cookie"),
 
     path('fido2/', fido2.start, name="fido2_start"),
@@ -20,11 +21,11 @@ urlpatterns = [
     path('fido2/begin-reg/', fido2.begin_registration, name="fido2_begin_reg"),
     path('fido2/complete-reg/', fido2.complete_reg, name="fido2_complete_reg"),
 
-    path('u2f/', u2f.start, name="u2f_start"),
-    path('u2f/auth/', u2f.auth, name="u2f_auth"),
+    path('u2f/', u2f.Create.as_view(), name="u2f_start"),
+    path('u2f/auth/', u2f.Auth.as_view(), name="u2f_auth"),
 
-    path('totp/start/', totp.create, name="totp_start"),
-    path('totp/auth/', totp.auth, name="totp_auth"),
+    path('totp/start/', totp.Create.as_view(), name="totp_start"),
+    path('totp/auth/', totp.Auth.as_view(), name="totp_auth"),
 
-    path('fallback/auth/', fallback.auth, name="fallback_auth"),
+    path('fallback/auth/', fallback.Auth.as_view(), name="fallback_auth"),
 ]

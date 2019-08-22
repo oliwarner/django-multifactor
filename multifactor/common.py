@@ -5,7 +5,7 @@ from django.shortcuts import render as dj_render, redirect
 import random
 
 from .app_settings import mf_settings
-from .models import UserKey, MultifactorProfile
+from .models import UserKey, DisabledFallback
 
 
 
@@ -23,6 +23,9 @@ def active_factors(request):
         ),
     ]
     return factors
+
+def disabled_fallbacks(request):
+    return DisabledFallback.objects.filter(user=request.user).values_list('fallback', flat=True)
 
 
 def next_check():
@@ -72,10 +75,3 @@ def login(request):
 
     # punch back to the login URL and let it decide what to do with you
     return redirect(settings.LOGIN_URL)
-
-def get_profile(request):
-    return getattr(
-        request.user,
-        'multifactor_profile',
-        MultifactorProfile(user=request.user)
-    )

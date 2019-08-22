@@ -4,16 +4,16 @@
 {% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
-<div class="alert alert-success mb-0" id="res">
-	Your broswer should ask you to confirm you indentity.
-</div>
+Follow your browser's instructions to continue.
 {% endblock %}
 
 {% block head %}
+{{ block.super }}
 <script type="application/javascript" src="{% static 'multifactor/js/cbor.js'%}"></script>
+{% block fido_scripting %}
 <script type="application/javascript">
-function begin_reg() {
-	fetch('{% url 'multifactor:fido2_begin_reg' %}', {})
+function authenticate() {
+	fetch("{% url 'multifactor:fido2_begin_reg' %}", {})
 	.then(function(response) {
 		if(response.ok)
 			return response.arrayBuffer();
@@ -22,11 +22,10 @@ function begin_reg() {
 	.then(CBOR.decode)
 	.then(function(options) {
 		options.publicKey.attestation = "direct"
-		console.log(options)
 		return navigator.credentials.create(options);
 	})
 	.then(function(attestation) {
-		return fetch('{% url 'multifactor:fido2_complete_reg' %}', {
+		return fetch("{% url 'multifactor:fido2_complete_reg' %}", {
 			method: 'POST',
 			headers: {'Content-Type': 'application/cbor'},
 			body: CBOR.encode({
@@ -41,14 +40,18 @@ function begin_reg() {
 	})
 	.then(function (res) {
 		if (res["status"] =='OK')
-			$("#res").html("<div class='alert alert-success'>Registered Successfully, <a href='{% url 'multifactor:home' %}'> Go to Security Home</a></div>");
+			window.location.href = "{% url 'multifactor:home' %}";
 		else
-			$("#res").html("<div class='alert alert-danger'>Registration Failed as " + res["message"] + ", <a href='javascript:void(0)' onclick='begin_reg()'> try again or <a href='{% url 'multifactor:home' %}'> Go to Security Home</a></div>");
+			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='begin_reg()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
 	}, function(reason) {
-		$("#res").html("<div class='alert alert-danger'>Registration Failed as " +reason +", <a href='javascript:void(0)' onclick='begin_reg()'> try again </a> or <a href='{% url 'multifactor:home' %}'> Go to Security Home</a></div>");
+		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='begin_reg()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
 	});
 }
-setTimeout(begin_reg,500);
-</script>
-{% endblock %}
 
+if (location.protocol != 'https:')
+	display_error("FIDO2 only works under HTTPS");
+else
+	setTimeout(authenticate, 500);
+</script>
+{% endblock fido_scripting %}
+{% endblock %}
