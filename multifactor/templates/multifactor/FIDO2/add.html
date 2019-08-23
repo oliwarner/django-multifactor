@@ -1,7 +1,7 @@
 {% extends "multifactor/base.html" %}{% load static %}
 
 {% block card_title %}FIDO2 Security Key{% endblock %}
-{% block card_classes %}card-login mx-auto{% endblock %}
+{% block card_class %}{{ block.super }} has-text-centered{% endblock %}
 
 {% block content %}
 Follow your browser's instructions to continue.

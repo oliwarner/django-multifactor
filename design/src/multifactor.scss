@@ -1,0 +1,115 @@
+@charset "utf-8";
+
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+
+// Set your brand colors
+$purple: #8A4D76;
+$pink: #FA7C91;
+$brown: #757763;
+$beige-light: #D0D1CD;
+$beige-lighter: #EFF0EB;
+
+// Update Bulma's global variables
+$family-sans-serif: "Nunito", sans-serif;
+$grey-dark: $brown;
+$grey-light: $beige-light;
+$primary: $purple;
+$link: $pink;
+$widescreen-enabled: false;
+$fullhd-enabled: false;
+
+// Update some of Bulma's component variables
+$body-background-color: $beige-lighter;
+$control-border-width: 2px;
+$input-border-color: transparent;
+$input-shadow: none;
+
+// Import only what you need from Bulma
+@import "../node_modules/bulma/sass/utilities/_all.sass";
+@import "../node_modules/bulma/sass/base/_all.sass";
+@import "../node_modules/bulma/sass/grid/columns.sass";
+@import "../node_modules/bulma/sass/grid/columns.sass";
+@import "../node_modules/bulma/sass/elements/container.sass";
+@import "../node_modules/bulma/sass/elements/content.sass";
+@import "../node_modules/bulma/sass/elements/button.sass";
+@import "../node_modules/bulma/sass/elements/table.sass";
+@import "../node_modules/bulma/sass/elements/notification.sass";
+@import "../node_modules/bulma/sass/form/shared.sass";
+@import "../node_modules/bulma/sass/form/input-textarea.sass";
+@import "../node_modules/bulma/sass/components/card.sass";
+@import "../node_modules/bulma/sass/components/dropdown.sass";
+
+html, body {min-height:100vh;}
+body {
+	margin: 50px 20px 50px;
+}
+body > .column {padding-bottom:0;}
+#card {
+	min-height: 100vh;
+	@include from($tablet) {
+		min-height: 0;
+		margin-top:50px;
+		margin-bottom:50px;
+	}
+	:last-child {margin-bottom: 0 !important;}
+}
+.card-header-title {text-align:center; font-size: 1.3rem;}
+#card.has-background-danger {
+	text-align: center;
+	color: $white;
+	.card-header-title {color: $white;}
+}
+
+.collapse {max-height:0; overflow: hidden;transition: max-height 0.3s linear;}
+.collapse.open {max-height:2000px !important;}
+
+p {margin-bottom: 1em;}
+.table {
+	width: 100%;
+	td {
+		vertical-align: middle;
+		:last-child {
+			margin-bottom:0;
+		}
+		&:last-child {
+			text-align: right;
+			width:10%;
+			white-space: nowrap;
+		}
+		form {
+			display: inline;
+		}
+	}
+
+
+	@include until($tablet) {
+		td {
+			display: block;
+			width: 100%;
+		}
+		tr, td {border: 0;}
+	}
+}
+
+.button-ml {
+	display: inline-block;
+	height: auto;
+	span, small, strong {
+		display: block
+	}
+}
+
+.is-100 {width: 100%}
+
+.field {margin-bottom:1rem;}
+.button.is-fullwidth {margin-bottom:1rem;}
+
+h4 {
+	font-size: 1.4rem;
+	border-bottom: 1px solid $beige-lighter;
+	padding-bottom: 4px;
+	margin-bottom: 4px;
+}
+
+.card-footer .card {height:100%;}
+

@@ -8,41 +8,32 @@
 	<meta name="author" content="">
 	<title>{% block title %}Multifactor Authentiction{% endblock %}</title>
 
-	<link href="{% static 'multifactor/css/sb-admin.min.css' %}" rel="stylesheet">
-	<script src="{% static 'multifactor/js/jquery.min.js' %}"></script>
-	<style>
-		.card > .alert { border-radius: 0; border-left: 0; border-right: 0; margin:0; }
-		.card > .card-header { font-size: 1.3rem; }
-	</style>
+	<link href="{% static 'multifactor/css/multifactor-main.bundle.css' %}" rel="stylesheet">
 </head>
 
-<body class="bg-dark">
+<body class="columns is-vcentered is-centered"><div class="column"><div class="container">
 	{% block page %}
-	<div class="container">
-		<div class="card border-dark {% block card_classes %}mx-auto{% endblock %} my-5" id="card">
-			<h1 class="card-header">{% block card_title %}Login{% endblock %}</h1>
-			{% for message in messages %}
-			<div class="card-body alert alert-{{message.tags}}">
-				{{ message }}
+
+	{% for message in messages %}
+	<div class="card-content notification is-{{message.tags}}">
+		{{ message }}
+	</div>
+	{% endfor %}
+
+	<div class="">
+		<div class="card" id="card">
+			<div class="card-header">
+				<h1 class="card-header-title is-centered">{% block card_title %}{% endblock %}</h1>
 			</div>
-			{% endfor %}
-			<div class="card-body" id="content">
+			<div class="card-content" id="content">
 				{% block content %}{% endblock %}
 			</div>
 		</div>
 	</div>
 	{% endblock page %}
 
-	<script src="{%static 'multifactor/js/bootstrap.bundle.js' %}"></script>
+	<script src="{%static 'multifactor/js/multifactor.bundle.js' %}"></script>
 	{% block head %}
-	<script>
-		function display_message(level, msg) {
-			document.getElementById('card').classList.add('bg-' + level, 'text-white');
-			document.getElementById('content').innerHTML = msg;
-		}
-		function display_error(msg) { display_message('danger', msg); }
-		function display_succcess(msg) { display_message('success', msg); }
-	</script>
 	{% endblock %}
-</body>
+</div></div></body>
 </html>

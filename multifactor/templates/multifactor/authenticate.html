@@ -1,21 +1,19 @@
 {% extends "multifactor/base.html" %}
 
-{% block card_title %}Secondy Factor Verification{% endblock %}
-{% block card_classes %}card-login mx-auto{% endblock %}
+{% block card_title %}Which factor would you like to authenticate with?{% endblock %}
 
 {% block content %}
-
-<p>The page you're trying to access requires secondary authentication. Pick one of your secondary factor types from the list below to continue.</p>
+<p class="has-text-centered">We need to verify one of your secondary factors to continue. Please pick one.</p>
 {% for link, label in methods %}
-<a class="btn btn-block btn-primary" href="{% url link %}">{{label}} →</a>
+<a class="button is-primary is-large is-fullwidth" href="{% url link %}">{{label}} →</a>
 {% endfor %}
 
 {% if fallbacks %}
 </div>
 <div class="card-footer">
-<a href="{% url 'multifactor:fallback_auth' %}" class="btn btn-block btn-secondary">
+<a href="{% url 'multifactor:fallback_auth' %}" class="button is-100 button-ml is-light">
 	<strong>Send Fallback Token</strong>
-	<small class="d-block">{{fallbacks|join:" + "}}</small>
+	<small>{{fallbacks|join:" + "}}</small>
 </a>
 {% endif %}
 {% endblock %}

@@ -9,7 +9,6 @@ else {
 	data = JSON.parse('{{ token|safe }}')
 	u2f.sign(data.appId, data.challenge, data.registeredKeys, function (response) {
 		document.getElementById('response').value = JSON.stringify(response);
-		console.log(response)
 
 		if (response.hasOwnProperty("errorCode") && response.errorCode != 0)
 			display_error('Error handling request: ' + {

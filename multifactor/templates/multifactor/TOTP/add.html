@@ -1,34 +1,34 @@
 {% extends "multifactor/base.html" %}{% load static %}
 
 {% block card_title %}Add Authenticator{% endblock %}
-{% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
-<p>Start by downloading an Authenticator App on your phone. <a href="#suggestions" data-toggle="collapse">Show suggestions...</a></p>
-<ul class="collapse" id="suggestions">
-	<li>Android <a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2' target='_blank'>Google Authenticator</a></li>
-	<li>iPhone/iPad <a href='https://itunes.apple.com/us/app/authy/id494168017' target='_blank'>Authy</a></li>
-	<li>Chrome <a href='https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai?hl=en'>Google Authenticator</a>
-</ul>
+{% block preform %}
+<p>Start by downloading an Authenticator App on your phone. <a href="#suggestions" data-collapse="suggestions">Show suggestions...</a></p>
+<div class="collapse" id="suggestions"><div class="notification is-info">
+	<ul>
+		<li>Android <a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2' target='_blank'>Google Authenticator</a></li>
+		<li>iPhone/iPad <a href='https://itunes.apple.com/us/app/authy/id494168017' target='_blank'>Authy</a></li>
+		<li>Chrome <a href='https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai?hl=en'>Google Authenticator</a>
+	</ul>
+</div></div>
 
-<div class="text-center">
+<div class="has-text-centered">
 	<img id="qr" />
 	<p><code>{{secret_key}}</code></p>
 </div>
-
 <p>Use your Authenticator to scan in this QR Code. It should give you a six-digit code in return. Enter this code below and click Verify.</p>
+{% endblock preform %}
 
 <form action="" method="POST">
 	{% csrf_token %}
 	<input type="hidden" name="key" value="{{secret_key|safe}}">
-	<div class="form-group">
-		<div class="input-group">
-			<input maxlength="6" size="6" class="form-control" name="answer" placeholder="e.g 123456" autocomplete="off" autofocus/>
-		</div>
-	</div>
 
-	<button type="submit" class="btn btn-lg btn-success btn-block">Verify</button>
-	<a class="btn btn-block" href="{% url 'multifactor:home' %}">Cancel</a>
+	<div class="field"><div class="control">
+		<input class="input is-primary has-text-centered is-large" type="text" maxlength="6" size="6"  name="answer" placeholder="e.g 123456" autocomplete="off" autofocus>
+	</div></div>
+
+	<button type="submit" class="button is-primary is-large is-fullwidth">Verify</button>
 </form>
 {% endblock %}
 
