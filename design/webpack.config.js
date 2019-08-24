@@ -1,5 +1,6 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
   entry: './src/index.js',
@@ -36,5 +37,12 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'css/multifactor-[name].bundle.css'
     }),
+    new OptimizeCssAssetsPlugin({
+      cssProcessor: require('cssnano'),
+      cssProcessorPluginOptions: {
+        preset: ['default', { discardComments: { removeAll: true } }],
+      },
+      canPrint: true
+    })
   ]
 };

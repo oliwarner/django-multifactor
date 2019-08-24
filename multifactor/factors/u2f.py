@@ -1,6 +1,5 @@
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -27,6 +26,10 @@ class Create(LoginRequiredMixin, TemplateView):
         }
 
     def post(self, request, *args, **kwargs):
+        if 'response' not in request.POST or any(x not in request.POST["response"] for x in ['clientData', 'registrationData', 'version']):
+            messages.success(request, "Invalid U2F response, please try again.")
+            return redirect('multifactor:home')
+
         device, cert = u2f.complete_registration(
             request.session['multifactor_u2f_enroll_'],
             json.loads(request.POST["response"]),
@@ -36,7 +39,8 @@ class Create(LoginRequiredMixin, TemplateView):
         cert_hash = hashlib.sha384(cert.public_bytes(Encoding.PEM)).hexdigest()
 
         if UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_U2F, properties__icontains=cert_hash).exists():
-            return HttpResponse("You already have this key on your account.")
+            messages.info(request, "That key's already in your account.")
+            return redirect('multifactor:home')
 
         key = UserKey.objects.create(
             user=request.user,

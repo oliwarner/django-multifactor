@@ -4,17 +4,18 @@
 {% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
-<form method="POST" action="">
-	{% csrf_token %}
-	<fieldset>
-		<p>A fallback one-time-password has been sent to you via {{succeeded}}.</p>
-		<p>Copy this code into the box below and click verify.</p>
-		<div class="form-group">
-			<input class="form-control" size="8" MaxLength="8" value="" placeholder="e.g 12345678" name="otp" type="text" autocomplete="off" autofocus>
-		</div>
 
-		<button type="submit" class="btn btn-lg btn-success btn-block">Verify</button>
-	</fieldset>
+<p>A fallback one-time-password has been sent to you via {{succeeded}}.</p>
+<p>Copy this code into the box below and click verify.</p>
+
+<form action="" method="POST">
+	{% csrf_token %}
+
+	<div class="field"><div class="control">
+		<input class="input is-primary has-text-centered is-large" type="text" maxlength="6" size="6"  name="otp" placeholder="e.g 12345678" autocomplete="off" autofocus>
+	</div></div>
+
+	<button type="submit" class="button is-primary is-large is-fullwidth">Verify</button>
 </form>
 {% endblock %}
 

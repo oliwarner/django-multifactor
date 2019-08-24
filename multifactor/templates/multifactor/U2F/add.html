@@ -1,17 +1,16 @@
 {% extends "multifactor/base.html" %}{% load static %}
 
 {% block card_title %}U2F Security Key{% endblock %}
-{% block card_classes %}card-login mx-auto{% endblock %}
 
 {% block content %}
-<p>Plug your U2F Security Key in now —if it isn't already— and it should start flashing</p>
-<p class="mb-0">Please press its button.</p>
-
 <form action="" method="POST" id="u2f_login">
 	{% csrf_token %}
 	<input type="hidden" id="response" name="response" value=""/>
 </form>
+
+<p class="has-text-centered">Follow your browser's instructions to continue.</p>
 {% endblock %}
+
 
 {% block head %}
 {{ block.super }}

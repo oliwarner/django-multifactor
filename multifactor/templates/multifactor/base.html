@@ -6,12 +6,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<meta name="description" content="">
 	<meta name="author" content="">
-	<title>{% block title %}Multifactor Authentiction{% endblock %}</title>
+	<title>{% block title %}Multifactor Verification{% endblock %}</title>
 
 	<link href="{% static 'multifactor/css/multifactor-main.bundle.css' %}" rel="stylesheet">
 </head>
 
-<body class="columns is-vcentered is-centered"><div class="column"><div class="container">
+<body class="columns"><div class="column {% block container_class %}curt{% endblock %}">
 	{% block page %}
 
 	{% for message in messages %}
@@ -20,14 +20,12 @@
 	</div>
 	{% endfor %}
 
-	<div class="">
-		<div class="card" id="card">
-			<div class="card-header">
-				<h1 class="card-header-title is-centered">{% block card_title %}{% endblock %}</h1>
-			</div>
-			<div class="card-content" id="content">
-				{% block content %}{% endblock %}
-			</div>
+	<div class="card" id="card">
+		<div class="card-header">
+			<h1 class="card-header-title is-centered">{% block card_title %}{% endblock %}</h1>
+		</div>
+		<div class="card-content" id="content">
+			{% block content %}{% endblock %}
 		</div>
 	</div>
 	{% endblock page %}
@@ -35,5 +33,5 @@
 	<script src="{%static 'multifactor/js/multifactor.bundle.js' %}"></script>
 	{% block head %}
 	{% endblock %}
-</div></div></body>
+</div></body>
 </html>

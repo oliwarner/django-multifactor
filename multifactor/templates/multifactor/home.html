@@ -1,15 +1,15 @@
 {% extends "multifactor/base.html" %}
 {% load static %}
 
-{% block card_title %}Multi-Factor Authentication{% endblock %}
-{% block card_class %}is-three-quarters{% endblock %}
+{% block card_title %}Multi-Factor Verification{% endblock %}
+{% block container_class %}{% endblock %}
 
 {% block content %}
 {% if can_edit %}
 <div class="dropdown is-right is-pulled-right is-hoverable">
 	<div class="dropdown-trigger">
 		<button class="button is-light" aria-haspopup="true" aria-controls="dropdown-add-factor">
-			Add Factor +
+			Add Factor ➕
 		</button>
 	</div>
 	<div class="dropdown-menu" id="dropdown-add-factor" role="menu">

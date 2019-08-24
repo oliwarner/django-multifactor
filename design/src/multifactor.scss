@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+@import url('https://fonts.googleapis.com/css?family=Assistant:400,600');
 
 // Set your brand colors
 $purple: #8A4D76;
@@ -10,7 +10,9 @@ $beige-light: #D0D1CD;
 $beige-lighter: #EFF0EB;
 
 // Update Bulma's global variables
-$family-sans-serif: "Nunito", sans-serif;
+$family-sans-serif: "Assistant", sans-serif;
+$weight-normal: 400;
+$weight-bold: 600;
 $grey-dark: $brown;
 $grey-light: $beige-light;
 $primary: $purple;
@@ -21,13 +23,14 @@ $fullhd-enabled: false;
 // Update some of Bulma's component variables
 $body-background-color: $beige-lighter;
 $control-border-width: 2px;
-$input-border-color: transparent;
-$input-shadow: none;
+// $input-border-color: transparent;
+// $input-shadow: none;
+
+$card-header-background-color: rgba(10,30,10,0.05);
 
 // Import only what you need from Bulma
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/base/_all.sass";
-@import "../node_modules/bulma/sass/grid/columns.sass";
 @import "../node_modules/bulma/sass/grid/columns.sass";
 @import "../node_modules/bulma/sass/elements/container.sass";
 @import "../node_modules/bulma/sass/elements/content.sass";
@@ -42,18 +45,62 @@ $input-shadow: none;
 html, body {min-height:100vh;}
 body {
 	margin: 50px 20px 50px;
+	display: flex;
+
+	@include until($tablet) {
+		margin-top: 0 !important;
+		:last-child {margin-bottom:0 !important;}
+	}
+	@include from($tablet) {
+		align-items: center;
+		justify-content: center;
+	}
 }
-body > .column {padding-bottom:0;}
+body > .column {
+	padding-bottom:0;
+
+	@include until($tablet) {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		padding-top:0;
+	}
+
+	@include from($tablet) {
+		max-width: 1020px;
+		margin-left:20px;
+		margin-right: 20px;
+		&.curt {max-width: 450px}
+	}
+}
 #card {
-	min-height: 100vh;
+	@include until($tablet) {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		> .card-content {flex-grow: 1}
+		&, > .card-header {box-shadow: none !important;}
+	}
 	@include from($tablet) {
 		min-height: 0;
-		margin-top:50px;
-		margin-bottom:50px;
+		margin-top:2rem;
+		margin-bottom:2rem;
 	}
-	:last-child {margin-bottom: 0 !important;}
+	:last-child, .card-content :last-child {margin-bottom: 0 !important;}
 }
-.card-header-title {text-align:center; font-size: 1.3rem;}
+
+body > .column > .notification {
+	margin: 1.5rem 0 0 0 !important;
+	text-align: center;
+
+	@include until($tablet) {
+		border-radius: 0;
+		margin: 0 !important;
+	}
+	flex-grow: 0;
+}
+
+.card-header-title {text-align:center; font-size: 1.4rem;}
 #card.has-background-danger {
 	text-align: center;
 	color: $white;
@@ -113,3 +160,8 @@ h4 {
 
 .card-footer .card {height:100%;}
 
+
+.qr-block {
+	margin-bottom:1.5rem;
+	text-align: center;
+}

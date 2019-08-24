@@ -13,11 +13,12 @@
 	</ul>
 </div></div>
 
-<div class="has-text-centered">
+<div class="qr-block">
 	<img id="qr" />
 	<p><code>{{secret_key}}</code></p>
 </div>
-<p>Use your Authenticator to scan in this QR Code. It should give you a six-digit code in return. Enter this code below and click Verify.</p>
+
+<p>Your Authenticator app should be able to scan the image above. If that does not work, you should be able to manually input the token shown beneath the barcode. Once you are linked up, it should give you a slowly-rotating 6-digit code. Copy a code into the box below before it expires and click Verify.</p>
 {% endblock preform %}
 
 <form action="" method="POST">
