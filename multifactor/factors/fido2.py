@@ -19,6 +19,24 @@ from ..app_settings import mf_settings
 logger = logging.getLogger(__name__)
 
 
+SESSION_KEY = 'multifactor_fido_state'
+
+SERVER = Fido2Server(
+    rp=RelyingParty(
+        ident=mf_settings['FIDO_SERVER_ID'],
+        name=mf_settings['FIDO_SERVER_NAME'],
+        icon=mf_settings['FIDO_SERVER_ICON']
+    )
+)
+
+
+def get_credentials(user):
+    return [
+        AttestedCredentialData(websafe_decode(uk.properties["device"]))
+        for uk in UserKey.objects.filter(user=user, key_type=KEY_TYPE_FIDO2)
+    ]
+
+
 @login_required
 def start(request):
     return render(request, "multifactor/FIDO2/add.html", {})
@@ -29,23 +47,17 @@ def auth(request):
     return render(request, "multifactor/FIDO2/check.html", {})
 
 
-def get_server():
-    rp = RelyingParty(mf_settings['FIDO_SERVER_ID'], mf_settings['FIDO_SERVER_NAME'], mf_settings['FIDO_SERVER_ICON'])
-    return Fido2Server(rp)
-
-
 @login_required
 def begin_registration(request):
-    server = get_server()
-    registration_data, state = server.register_begin(
+    registration_data, state = SERVER.register_begin(
         {
-            'id': request.user.get_username().encode("utf8"),
-            'name': (request.user.get_full_name()),
-            'displayName': request.user.get_username(),
+            'id': request.pk,
+            'name': request.user.get_username(),
+            'displayName': request.user.get_full_name(),
         },
-        get_user_credentials(request)
+        get_credentials(request.user)
     )
-    request.session['fido_state'] = state
+    request.session[SESSION_KEY] = state
 
     return HttpResponse(cbor.encode(registration_data), content_type='application/octet-stream')
 
@@ -55,19 +67,18 @@ def begin_registration(request):
 def complete_reg(request):
     try:
         data = cbor.decode(request.body)
-
-        client_data = ClientData(data['clientDataJSON'])
-        att_obj = AttestationObject((data['attestationObject']))
-        server = get_server()
-        auth_data = server.register_complete(
-            request.session['fido_state'],
-            client_data,
-            att_obj
+        att_obj = AttestationObject(data['attestationObject'])
+        auth_data = SERVER.register_complete(
+            state=request.session[SESSION_KEY],
+            client_data=ClientData(data['clientDataJSON']),
+            attestation_object=att_obj,
         )
-        encoded = websafe_encode(auth_data.credential_data)
         key = UserKey.objects.create(
             user=request.user,
-            properties={"device": encoded, "type": att_obj.fmt},
+            properties={
+                "device": websafe_encode(auth_data.credential_data),
+                "type": att_obj.fmt
+            },
             key_type=KEY_TYPE_FIDO2,
         )
         write_session(request, key)
@@ -83,38 +94,26 @@ def complete_reg(request):
 
 
 @login_required
-def get_user_credentials(request):
-    return [
-        AttestedCredentialData(websafe_decode(uk.properties["device"]))
-        for uk in UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_FIDO2)
-    ]
-
-
-@login_required
 def authenticate_begin(request):
-    server = get_server()
-    auth_data, state = server.authenticate_begin(get_user_credentials(request))
-    request.session['fido_state'] = state
+    auth_data, state = SERVER.authenticate_begin(
+        get_credentials(request.user)
+    )
+    request.session[SESSION_KEY] = state
     return HttpResponse(cbor.encode(auth_data), content_type="application/octet-stream")
 
 
 @csrf_exempt
 @login_required
 def authenticate_complete(request):
-    server = get_server()
     data = cbor.decode(request.body)
-    credential_id = data['credentialId']
-    client_data = ClientData(data['clientDataJSON'])
-    auth_data = AuthenticatorData(data['authenticatorData'])
-    signature = data['signature']
 
-    cred = server.authenticate_complete(
-        request.session.pop('fido_state'),
-        get_user_credentials(request),
-        credential_id,
-        client_data,
-        auth_data,
-        signature
+    cred = SERVER.authenticate_complete(
+        state=request.session.pop(SESSION_KEY),
+        credentials=get_credentials(request.user),
+        credentials_id=data['credentialId'],
+        client_data=ClientData(data['clientDataJSON']),
+        auth_data=AuthenticatorData(data['authenticatorData']),
+        signature=data['signature']
     )
 
     for key in UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_FIDO2, enabled=1):

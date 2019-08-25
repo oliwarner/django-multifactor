@@ -48,7 +48,7 @@ def index(request):
 
 
 @login_required
-def authenticate(request):
+def verify(request):
     factors = UserKey.objects.filter(user=request.user, enabled=True)
 
     if not factors:
@@ -68,7 +68,7 @@ def authenticate(request):
 
     method_names = dict(KEY_CHOICES)
 
-    return render(request, 'multifactor/authenticate.html', {
+    return render(request, 'multifactor/verify.html', {
         'methods': [
             (method_url(method), method_names[method])
             for method in methods
