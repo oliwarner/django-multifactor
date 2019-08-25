@@ -9,13 +9,8 @@ window.display_succcess = function(msg) { display_message('success', msg) }
 
 
 document.body.addEventListener('click', function (ev) {
-	console.log(ev.target.classList)
 	if (ev.target.classList.contains('delete')) {
 		let carryOn = confirm('Are you sure you want to delete this factor?')
-		console.log(carryOn)
-		console.log(carryOn)
-		console.log(carryOn)
-		console.log(carryOn)
 		if (!carryOn)
 			ev.preventDefault()
 	}
