@@ -1,5 +1,0 @@
-django >= 2.2
-pyotp
-python-u2flib-server
-python-jose
-fido2 == 0.7

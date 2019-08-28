@@ -29,7 +29,9 @@
 		{% for key in keys %}
 		<tr>
 			<td>
-				<strong>{{ key.get_key_type_display }}</strong>
+				<h3><a href="{% url 'multifactor:rename' key.pk %}" title="Click to rename">
+					{{ key.display_name }}
+				</a></h3>
 				<p>Added {{ key.added_on.date }}. {% if key.last_used %}Used {{key.last_used|timesince}} ago.{% else %}Never used.{% endif %}</p>
 			</td>
 			<td>

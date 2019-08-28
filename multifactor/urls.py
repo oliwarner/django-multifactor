@@ -13,6 +13,7 @@ urlpatterns = [
     path('toggle-fallback/', views.toggle_fallback, name="toggle_fallback"),
     path('delete/', views.delete_factor, name="delete_factor"),
     path('reset/', views.reset_cookie, name="reset_cookie"),
+    path('rename/<int:pk>/', views.Rename.as_view(), name="rename"),
 
     path('fido2/', fido2.start, name="fido2_start"),
     path('fido2/auth/', fido2.auth, name="fido2_auth"),

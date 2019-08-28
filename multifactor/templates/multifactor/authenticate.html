@@ -3,7 +3,7 @@
 {% block card_title %}Which factor would you like to authenticate with?{% endblock %}
 
 {% block content %}
-<p class="has-text-centered">We need to verify one of your secondary factors to continue. Please pick one.</p>
+<p class="has-text-centered">You are logged in but we need to verify one of your secondary factors to continue. Please pick one.</p>
 {% for link, label in methods %}
 <a class="button is-primary is-large is-fullwidth" href="{% url link %}">{{label}} →</a>
 {% endfor %}
@@ -12,7 +12,7 @@
 </div>
 <div class="card-footer">
 <a href="{% url 'multifactor:fallback_auth' %}" class="button is-100 button-ml is-light">
-	<strong>Send Fallback Token</strong>
+	<strong>Send Fallback Token →</strong>
 	<small>{{fallbacks|join:" + "}}</small>
 </a>
 {% endif %}

@@ -1,34 +1,6 @@
 @charset "utf-8";
 
-@import url('https://fonts.googleapis.com/css?family=Assistant:400,600');
-
-// Set your brand colors
-$purple: #8A4D76;
-$pink: #FA7C91;
-$brown: #757763;
-$beige-light: #D0D1CD;
-$beige-lighter: #EFF0EB;
-
-// Update Bulma's global variables
-$family-sans-serif: "Assistant", sans-serif;
-$weight-normal: 400;
-$weight-bold: 600;
-$grey-dark: $brown;
-$grey-light: $beige-light;
-$primary: $purple;
-$link: $pink;
-$widescreen-enabled: false;
-$fullhd-enabled: false;
-
-// Update some of Bulma's component variables
-$body-background-color: $beige-lighter;
-$control-border-width: 2px;
-// $input-border-color: transparent;
-// $input-shadow: none;
-
-$card-header-background-color: rgba(10,30,10,0.05);
-
-// Import only what you need from Bulma
+@import "variables";
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/base/_all.sass";
 @import "../node_modules/bulma/sass/grid/columns.sass";
@@ -136,6 +108,8 @@ p {margin-bottom: 1em;}
 		}
 		tr, td {border: 0;}
 	}
+
+	h3 {font-weight: $weight-bold}
 }
 
 .button-ml {
@@ -153,7 +127,7 @@ p {margin-bottom: 1em;}
 
 h4 {
 	font-size: 1.4rem;
-	border-bottom: 1px solid $beige-lighter;
+	border-bottom: 1px solid $hr-background-color;
 	padding-bottom: 4px;
 	margin-bottom: 4px;
 }
@@ -168,4 +142,11 @@ h4 {
 .qr-block {
 	margin-bottom:1.5rem;
 	text-align: center;
+}
+
+
+// authenticate full-width (flex) button
+.card-footer > .button {
+	border-radius: 0;
+	padding: 0.75rem 1rem;
 }

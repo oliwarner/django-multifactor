@@ -17,6 +17,7 @@ KEY_CHOICES = (
 
 class UserKey(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='multifactor_keys')
+    name = models.CharField(max_length=30, help_text="Easy to remember name to distinguish from any other keys of this sort you own.", blank=True, null=True)
     properties = JSONField(null=True)
     key_type = models.CharField(max_length=25, choices=KEY_CHOICES)
     enabled = models.BooleanField(default=True)
@@ -26,7 +27,14 @@ class UserKey(models.Model):
     last_used = models.DateTimeField(null=True, default=None, blank=True)
 
     def __str__(self):
+        if self.name:
+            return f"{self.get_key_type_display()}, aka \"{self.name}\" for {self.user}"
         return f"{self.get_key_type_display()} for {self.user}"
+
+    def display_name(self):
+        if self.name:
+            return f"{self.name} ({self.key_type})"
+        return self.get_key_type_display()
 
     @property
     def device(self):

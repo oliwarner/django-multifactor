@@ -5,9 +5,13 @@ from django.utils.module_loading import import_string
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.html import format_html
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.views.generic import TemplateView
+from django.views.generic.edit import UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import UserKey, DisabledFallback, KEY_CHOICES
+# from .forms import RenameForm
 from .common import render, method_url, active_factors, has_multifactor, disabled_fallbacks
 from .app_settings import mf_settings
 from .decorators import multifactor_protected
@@ -45,6 +49,16 @@ def index(request):
         "can_edit": can_edit,
         'available_fallbacks': available_fallbacks,
     })
+
+
+class Rename(LoginRequiredMixin, UpdateView):
+    # template_name = 'multifactor/rename.html'
+    model = UserKey
+    fields = ['name']
+    success_url = reverse_lazy('multifactor:home')
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
 
 
 @login_required

@@ -27,7 +27,7 @@ class Create(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         if 'response' not in request.POST or any(x not in request.POST["response"] for x in ['clientData', 'registrationData', 'version']):
-            messages.success(request, "Invalid U2F response, please try again.")
+            messages.error(request, "Invalid U2F response, please try again.")
             return redirect('multifactor:home')
 
         device, cert = u2f.complete_registration(
