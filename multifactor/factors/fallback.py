@@ -30,14 +30,14 @@ class Auth(LoginRequiredMixin, TemplateView):
         disabled = disabled_fallbacks(request)
         s = []
         for name, (field, method) in mf_settings['FALLBACKS'].items():
-            if name in disabled:
+            if name in disabled or not field(request.user):
                 continue
+
             try:
                 imported_method = import_string(method)
                 if imported_method(request.user, message):
                     s.append(name)
             except:
-                logger.exception('Fallback exploded')
                 pass
 
         if not s:
