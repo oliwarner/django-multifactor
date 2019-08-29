@@ -1,0 +1,17 @@
+language: python
+install:
+  - pip install poetry
+  - pip install pytest
+  - poetry install
+
+script:
+  - pytest        # I hope you're using this to run your tests instead of unittest
+
+after_success:
+  - poetry build  # need the build artifacts for deploy
+  - |
+    if [ -n "${TRAVIS_TAG}" ]; then 
+      # enter deploy command(s) you used to use here 
+    else
+      echo "not on a tag, nothing else to do."
+    fi
