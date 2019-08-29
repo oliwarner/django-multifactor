@@ -8,7 +8,7 @@
 
 {% block head %}
 {{ block.super }}
-<script type="application/javascript" src="{% static 'multifactor/js/cbor.js'%}"></script>
+<script type="application/javascript" src="{% static 'multifactor/js/cbor.min.js'%}"></script>
 {% block fido_scripting %}
 <script type="application/javascript">
 function authenticate() {
