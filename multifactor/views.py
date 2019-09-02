@@ -1,58 +1,110 @@
-from django.shortcuts import redirect
-from django.http import HttpResponse, Http404
 from django.conf import settings
-from django.utils.module_loading import import_string
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.utils.html import format_html
-from django.urls import reverse, reverse_lazy
-from django.views.generic import TemplateView
-from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.http import HttpResponse, Http404
+from django.shortcuts import redirect
+from django.urls import reverse, reverse_lazy
+from django.utils.html import format_html
+from django.utils.module_loading import import_string
+from django.views.generic import TemplateView, UpdateView
 
-from .models import UserKey, DisabledFallback, KEY_CHOICES
+from collections import defaultdict
+
+from .models import UserKey, DisabledFallback, KEY_CHOICES, DOMAIN_KEYS
 # from .forms import RenameForm
 from .common import render, method_url, active_factors, has_multifactor, disabled_fallbacks
 from .app_settings import mf_settings
 from .decorators import multifactor_protected
+from .mixins import RequireMultiAuthMixin, PreferMultiAuthMixin, MultiFactorMixin
 
 
-@login_required
-def index(request):
-    authed = active_factors(request)
-    methods = [
-        (f"multifactor:{value.lower()}_start", label)
-        for value, label in KEY_CHOICES
-    ]
+class List(LoginRequiredMixin, RequireMultiAuthMixin, TemplateView):
+    template_name = "multifactor/home.html"
 
-    can_edit = not has_multifactor(request) or bool(authed)
+    def get_context_data(self, **kwargs):
+        can_edit = not self.has_multifactor or bool(self.active_factors)
 
-    if not can_edit:
-        messages.warning(request, format_html(
-            'You will not be able to change these settings or add new '
-            'factors until until you <a href="{}" class="alert-link">authenticate</a> with '
-            'one of your existing secondary factors.',
-            reverse('multifactor:authenticate')
-        ))
+        if not can_edit:
+            messages.warning(self.request, format_html(
+                'You will not be able to change these settings or add new '
+                'factors until until you <a href="{}" class="alert-link">authenticate</a> with '
+                'one of your existing secondary factors.',
+                reverse('multifactor:authenticate')
+            ))
 
-    disabled = disabled_fallbacks(request)
-    available_fallbacks = [
-        (k, k not in disabled, v[0](request.user))
-        for k, v in mf_settings['FALLBACKS'].items()
-        if v[0](request.user)
-    ]
+        disabled = disabled_fallbacks(self.request)
+        available_fallbacks = [
+            (k, k not in disabled, v[0](self.request.user))
+            for k, v in mf_settings['FALLBACKS'].items()
+            if v[0](self.request.user)
+        ]
 
-    return render(request, "multifactor/home.html", {
-        "keys": UserKey.objects.filter(user=request.user),
-        'authed_kids': [k[1] for k in authed],
-        "available_methods": methods,
-        "can_edit": can_edit,
-        'available_fallbacks': available_fallbacks,
-    })
+        return {
+            **super().get_context_data(**kwargs),
+            "keys": self.factors,
+            'authed_kids': [k[1] for k in self.active_factors],
+            "can_edit": can_edit,
+            'available_fallbacks': available_fallbacks,
+        }
+
+    def get(self, request, *args, **kwargs):
+        # if 'action' in kwargs:
+        #     raise Http404()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, action, ident, *args, **kwargs):
+        """ Wire through actions to action_ functions. """
+        if hasattr(self, f"action_{action}"):
+            getattr(self, f"action_{action}")(request)
+            return redirect('multifactor:home')
+        raise Http404('Action not found')
+
+    def action_toggle_factor(self, request, ident):
+        try:
+            factor = self.factors.get(pk=ident)
+            factor.enabled = not factor.enabled
+            factor.save()
+            messages.info(request, f'{factor.get_key_type_display()} has been {"enabled" if factor.enabled else "disabled"}.')
+
+        except UserKey.DoesNotExist:
+            messages.error(request, f'{factor.get_key_type_display()} not found.')
+
+    def action_delete_factor(self, request, ident):
+        try:
+            factor = self.factors.get(pk=ident)
+            factor.delete()
+            messages.info(request, f'{factor.get_key_type_display()} has been deleted.')
+
+        except UserKey.DoesNotExist:
+            messages.error(request, f"Couldn't find that factor.")
 
 
-class Rename(LoginRequiredMixin, UpdateView):
-    # template_name = 'multifactor/rename.html'
+    def action_toggle_fallback(self, request, ident):
+        if ident and ident in mf_settings['FALLBACKS']:
+            n, _ = DisabledFallback.objects.filter(user=request.user, fallback=ident).delete()
+            if n:  # managed to delete something
+                messages.info(request, f"{ident} fallback factor has been re-enabled.")
+
+            else:  # didn't so creating new block
+                messages.info(request, f"{ident} fallback factor has been disabled.")
+                DisabledFallback(user=request.user, fallback=ident).save()
+
+
+class Add(LoginRequiredMixin, PreferMultiAuthMixin, TemplateView):
+    template_name = 'multifactor/add.html'
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "methods": [
+                (f"multifactor:{value.lower()}_start", label)
+                for value, label in KEY_CHOICES
+            ],
+        }
+
+class Rename(LoginRequiredMixin, RequireMultiAuthMixin, UpdateView):
     model = UserKey
     fields = ['name']
     success_url = reverse_lazy('multifactor:home')
@@ -61,88 +113,72 @@ class Rename(LoginRequiredMixin, UpdateView):
         return super().get_queryset().filter(user=self.request.user)
 
 
-@login_required
-def authenticate(request):
-    factors = UserKey.objects.filter(user=request.user, enabled=True)
+class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
+    template_name = "multifactor/authenticate.html"
 
-    if not factors:
-        messages.warning(request, 'You have not set up your factors. Please add one (or more).')
-        return redirect('multifactor:home')
+    def get_context_data(self, **kwargs):
+        available_methods = defaultdict(list)
+        other_domains = set()
 
-    methods = list(set([k.key_type for k in factors]))
+        for factor in self.factors:
+            if factor.key_type in DOMAIN_KEYS:
+                print(factor)
+                domain = factor.properties.get('domain', '')
+                if not domain:
+                    # broken key
+                    continue
+                if domain != self.request.get_host():
+                    other_domains.add(domain)
+                    continue
+            available_methods[factor.key_type].append(factor)
 
-    disabled = disabled_fallbacks(request)
-    available_fallbacks = [
-        k for k, v in mf_settings['FALLBACKS'].items()
-        if k not in disabled and v[0](request.user)
-    ]
+        disabled_fbs = disabled_fallbacks(self.request)
+        available_fallbacks = [
+            k for k, v in mf_settings['FALLBACKS'].items()
+            if k not in disabled_fbs and v[0](self.request.user)
+        ]
 
-    if len(methods) == 1 and not available_fallbacks:
-        return redirect(method_url(methods[0]))
+        if len(available_methods) == 1 and not available_fallbacks:
+            # if there's only one type of factor available
+            # and no chance of a fallback, let's redirect them.
+            return redirect(method_url(available_methods.keys()[0]))
 
-    method_names = dict(KEY_CHOICES)
+        if other_domains:
+            domains = format_html(', '.join(['<a href="https://{0}{1}">{0}</a>'.format(d, self.request.path) for d in other_domains]))
+            messages.info(self.request, format_html("You also have active domain-locked factors available on: {}", domains))
 
-    return render(request, 'multifactor/authenticate.html', {
-        'methods': [
-            (method_url(method), method_names[method])
-            for method in methods
-        ],
-        'fallbacks': available_fallbacks,
-    })
+        method_names = dict(KEY_CHOICES)
 
+        # build up a reminder string as one of the following:
+        #  - 2 available
+        #  - Car keys or usb stick
+        #  - Key fob or 2 others
+        factor_string = {}
+        for method, factors in available_methods.items():
+            named_factors = [f.name for f in factors if f.name]
 
-@login_required
-def reset_cookie(request):
-    del request.session['multifactor']
-    return redirect(settings.LOGIN_URL)
+            if not named_factors:
+                factor_string[method] = f'{len(factors)} available'
 
+            else:
+                anon = len(factors) - len(named_factors)
+                print(factors, anon)
+                if anon:
+                    factor_string[method] = ', '.join(named_factors) + f' or {len(factors)} other{"" if anon == 1 else "s"}'
+                elif len(factors) > 1:
+                    factor_string[method] = ', '.join(named_factors[:1]) + ' or ' + named_factors[-1]
+                else:
+                    factor_string[method] = named_factors[0]
 
-@login_required
-@multifactor_protected(max_age=600)
-def delete_factor(request):
-    if not request.POST.get('kid'):
-        raise Http404()
-
-    try:
-        key = UserKey.objects.get(user=request.user, pk=request.POST['kid'])
-        key.delete()
-        messages.info(request, f'{key.get_key_type_display()} has been deleted.')
-
-    except UserKey.DoesNotExist:
-        messages.error(request, f'{key.get_key_type_display()} not found.')
-
-    return redirect('multifactor:home')
-
-
-@login_required
-@multifactor_protected(max_age=600)
-def toggle_factor(request):
-    if not request.POST.get('kid'):
-        raise Http404()
-
-    try:
-        key = UserKey.objects.get(user=request.user, pk=request.POST['kid'])
-        key.enabled = not key.enabled
-        key.save()
-        messages.info(request, f'{key.get_key_type_display()} has been {"enabled" if key.enabled else "disabled"}.')
-
-    except UserKey.DoesNotExist:
-        messages.error(request, f'{key.get_key_type_display()} not found.')
-
-    return redirect('multifactor:home')
+        return {
+            **super().get_context_data(**kwargs),
+            'methods': [
+                (method_url(method), method_names[method], factor_string[method])
+                for method in available_methods
+            ],
+            'fallbacks': available_fallbacks,
+        }
 
 
-@login_required
-@multifactor_protected(max_age=600)
-def toggle_fallback(request):
-    fallback = request.POST.get('fallback')
-    if fallback and fallback in mf_settings['FALLBACKS']:
-        n, _ = DisabledFallback.objects.filter(user=request.user, fallback=fallback).delete()
-        if n:  # managed to delete something
-            messages.info(request, f"{fallback} fallback factor has been re-enabled.")
-
-        else:  # didn't so creating new block
-            messages.info(request, f"{fallback} fallback factor has been disabled.")
-            DisabledFallback(user=request.user, fallback=fallback).save()
-
-    return redirect('multifactor:home')
+class Help(TemplateView):
+    template_name = 'multifactor/help.html'

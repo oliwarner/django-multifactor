@@ -14,11 +14,6 @@ document.body.addEventListener('click', function (ev) {
 		if (!carryOn)
 			ev.preventDefault()
 	}
-    else if ('collapse' in ev.target.dataset) {
-    	ev.preventDefault()
-        let target = document.getElementById(ev.target.dataset.collapse)
-        target.classList.toggle('open')
-    }
 }, false)
 
 

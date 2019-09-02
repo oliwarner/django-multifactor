@@ -67,7 +67,11 @@ def complete_reg(request):
         encoded = websafe_encode(auth_data.credential_data)
         key = UserKey.objects.create(
             user=request.user,
-            properties={"device": encoded, "type": att_obj.fmt},
+            properties={
+                "device": encoded,
+                "type": att_obj.fmt,
+                "domain": request.get_host(),
+            },
             key_type=KEY_TYPE_FIDO2,
         )
         write_session(request, key)
@@ -86,7 +90,12 @@ def complete_reg(request):
 def get_user_credentials(request):
     return [
         AttestedCredentialData(websafe_decode(uk.properties["device"]))
-        for uk in UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_FIDO2)
+        for uk in UserKey.objects.filter(
+            user=request.user,
+            key_type=KEY_TYPE_FIDO2,
+            properties__domain=request.get_host(),
+            enabled=True,
+        )
     ]
 
 
@@ -117,7 +126,13 @@ def authenticate_complete(request):
         signature
     )
 
-    for key in UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_FIDO2, enabled=1):
+    keys = UserKey.objects.filter(
+        user=request.user,
+        key_type=KEY_TYPE_FIDO2,
+        enabled=True,
+    )
+
+    for key in keys:
         if AttestedCredentialData(websafe_decode(key.properties["device"])).credential_id == cred.credential_id:
             write_session(request, key)
             res = login(request)

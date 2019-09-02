@@ -12,7 +12,6 @@
 @import "../node_modules/bulma/sass/form/shared.sass";
 @import "../node_modules/bulma/sass/form/input-textarea.sass";
 @import "../node_modules/bulma/sass/components/card.sass";
-@import "../node_modules/bulma/sass/components/dropdown.sass";
 
 html, body {min-height:100vh;}
 body {
@@ -72,15 +71,16 @@ body > .column > .notification {
 	flex-grow: 0;
 }
 
-.card-header-title {text-align:center; font-size: 1.4rem;}
+.card-header-title {
+	text-align:center;
+	font-size: 1.4rem;
+	margin:0;
+}
 #card.has-background-danger {
 	text-align: center;
 	color: $white;
 	.card-header-title {color: $white;}
 }
-
-.collapse {max-height:0; overflow: hidden;transition: max-height 0.3s linear;}
-.collapse.open {max-height:2000px !important;}
 
 p {margin-bottom: 1em;}
 .table {
@@ -132,7 +132,25 @@ h4 {
 	margin-bottom: 4px;
 }
 
-.card-footer .card {height:100%;}
+.card-footer {
+	.card {height:100%}
+
+	// authenticate full-width (flex) button
+	> .button {
+		border-radius: 0;
+		padding: 0.75rem 1rem;
+	}
+}
+
+.button.is-multilayer {
+	flex-direction: column;
+	height:auto;
+
+	small {
+		display: block;
+		font-size: 0.9rem;
+	}	
+} 
 
 .home-add {
 	float:right;
@@ -140,13 +158,17 @@ h4 {
 }
 
 .qr-block {
-	margin-bottom:1.5rem;
+	margin-bottom:1rem;
 	text-align: center;
+	> div {
+		margin-bottom: 0.5rem;
+		img {margin: auto;}
+	}
 }
 
-
-// authenticate full-width (flex) button
-.card-footer > .button {
-	border-radius: 0;
-	padding: 0.75rem 1rem;
+.columns > .column > .card {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	.card-content {flex-grow: 1}
 }

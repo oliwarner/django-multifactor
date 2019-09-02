@@ -6,46 +6,33 @@
 
 {% block content %}
 {% if can_edit %}
-<div class="dropdown is-right is-hoverable home-add">
-	<div class="dropdown-trigger">
-		<button class="button is-light" aria-haspopup="true" aria-controls="dropdown-add-factor">
-			Add Factor ➕
-		</button>
-	</div>
-	<div class="dropdown-menu" id="dropdown-add-factor" role="menu">
-		<div class="dropdown-content">
-			{% for link, label in available_methods %}
-			<a class="dropdown-item has-right-text" href="{% url link %}">{{label}}</a>
-			{% endfor %}
-		</div>
-	</div>
-</div>
+<a class="button home-add is-light" href="{% url 'multifactor:add' %}">Add New Factor ➕</a>
 {% endif %}
 
 <p>To keep your account secure, you can add one or more secondary authentication factors. These are commonly USB keys, or codes acquired through a secure mechanism like an authenticator. </p>
 
 <table class="table is-striped">
 	<tbody>
-		{% for key in keys %}
+		{% for factor in factors %}
 		<tr>
 			<td>
-				<h3><a href="{% url 'multifactor:rename' key.pk %}" title="Click to rename">
-					{{ key.display_name }}
+				<h3><a href="{% url 'multifactor:rename' factor.pk %}" title="Click to rename">
+					{{ factor.display_name }}
 				</a></h3>
-				<p>Added {{ key.added_on.date }}. {% if key.last_used %}Used {{key.last_used|timesince}} ago.{% else %}Never used.{% endif %}</p>
+				<p>Added {{ factor.added_on.date }}. {% if factor.last_used %}Used {{factor.last_used|timesince}} ago.{% else %}Never used.{% endif %}</p>
 			</td>
 			<td>
-				{% if key.id in authed_kids %}
+				{% if factor.id in authed_kids %}
 					<a class="button disabled" href="#" title="Unlocked">🔓</a>
-				{% elif key.enabled %}
-					<a class="button is-light" href="{% url key.auth_url %}" title="Locked, click to authenticate">🔒</a>
+				{% elif factor.enabled %}
+					<a class="button is-light" href="{% url factor.auth_url %}" title="Locked, click to authenticate">🔒</a>
 				{% endif %}
 				{% if can_edit %}
-				<form action="{% url 'multifactor:toggle_factor' %}" method="POST">{% csrf_token %}
-					<button type="submit" name="kid" value="{{key.pk}}" class="button is-{{key.enabled|yesno:'success,warning'}}">{{key.enabled|yesno:'Enabled,Disabled'}}</button>
+				<form action="{% url 'multifactor:action' 'toggle_factor' factor.pk %}" method="POST">{% csrf_token %}
+					<button type="submit" name="kid" value="{{factor.pk}}" class="button is-{{factor.enabled|yesno:'success,warning'}}">{{factor.enabled|yesno:'Enabled,Disabled'}}</button>
 				</form>
-				<form action="" method="POST">{% csrf_token %}
-					<button type="submit" name="kid" value="{{key.pk}}" class="button is-danger delete">Delete</button>
+				<form action="{% url 'multifactor:action' 'delete_factor' factor.pk %}" method="POST">{% csrf_token %}
+					<button type="submit" name="kid" value="{{factor.pk}}" class="button is-danger delete">Delete</button>
 				</form>
 				{% endif %}
 			</td>
@@ -57,78 +44,19 @@
 				<p>Consider turning these off for higher security.</p>
 			</td>
 			<td>
-				<form method="POST" action="{% url 'multifactor:toggle_fallback' %}">
-					{% csrf_token %}
-					{% for fb_name, fb_enabled, fb_destination in available_fallbacks %}
-					<button type="submit" name="fallback" value="{{fb_name}}" class="button button-ml is-{{ fb_enabled|yesno:'success,light' }}" title="{{fb_name}} fallback {{ fb_enabled|yesno:'enabled,disabled' }}, click to toggle." {% if not can_edit %} disabled{% endif %}>
+				{% csrf_token %}
+				{% for fb_name, fb_enabled, fb_destination in available_fallbacks %}
+				<form method="POST" action="{% url 'multifactor:action' 'toggle_fallback' fb_name %}">
+					<button type="submit" class="button button-ml is-{{ fb_enabled|yesno:'success,light' }}" title="{{fb_name}} fallback {{ fb_enabled|yesno:'enabled,disabled' }}, click to toggle." {% if not can_edit %} disabled{% endif %}>
 						<span>{{fb_name}} {{ fb_enabled|yesno:'✔,✗' }}</span>
 						<small class="d-block">{{fb_destination}}</small>
 					</button>
-					{% endfor %}
 				</form>
+				{% endfor %}
 			</td>
 		</tr>
 	</tbody>
 </table>
-
-<a href="#explanation" class="button is-fullwidth is-small" data-collapse="explanation">What is multi-factor authentication? Where do I start?</a>
-
-</div>
-<div class="card-footer collapse" id="explanation"><div class="card-content"><div class="content">
-	<h4>What is multi-factor authentication?</h4>
-	<p>Traditionally you have logged in with a username and password, maybe directly, maybe through a single sign-in portal. It's a tried and tested authentication system but it's weak. People pick bad passwords, enter them into the wrong places, write them down on paper, give them to the wrong people.</p>
-
-	<p>Credentials are <strong>something you know</strong>. Multi-factor authentication adds different types of factor, like <strong>something you have</strong> (a USB security token, your phone), or <strong>something you are</strong> (fingerprint, voice scan, location). For somebody to break in, they would need your credentials <em>and</em> the (eg) Security USB key you keep on your keychain. It dramatically decreases the threat of phishing and data breaches.</p>
-
-	<h4>Where to start? Which factor should I add?</h4>
-	<p>While there are hundreds of products compatible with this system, we support three main types of factor...</p>
-
-	<div class="columns">
-		<div class="column"><div class="card">
-
-			<div class="card-header">
-				<h5 class="card-header-title is-centered">TOPT Authenticators</h5>
-			</div>
-			<div class="card-content">
-				<p>Free for anybody with a phone.</p>
-				<p>Install Google Authenticator or Authy from your phone's marketplace. Click the Add button above, and select TOTP Authenticator. Scan in the barcode in your Authenticator app. It will give you a 6-digit code to type back into this website. That's it, you're paired.</p>
-				<p>The code will rotate every 30 seconds. To authenticate later, you will be asked what the current code is.</p>
-			</div>
-		</div></div>
-		<div class="column"><div class="card">
-			<div class="card-header">
-				<h5 class="card-header-title is-centered">FIDO2 Devices</h5>
-			</div>
-			<div class="card-content">
-				<p>A broad range of devices:</p>
-				<ul>
-					<li>Windows Hello fingerprint or facial recognition</li>
-					<li>Google Chrome</li>
-					<li>Google Android via biometrics or location</li>
-					<li>FIDO2 USB and NFC keys</li>
-				</ul>
-				<p>Windows Hello is convenient but can tie you to one computer. Physical keys are useful for mobile usage.</p>
-			</div>
-		</div></div>
-		<div class="column"><div class="card">
-			<div class="card-header">
-				<h5 class="card-header-title is-centered">U2F/FIDO1 USB devices</h5>
-			</div>
-			<div class="card-content">
-				<p>The predacessor to FIDO2, these are usually USB devices that start blinking when you need to authenticate. Press the button and you're done.</p>
-				<p>These are cheap and convenient for desktop-only installations.</p>
-			</div>
-		</div></div>
-	</div>
-
-	<h4>What are fallback factors?</h4>
-	<p>They <em>are</em> secondary factors but they are usually weaker, more insecure and commonly more inconvenient than plugging in a USB key. They are however, a good defence from getting locked out when your primary factors aren't available.</p>
-	<p>When you request to authenticate with a secondary factor, we send a the same OTP to all your devices. If you get a message like this and didn't request it, it could mean your main account is compromised.</p>
-
-	<h4>What happens if I lose my factor or don't have access to it when I need it?</h4>
-	<p>Contact an administrator immediately. They can deactivate or remove your active factors, allowing you to add another.</p>
-	<p>We recommend you keep a backup secondary factor. Having a FIDO2 token is convenient (eg just leave your keys plugged in while you're at your computer) but having a TOPT authenticator will serve as a suitable backup if you misplace your keys. Additional factors can dilute over-all security.</p>
-</div><div></div>
 {% endblock %}
 
 

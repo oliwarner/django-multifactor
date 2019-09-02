@@ -12,7 +12,6 @@
 </head>
 
 <body class="columns"><div class="column {% block container_class %}curt{% endblock %}">
-	{% block page %}
 
 	{% for message in messages %}
 	<div class="card-content notification is-{{message.tags}}">
@@ -20,6 +19,7 @@
 	</div>
 	{% endfor %}
 
+	{% block page %}
 	<div class="card" id="card">
 		<div class="card-header">
 			<h1 class="card-header-title is-centered">{% block card_title %}{% endblock %}</h1>

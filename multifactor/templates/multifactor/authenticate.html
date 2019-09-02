@@ -4,15 +4,18 @@
 
 {% block content %}
 <p class="has-text-centered">You are logged in but we need to verify one of your secondary factors to continue. Please pick one.</p>
-{% for link, label in methods %}
-<a class="button is-primary is-large is-fullwidth" href="{% url link %}">{{label}} →</a>
+{% for link, label, factors in methods %}
+<a class="button is-primary is-large is-fullwidth is-multilayer" href="{% url link %}">
+	<strong>{{label}}</strong>
+	<small>{{factors}}</small>
+</a>
 {% endfor %}
 
 {% if fallbacks %}
 </div>
 <div class="card-footer">
 <a href="{% url 'multifactor:fallback_auth' %}" class="button is-100 button-ml is-light">
-	<strong>Send Fallback Token →</strong>
+	<strong>Send Fallback Token</strong>
 	<small>{{fallbacks|join:" + "}}</small>
 </a>
 {% endif %}

@@ -10,6 +10,9 @@ from ..common import write_session, login
 from ..app_settings import mf_settings
 
 
+WINDOW = 60
+
+
 class Create(LoginRequiredMixin, TemplateView):
     template_name = "multifactor/TOTP/add.html"
 
@@ -29,7 +32,7 @@ class Create(LoginRequiredMixin, TemplateView):
         }
 
     def post(self, request, *args, **kwargs):
-        if self.totp.verify(request.POST["answer"], valid_window=60):
+        if self.totp.verify(request.POST["answer"], valid_window=WINDOW):
             key = UserKey.objects.create(
                 user=request.user,
                 properties={"secret_key": self.secret_key},
@@ -56,6 +59,6 @@ class Auth(LoginRequiredMixin, TemplateView):
         return super().get(request, *args, **kwargs)
 
     def verify_login(self, token):
-        for key in UserKey.objects.filter(user=self.request.user, key_type=KEY_TYPE_TOPT):
-            if pyotp.TOTP(key.properties["secret_key"]).verify(token, valid_window=60):
+        for key in UserKey.objects.filter(user=self.request.user, key_type=KEY_TYPE_TOPT, enabled=True):
+            if pyotp.TOTP(key.properties["secret_key"]).verify(token, valid_window=WINDOW):
                 return key

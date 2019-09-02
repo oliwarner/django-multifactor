@@ -13,6 +13,8 @@ KEY_CHOICES = (
     (KEY_TYPE_TOPT, "TOTP Authenticator"),
 )
 
+# keys that can only be used on one domain
+DOMAIN_KEYS = (KEY_TYPE_FIDO2, KEY_TYPE_U2F)
 
 
 class UserKey(models.Model):

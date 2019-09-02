@@ -15,7 +15,17 @@ from ..common import write_session, login
 from ..app_settings import mf_settings
 
 
-class Create(LoginRequiredMixin, TemplateView):
+class BaseMixin:
+    @property
+    def base(self):
+        return dict(
+            user=self.request.user,
+            key_type=KEY_TYPE_U2F,
+            properties__domain=self.request.get_host()
+        )
+
+
+class Create(BaseMixin, LoginRequiredMixin, TemplateView):
     template_name = "multifactor/U2F/add.html"
 
     def get_context_data(self, **kwargs):
@@ -38,32 +48,43 @@ class Create(LoginRequiredMixin, TemplateView):
         cert = x509.load_der_x509_certificate(cert, default_backend())
         cert_hash = hashlib.sha384(cert.public_bytes(Encoding.PEM)).hexdigest()
 
-        if UserKey.objects.filter(user=request.user, key_type=KEY_TYPE_U2F, properties__icontains=cert_hash).exists():
+        if UserKey.objects.filter(**self.base, properties__cert=cert_hash).exists():
             messages.info(request, "That key's already in your account.")
             return redirect('multifactor:home')
 
         key = UserKey.objects.create(
             user=request.user,
+            key_type=KEY_TYPE_U2F,
             properties={
                 "device": json.loads(device.json),
                 "cert": cert_hash,
+                "domain": request.get_host(),
             },
-            key_type=KEY_TYPE_U2F,
         )
         write_session(request, key)
         messages.success(request, "U2F key added to account.")
         return redirect('multifactor:home')
 
 
-class Auth(LoginRequiredMixin, TemplateView):
+class Auth(BaseMixin, LoginRequiredMixin, TemplateView):
     template_name = "multifactor/U2F/check.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        self.keys = UserKey.objects.filter(
+            **self.base,
+            enabled=True
+        )
+        if not self.keys.exists():
+            messages.error(request, 'You have no U2F devices for this domain.')
+            return redirect('multifactor:home')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
-        u2f_devices = [
-            d.device
-            for d in UserKey.objects.filter(user=self.request.user, key_type=KEY_TYPE_U2F)
-        ]
-        challenge = u2f.begin_authentication(mf_settings['U2F_APPID'], u2f_devices)
+        challenge = u2f.begin_authentication(
+            mf_settings['U2F_APPID'],
+            list(self.keys.values_list("properties__device", flat=True))
+        )
+
         self.request.session["_u2f_challenge_"] = challenge.json
 
         return {
@@ -79,9 +100,6 @@ class Auth(LoginRequiredMixin, TemplateView):
         challenge = request.session.pop('_u2f_challenge_')
         device, c, t = u2f.complete_authentication(challenge, data, [mf_settings['U2F_APPID']])
 
-        key = UserKey.objects.get(
-            user=request.user,
-            properties__device__publicKey=device["publicKey"]
-        )
+        key = self.keys.get(properties__device__publicKey=device["publicKey"])
         write_session(request, key)
         return login(request)
