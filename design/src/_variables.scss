@@ -1,24 +1,14 @@
 @import url('https://fonts.googleapis.com/css?family=Assistant:400,600');
 
-$purple: #8A4D76;
-$pink: #FA7C91;
-$brown: #757763;
-$beige-light: #D0D1CD;
-$beige-lighter: #EFF0EB;
-
 $family-sans-serif: "Assistant", sans-serif;
 $weight-normal: 400;
 $weight-bold: 600;
 
-$grey-dark: $brown;
-$grey-light: $beige-light;
-$primary: $purple;
-$link: $pink;
-$widescreen-enabled: false;
-$fullhd-enabled: false;
+$primary: #33A9FF;
+$success: #54BC2B;
+$info: #0287FC;
+$warning: #FFF028;
+$danger: #FF4B3A;
 
-// Update some of Bulma's component variables
-$body-background-color: $beige-lighter;
-$control-border-width: 2px;
-
-$card-header-background-color: rgba(10,30,10,0.05);
+$body-background-color: #EEE;
+$control-border-width: 3px;

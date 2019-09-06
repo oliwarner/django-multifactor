@@ -43,7 +43,7 @@ class List(LoginRequiredMixin, RequireMultiAuthMixin, TemplateView):
 
         return {
             **super().get_context_data(**kwargs),
-            "keys": self.factors,
+            "factors": self.factors,
             'authed_kids': [k[1] for k in self.active_factors],
             "can_edit": can_edit,
             'available_fallbacks': available_fallbacks,
@@ -57,7 +57,7 @@ class List(LoginRequiredMixin, RequireMultiAuthMixin, TemplateView):
     def post(self, request, action, ident, *args, **kwargs):
         """ Wire through actions to action_ functions. """
         if hasattr(self, f"action_{action}"):
-            getattr(self, f"action_{action}")(request)
+            getattr(self, f"action_{action}")(request, ident)
             return redirect('multifactor:home')
         raise Http404('Action not found')
 
@@ -82,14 +82,15 @@ class List(LoginRequiredMixin, RequireMultiAuthMixin, TemplateView):
 
 
     def action_toggle_fallback(self, request, ident):
-        if ident and ident in mf_settings['FALLBACKS']:
-            n, _ = DisabledFallback.objects.filter(user=request.user, fallback=ident).delete()
-            if n:  # managed to delete something
-                messages.info(request, f"{ident} fallback factor has been re-enabled.")
+        if not (ident and ident in mf_settings['FALLBACKS']):
+            return messages.error('Invalid fallback.')
 
-            else:  # didn't so creating new block
-                messages.info(request, f"{ident} fallback factor has been disabled.")
-                DisabledFallback(user=request.user, fallback=ident).save()
+        n, _ = DisabledFallback.objects.filter(user=request.user, fallback=ident).delete()
+        if n:  # managed to delete something
+            return messages.info(request, f"{ident} fallback factor has been re-enabled.")
+
+        messages.info(request, f"{ident} fallback factor has been disabled.")
+        DisabledFallback(user=request.user, fallback=ident).save()
 
 
 class Add(LoginRequiredMixin, PreferMultiAuthMixin, TemplateView):
@@ -104,6 +105,7 @@ class Add(LoginRequiredMixin, PreferMultiAuthMixin, TemplateView):
             ],
         }
 
+
 class Rename(LoginRequiredMixin, RequireMultiAuthMixin, UpdateView):
     model = UserKey
     fields = ['name']
@@ -116,8 +118,8 @@ class Rename(LoginRequiredMixin, RequireMultiAuthMixin, UpdateView):
 class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
     template_name = "multifactor/authenticate.html"
 
-    def get_context_data(self, **kwargs):
-        available_methods = defaultdict(list)
+    def get(self, request, *args, **kwargs):
+        self.available_methods = defaultdict(list)
         other_domains = set()
 
         for factor in self.factors:
@@ -130,23 +132,26 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
                 if domain != self.request.get_host():
                     other_domains.add(domain)
                     continue
-            available_methods[factor.key_type].append(factor)
+            self.available_methods[factor.key_type].append(factor)
 
         disabled_fbs = disabled_fallbacks(self.request)
-        available_fallbacks = [
+        self.available_fallbacks = [
             k for k, v in mf_settings['FALLBACKS'].items()
             if k not in disabled_fbs and v[0](self.request.user)
         ]
 
-        if len(available_methods) == 1 and not available_fallbacks:
+        if len(self.available_methods) == 1 and not self.available_fallbacks:
             # if there's only one type of factor available
             # and no chance of a fallback, let's redirect them.
-            return redirect(method_url(available_methods.keys()[0]))
+            return redirect(method_url(list(self.available_methods)[0]))
 
         if other_domains:
             domains = format_html(', '.join(['<a href="https://{0}{1}">{0}</a>'.format(d, self.request.path) for d in other_domains]))
             messages.info(self.request, format_html("You also have active domain-locked factors available on: {}", domains))
 
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
         method_names = dict(KEY_CHOICES)
 
         # build up a reminder string as one of the following:
@@ -154,7 +159,7 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
         #  - Car keys or usb stick
         #  - Key fob or 2 others
         factor_string = {}
-        for method, factors in available_methods.items():
+        for method, factors in self.available_methods.items():
             named_factors = [f.name for f in factors if f.name]
 
             if not named_factors:
@@ -174,9 +179,9 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
             **super().get_context_data(**kwargs),
             'methods': [
                 (method_url(method), method_names[method], factor_string[method])
-                for method in available_methods
+                for method in self.available_methods
             ],
-            'fallbacks': available_fallbacks,
+            'fallbacks': self.available_fallbacks,
         }
 
 

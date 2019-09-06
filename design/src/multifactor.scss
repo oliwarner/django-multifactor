@@ -1,14 +1,26 @@
 @charset "utf-8";
 
-@import "variables";
+@import url('https://fonts.googleapis.com/css?family=Assistant:400,600');
+$family-sans-serif: "Assistant", sans-serif;
+$weight-normal: 400;
+$weight-bold: 600;
+
+$primary: #33A9FF;
+$success: #54BC2B;
+$info: #0287FC;
+$warning: #FFF028;
+$danger: #FF4B3A;
+
+$body-background-color: #EEE;
+$control-border-width: 3px;
+
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/base/_all.sass";
 @import "../node_modules/bulma/sass/grid/columns.sass";
 @import "../node_modules/bulma/sass/elements/container.sass";
-@import "../node_modules/bulma/sass/elements/content.sass";
 @import "../node_modules/bulma/sass/elements/button.sass";
-@import "../node_modules/bulma/sass/elements/table.sass";
 @import "../node_modules/bulma/sass/elements/notification.sass";
+@import "../node_modules/bulma/sass/elements/table.sass";
 @import "../node_modules/bulma/sass/form/shared.sass";
 @import "../node_modules/bulma/sass/form/input-textarea.sass";
 @import "../node_modules/bulma/sass/components/card.sass";
@@ -43,46 +55,72 @@ body > .column {
 		margin-right: 20px;
 		&.curt {max-width: 450px}
 	}
-}
-#card {
-	@include until($tablet) {
-		flex-grow: 1;
-		display: flex;
-		flex-direction: column;
-		> .card-content {flex-grow: 1}
-		&, > .card-header {box-shadow: none !important;}
+
+
+	> .notification {
+		margin: 1.5rem 0 0 0 !important;
+		text-align: center;
+
+		@include until($tablet) {
+			border-radius: 0;
+			margin: 0 !important;
+		}
+		flex-grow: 0;
 	}
-	@include from($tablet) {
-		min-height: 0;
-		margin-top:2rem;
-		margin-bottom:2rem;
+
+	> .card {
+		@include until($tablet) {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			> .card-content {flex-grow: 1}
+			&, > .card-header {box-shadow: none !important;}
+		}
+		@include from($tablet) {
+			min-height: 0;
+			margin-top:1rem;
+			margin-bottom:10%;
+		}
+		:last-child, .card-content :last-child {margin-bottom: 0 !important;}
 	}
-	:last-child, .card-content :last-child {margin-bottom: 0 !important;}
 }
 
-body > .column > .notification {
-	margin: 1.5rem 0 0 0 !important;
-	text-align: center;
+.card {
+	border-radius: 3px;
+	overflow: hidden;
+}
 
-	@include until($tablet) {
+.card-header {
+	box-shadow: none;
+	margin-top: 0.75rem;
+	margin-bottom: -.75rem;
+
+	h1, h2, h3, h4, h5 {
+		text-align:center;
+		font-size: 1.4rem;
+		margin:0;
+	}
+}
+.card-footer {
+	border-top: 0;
+
+	.card {height:100%}
+
+	// authenticate full-width (flex) button
+	> .button {
 		border-radius: 0;
-		margin: 0 !important;
+		padding: 0.75rem 1rem;
 	}
-	flex-grow: 0;
 }
 
-.card-header-title {
-	text-align:center;
-	font-size: 1.4rem;
-	margin:0;
-}
-#card.has-background-danger {
+.card.has-background-danger {
 	text-align: center;
 	color: $white;
 	.card-header-title {color: $white;}
 }
 
 p {margin-bottom: 1em;}
+
 .table {
 	width: 100%;
 	td {
@@ -104,6 +142,7 @@ p {margin-bottom: 1em;}
 	@include until($tablet) {
 		td {
 			display: block;
+			padding-bottom: 0.5rem;
 			width: 100%;
 		}
 		tr, td {border: 0;}
@@ -132,15 +171,6 @@ h4 {
 	margin-bottom: 4px;
 }
 
-.card-footer {
-	.card {height:100%}
-
-	// authenticate full-width (flex) button
-	> .button {
-		border-radius: 0;
-		padding: 0.75rem 1rem;
-	}
-}
 
 .button.is-multilayer {
 	flex-direction: column;
@@ -166,9 +196,67 @@ h4 {
 	}
 }
 
-.columns > .column > .card {
-	height: 100%;
-	display: flex;
-	flex-direction: column;
+#content .columns > .column {
+	> .card {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	@include from($tablet) {
+		padding-bottom:0;
+	}
 	.card-content {flex-grow: 1}
+}
+
+.button.is-toggle {
+	position: relative;
+	padding-left: 1.25em;
+	padding-right: 1.25em;
+	opacity: 1;
+	transition: background-color 0.5s, color 0.5s;
+
+	&:before{
+		content: " ";
+		display: block;
+		width: 12px;
+		background: rgba(255, 255, 255, 0.8);
+		border: 2px solid #ccc;
+		border-radius: 4px;
+		position: absolute;
+		top: 0px;
+		bottom: 0px;
+		transition: left 0.7s, right 0.7s;
+	}
+	&:hover {
+	}
+	&.is-toggled-on {
+		@extend .button.is-success;
+		&:before {
+			left: 0px;
+		}
+		&:hover {
+			background-color: #eee !important;
+			border-color: transparent !important;
+			color: #363636 !important;
+		}
+		&:hover {
+			@extend .button.is-light:hover;
+		}
+		&:hover:before {
+			left: calc(100% - 12px);
+		}
+	}
+	&.is-toggled-off {
+		@extend .button.is-light;
+		&:before {
+			right: 0px;
+		}
+		&:hover {
+			@extend .button.is-success:hover;
+		}
+		&:hover:before {
+			right: calc(100% - 12px);
+		}
+	}
 }

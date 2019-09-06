@@ -53,7 +53,7 @@
 								<a class="button disabled" href="#" title="Unlocked">🔓</a>
 								<a class="button is-light" href="{% url key.auth_url %}" title="Locked, click to authenticate">🔒</a>
 							<form action="{% url 'multifactor:toggle_factor' %}" method="POST">
-								<button type="submit" name="kid" value="{{key.pk}}" class="button is-{{key.enabled|yesno:'success,warning'}}">{{key.enabled|yesno:'Enabled,Disabled'}}</button>
+								<button type="submit" name="kid" value="{{key.pk}}" class="button is-toggle is-toggled-on is-toggled-off">{{key.enabled|yesno:'Enabled,Disabled'}}</button>
 							</form>
 							<form action="" method="POST">
 								<button type="submit" name="kid" value="{{key.pk}}" class="button is-danger delete">Delete</button>

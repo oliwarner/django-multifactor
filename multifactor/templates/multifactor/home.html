@@ -28,10 +28,12 @@
 					<a class="button is-light" href="{% url factor.auth_url %}" title="Locked, click to authenticate">🔒</a>
 				{% endif %}
 				{% if can_edit %}
-				<form action="{% url 'multifactor:action' 'toggle_factor' factor.pk %}" method="POST">{% csrf_token %}
-					<button type="submit" name="kid" value="{{factor.pk}}" class="button is-{{factor.enabled|yesno:'success,warning'}}">{{factor.enabled|yesno:'Enabled,Disabled'}}</button>
+				<form action="{% url 'multifactor:action' 'toggle_factor' factor.pk %}" method="POST">
+					{% csrf_token %}
+					<button type="submit" name="kid" value="{{factor.pk}}" class="button is-toggle is-toggled-{{factor.enabled|yesno:'on,off'}}">{{factor.enabled|yesno:'Enabled,Disabled'}}</button>
 				</form>
-				<form action="{% url 'multifactor:action' 'delete_factor' factor.pk %}" method="POST">{% csrf_token %}
+				<form action="{% url 'multifactor:action' 'delete_factor' factor.pk %}" method="POST">
+					{% csrf_token %}
 					<button type="submit" name="kid" value="{{factor.pk}}" class="button is-danger delete">Delete</button>
 				</form>
 				{% endif %}
@@ -47,7 +49,8 @@
 				{% csrf_token %}
 				{% for fb_name, fb_enabled, fb_destination in available_fallbacks %}
 				<form method="POST" action="{% url 'multifactor:action' 'toggle_fallback' fb_name %}">
-					<button type="submit" class="button button-ml is-{{ fb_enabled|yesno:'success,light' }}" title="{{fb_name}} fallback {{ fb_enabled|yesno:'enabled,disabled' }}, click to toggle." {% if not can_edit %} disabled{% endif %}>
+					{% csrf_token %}
+					<button type="submit" class="button button-ml  is-toggle is-toggled-{{fb_enabled|yesno:'on,off'}}" title="{{fb_name}} fallback {{ fb_enabled|yesno:'enabled,disabled' }}, click to toggle." {% if not can_edit %} disabled{% endif %}>
 						<span>{{fb_name}} {{ fb_enabled|yesno:'✔,✗' }}</span>
 						<small class="d-block">{{fb_destination}}</small>
 					</button>

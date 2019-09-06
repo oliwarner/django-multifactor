@@ -1,9 +1,10 @@
-from django.shortcuts import redirect
-from django.contrib.auth import get_user_model
 from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
-from django.urls import reverse
 
 import functools
 import time
@@ -38,6 +39,12 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
             def baulk():
                 return view_func(request, *args, **kwargs)
 
+            def force_authenticate():
+                if request.is_ajax():
+                    raise PermissionDenied('Multifactor authentication required')
+                request.session['multifactor-next'] = request.get_full_path()
+                return redirect('multifactor:authenticate')
+
             if not request.user.is_authenticated:
                 return baulk()
 
@@ -51,8 +58,7 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
             if has_multifactor(request):
                 if not active:
                     # has keys but isn't using them, tell them to authenticate
-                    request.session['multifactor-next'] = request.get_full_path()
-                    return redirect('multifactor:authenticate')
+                    return force_authenticate()
 
                 elif max_age and active[0][3] + max_age < timezone.now().timestamp():
                     # has authenticated but not recently enough for this view
@@ -61,8 +67,7 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                         f'This page requires secondary authentication every {max_age} seconds. '
                         'Please re-authenticate.'
                     )
-                    request.session['multifactor-next'] = request.get_full_path()
-                    return redirect('multifactor:authenticate')
+                    return force_authenticate()
 
             required_factors = factors
             if inspect.isfunction(factors):
@@ -75,15 +80,13 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                     f'This page requires {required_factors} active security '
                     f'factor{"" if required_factors == 1 else "s"}.'
                 )
-                request.session['multifactor-next'] = request.get_full_path()
-                return redirect('multifactor:home')
+                return force_authenticate()
 
             if not active and advertise and 'multifactor-advertised' not in request.session:
                 # tell them that they can add keys but it's entirely optional
                 messages.info(request, format_html(
-                    'Consider <a href="{}" class="alert-link">adding a second security factor</a> such as '
-                    'a USB Security Token, or an Authenticator App on your phone. '
-                    'This further protects your account and the data it can access.',
+                    'Make you account more secure by <a href="{}" class="alert-link">adding a second security factor</a> '
+                    'such as a USB Security Token, or an Authenticator App.',
                     reverse('multifactor:home')
                 ))
                 request.session['multifactor-advertised'] = True

@@ -1,6 +1,9 @@
 from django.conf import settings
-from django.utils import timezone
+from django.contrib import messages
 from django.shortcuts import render as dj_render, redirect
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.html import format_html
 
 import random
 
@@ -65,6 +68,11 @@ def write_session(request, key):
 
 
 def login(request):
+    messages.info(request, format_html(
+        'You are now multifactor-authenticated. <a href="{}">Multifactor settings</a>.',
+        reverse('multifactor:home')
+    ))
+
     if 'multifactor-next' in request.session:
         return redirect(request.session['multifactor-next'])
 
