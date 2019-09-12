@@ -132,3 +132,9 @@ It's often useful to monitor which of your users is using django-multifactor and
 
 It adds a column to show if that user has active factors, a filter to just show those with or without, and an inline to allow admins to turn certain keys off for their users.
 
+
+## Branding
+
+If you want to use the styles and form that django-multifactor supplies, your users may think they're on another site. To help there is an empty placeholder template `multifactor/brand.html` that you can override in your project. This slots in just before the h1 title tag and has `text-align: centre` as standard.
+
+You can use this to include your product logo, or an explantion.
