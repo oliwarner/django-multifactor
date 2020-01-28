@@ -93,7 +93,7 @@ def get_user_credentials(request):
         for uk in UserKey.objects.filter(
             user=request.user,
             key_type=KEY_TYPE_FIDO2,
-            properties__domain=request.get_host(),
+            properties__contains=f'"domain":"{request.get_host()}"',
             enabled=True,
         )
     ]

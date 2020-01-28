@@ -21,7 +21,7 @@ class BaseMixin:
         return dict(
             user=self.request.user,
             key_type=KEY_TYPE_U2F,
-            properties__domain=self.request.get_host()
+            properties__contains=f'"domain":"{self.request.get_host()}"',
         )
 
 
