@@ -22,6 +22,7 @@ class RequireMultiAuthMixin(MultiFactorMixin):
     """Require Multifactor, force user to add factors if none on account."""
 
     def dispatch(self, request, *args, **kwargs):
+        request.session['multifactor-next'] = request.get_full_path()
         if not self.active_factors:
             if self.has_multifactor:
                 return redirect('multifactor:authenticate')
