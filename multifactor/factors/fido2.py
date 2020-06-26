@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from fido2 import cbor
 from fido2.client import ClientData
-from fido2.server import Fido2Server, RelyingParty
+from fido2.server import Fido2Server, PublicKeyCredentialRpEntity
 from fido2.ctap2 import AttestationObject, AuthenticatorData
 from fido2.utils import websafe_decode, websafe_encode
 from fido2.ctap2 import AttestedCredentialData
@@ -30,7 +30,7 @@ def auth(request):
 
 
 def get_server():
-    rp = RelyingParty(mf_settings['FIDO_SERVER_ID'], mf_settings['FIDO_SERVER_NAME'], mf_settings['FIDO_SERVER_ICON'])
+    rp = PublicKeyCredentialRpEntity(mf_settings['FIDO_SERVER_ID'], mf_settings['FIDO_SERVER_NAME'], mf_settings['FIDO_SERVER_ICON'])
     return Fido2Server(rp)
 
 
