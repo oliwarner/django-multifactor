@@ -23,6 +23,7 @@ class RequireMultiAuthMixin(MultiFactorMixin):
 
     def dispatch(self, request, *args, **kwargs):
         if not self.active_factors:
+            request.session['multifactor-next'] = request.get_full_path()
             if self.has_multifactor:
                 return redirect('multifactor:authenticate')
 
@@ -36,6 +37,7 @@ class PreferMultiAuthMixin(MultiFactorMixin):
 
     def dispatch(self, request, *args, **kwargs):
         if not self.active_factors and self.has_multifactor:
+            request.session['multifactor-next'] = request.get_full_path()
             return redirect('multifactor:authenticate')
 
         return super().dispatch(request, *args, **kwargs)
