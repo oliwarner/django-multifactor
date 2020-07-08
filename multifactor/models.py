@@ -1,6 +1,10 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
+
+try:
+    from django.db.models import JSONField
+except ImportError:
+    from django.contrib.postgres.fields import JSONField
 
 
 KEY_TYPE_FIDO2 = 'FIDO2'

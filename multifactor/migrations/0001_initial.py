@@ -6,6 +6,14 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+try:
+    from django.db.models import JSONField
+except ImportError:
+    raise
+    from django.contrib.postgres.fields import JSONField
+
+
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -19,7 +27,7 @@ class Migration(migrations.Migration):
             name='UserKey',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('properties', django.contrib.postgres.fields.jsonb.JSONField(null=True)),
+                ('properties', JSONField(null=True)),
                 ('key_type', models.CharField(choices=[('FIDO2', 'FIDO2 Security Device'), ('U2F', 'U2F Security Key'), ('TOTP', 'TOTP Authenticator'), ('Email', 'OTP-over-Email')], max_length=25)),
                 ('enabled', models.BooleanField(default=True)),
                 ('added_on', models.DateTimeField(auto_now_add=True)),

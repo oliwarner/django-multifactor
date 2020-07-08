@@ -21,6 +21,9 @@ FIDO2/WebAuthn is the big-ticket item for MFA. It allows the browser to interfac
 
 This project targets modern stacks. Django 2.2+ and Python 3.5+.
 
+**Database support**: Depends on *either* PostgreSQL or Django 3.1+, or both for a sane JSONField implementation. If you're on Postgres, you can carry on using Django 2.x but SQLite3, MySQL, Oracle, etc users will need to upgrade.
+
+
 
 ## Installation:
 
