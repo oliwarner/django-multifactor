@@ -9,7 +9,6 @@ import django.db.models.deletion
 try:
     from django.db.models import JSONField
 except ImportError:
-    raise
     from django.contrib.postgres.fields import JSONField
 
 
