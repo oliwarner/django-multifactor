@@ -127,12 +127,14 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
                 print(factor)
                 domain = factor.properties.get('domain', '')
                 if not domain:
-                    # broken key
                     continue
                 if domain != self.request.get_host():
                     other_domains.add(domain)
                     continue
             self.available_methods[factor.key_type].append(factor)
+
+        if not self.available_methods:
+            return redirect('multifactor:add')
 
         disabled_fbs = disabled_fallbacks(self.request)
         self.available_fallbacks = [
