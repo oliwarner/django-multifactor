@@ -85,7 +85,7 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
             if not active and advertise and 'multifactor-advertised' not in request.session:
                 # tell them that they can add keys but it's entirely optional
                 messages.info(request, format_html(
-                    'Make you account more secure by <a href="{}" class="alert-link">adding a second security factor</a> '
+                    'Make your account more secure by <a href="{}" class="alert-link">adding a second security factor</a> '
                     'such as a USB Security Token, or an Authenticator App.',
                     reverse('multifactor:home')
                 ))
