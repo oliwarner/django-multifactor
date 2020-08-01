@@ -9,7 +9,7 @@ import django.db.models.deletion
 try:
     from django.db.models import JSONField
 except ImportError:
-    import django.contrib.postgres.fields.jsonb as JSONField
+    from django.contrib.postgres.fields.jsonb import JSONField
 
 
 class Migration(migrations.Migration):
