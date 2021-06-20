@@ -4,6 +4,7 @@
 
 {% block content %}
 <p class="has-text-centered">Follow your browser's instructions to continue.</p>
+<button type="button" class="button is-100 is-primary" onclick="authenticate()">Start</button>
 {% endblock %}
 
 {% block head %}
@@ -41,16 +42,14 @@ function authenticate() {
 		if (res["status"] =='OK')
 			window.location.href = "{% url 'multifactor:home' %}";
 		else
-			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='begin_reg()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
+			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
 	}, function(reason) {
-		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='begin_reg()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
+		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
 	});
 }
 
 if (location.protocol != 'https:')
 	display_error("FIDO2 only works under HTTPS");
-else
-	setTimeout(authenticate, 500);
 </script>
 {% endblock fido_scripting %}
 {% endblock %}
