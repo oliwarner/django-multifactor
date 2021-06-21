@@ -3,7 +3,10 @@
 {% block card_title %}FIDO2 Security Key{% endblock %}
 
 {% block content %}
-<p class="has-text-centered">Follow your browser's instructions to continue.</p>
+<div id="authtype" class="automatic">
+	<p class="has-text-centered ">Follow your browser's instructions to continue.</p>
+	<button type="button" class="button is-100 is-primary" onclick="authenticate()">Start</button>
+</div>
 {% endblock %}
 
 {% block head %}
@@ -32,6 +35,10 @@ function authenticate() {
 				"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
 			})
 		});
+	}, function(error) {
+		var el = document.getElementById('authtype');
+		el.classList.add('manual');
+		el.classList.remove('automatic');
 	})
 	.then(function(response) {
 		var stat = response.ok ? 'successful' : 'unsuccessful';
@@ -41,9 +48,9 @@ function authenticate() {
 		if (res["status"] =='OK')
 			window.location.href = "{% url 'multifactor:home' %}";
 		else
-			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='begin_reg()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
+			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
 	}, function(reason) {
-		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='begin_reg()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
+		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
 	});
 }
 
@@ -53,4 +60,9 @@ else
 	setTimeout(authenticate, 500);
 </script>
 {% endblock fido_scripting %}
+
+<style type="text/css">
+#authtype.automatic button {display: none;}
+#authtype.manual p {display: none;}
+</style>
 {% endblock %}
