@@ -56,7 +56,7 @@
 								<button type="submit" name="kid" value="{{key.pk}}" class="button is-toggle is-toggled-on is-toggled-off">{{key.enabled|yesno:'Enabled,Disabled'}}</button>
 							</form>
 							<form action="" method="POST">
-								<button type="submit" name="kid" value="{{key.pk}}" class="button is-danger delete">Delete</button>
+								<button type="submit" name="kid" value="{{key.pk}}" class="button is-danger delete-button"><span>Delete</span></button>
 							</form>
 							
 						</td>
@@ -207,14 +207,20 @@
 	</div>
 
 	<!-- error screen -->
-	<div class="card has-background-danger has-text-white has-text-centered" id="card">
+	<div class="card has-background-danger-dark has-text-white has-text-centered" id="card">
 		<div class="card-header">
 			<h1>U2F Security Key</h1>
 		</div>
 		<div class="card-content" id="content">U2F only works under HTTPS</div>
 	</div>
 
-
+	<!-- error screen -->
+	<div class="card has-background-danger has-text-white has-text-centered" id="card">
+		<div class="card-header">
+			<h1>U2F Security Key</h1>
+		</div>
+		<div class="card-content" id="content">U2F only works under HTTPS</div>
+	</div>
 
 	<div class="card" id="card">
 		<div class="card-header">

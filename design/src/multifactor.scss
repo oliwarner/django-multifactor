@@ -14,16 +14,7 @@ $danger: #FF4B3A;
 $body-background-color: #EEE;
 $control-border-width: 3px;
 
-@import "../node_modules/bulma/sass/utilities/_all.sass";
-@import "../node_modules/bulma/sass/base/_all.sass";
-@import "../node_modules/bulma/sass/grid/columns.sass";
-@import "../node_modules/bulma/sass/elements/container.sass";
-@import "../node_modules/bulma/sass/elements/button.sass";
-@import "../node_modules/bulma/sass/elements/notification.sass";
-@import "../node_modules/bulma/sass/elements/table.sass";
-@import "../node_modules/bulma/sass/form/shared.sass";
-@import "../node_modules/bulma/sass/form/input-textarea.sass";
-@import "../node_modules/bulma/sass/components/card.sass";
+@import "../node_modules/bulma/bulma.sass";
 
 html, body {min-height:100vh;}
 body {
@@ -115,7 +106,7 @@ body > .column {
 	}
 }
 
-.card.has-background-danger {
+.card.has-background-danger-dark {
 	text-align: center;
 	color: $white;
 	.card-header-title {color: $white;}
@@ -265,3 +256,10 @@ h4 {
 
 #authtype.automatic button {display: none;}
 #authtype.manual p {display: none;}
+
+.delete-button {
+	span { display: none; }
+	&:after {
+		content: "✖"
+	}
+}

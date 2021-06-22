@@ -1,3 +1,4 @@
-Django==3.1beta1
+pip
+Django<=3.2.999
 django-decorator-include
--e ../
+../

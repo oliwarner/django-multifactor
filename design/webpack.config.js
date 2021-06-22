@@ -2,7 +2,7 @@ const path = require('path');
 const glob = require('glob')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const PurgecssPlugin = require('purgecss-webpack-plugin')
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+// const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
   entry: './src/index.js',
@@ -34,18 +34,19 @@ module.exports = {
       filename: 'css/multifactor-[name].bundle.css'
     }),
     new PurgecssPlugin({
-      // hook into the django template directory
+      // hook into demo style page and the django template directory
       paths: [
         path.join(__dirname, 'src/all-layouts.html'),
         ...glob.sync(path.join(__dirname, '../multifactor/templates/**/*'),  { nodir: true }),
-      ]
+      ],
     }),
-    new OptimizeCssAssetsPlugin({
-      cssProcessor: require('cssnano'),
-      cssProcessorPluginOptions: {
-        preset: ['default', { discardComments: { removeAll: true } }],
-      },
-      canPrint: true
-    })
+    // can't use in webpack 5 yet
+    // new OptimizeCssAssetsPlugin({
+    //   cssProcessor: require('cssnano'),
+    //   cssProcessorPluginOptions: {
+    //     preset: ['default', { discardComments: { removeAll: true } }],
+    //   },
+    //   canPrint: true
+    // })
   ]
 };

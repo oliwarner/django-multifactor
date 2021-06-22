@@ -34,7 +34,7 @@
 				</form>
 				<form action="{% url 'multifactor:action' 'delete_factor' factor.pk %}" method="POST">
 					{% csrf_token %}
-					<button type="submit" name="kid" value="{{factor.pk}}" class="button is-danger delete">Delete</button>
+					<button type="submit" name="kid" value="{{factor.pk}}" class="button is-danger delete-button"><span>Delete</span></button>
 				</form>
 				{% endif %}
 			</td>
