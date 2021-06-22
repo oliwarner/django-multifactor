@@ -38,6 +38,10 @@ function authenticate() {
 				display_error("Error occured, please reload to try again.")
 			}
 		})
+	}, function(error) {
+		var el = document.getElementById('authtype');
+		el.classList.add('manual');
+		el.classList.remove('automatic');
 	})
 }
 
