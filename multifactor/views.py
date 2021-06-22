@@ -124,7 +124,7 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
 
         for factor in self.factors:
             if factor.key_type in DOMAIN_KEYS:
-                print(factor)
+                # print(factor)
                 domain = factor.properties.get('domain', '')
                 if not domain:
                     continue
@@ -169,7 +169,7 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
 
             else:
                 anon = len(factors) - len(named_factors)
-                print(factors, anon)
+                # print(factors, anon)
                 if anon:
                     factor_string[method] = ', '.join(named_factors) + f' or {len(factors)} other{"" if anon == 1 else "s"}'
                 elif len(factors) > 1:

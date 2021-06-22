@@ -11,7 +11,6 @@ from .app_settings import mf_settings
 from .models import UserKey, DisabledFallback
 
 
-
 def has_multifactor(request):
     return UserKey.objects.filter(user=request.user, enabled=True).exists()
 
@@ -21,11 +20,12 @@ def active_factors(request):
     now = timezone.now().timestamp()
     factors = request.session["multifactor"] = [
         *filter(
-            lambda tup: tup[3] > now,
+            lambda tup: tup[3] == False or tup[3] > now,
             request.session.get('multifactor', [])
         ),
     ]
     return factors
+
 
 def disabled_fallbacks(request):
     return DisabledFallback.objects.filter(user=request.user).values_list('fallback', flat=True)
@@ -46,6 +46,7 @@ def render(request, template_name, context, **kwargs):
 
 def method_url(method):
     return f'multifactor:{method.lower()}_auth'
+
 
 def write_session(request, key):
     """Write the multifactor session with the verified key"""
