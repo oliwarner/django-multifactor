@@ -69,10 +69,8 @@ def write_session(request, key):
 
 
 def login(request):
-    messages.info(request, format_html(
-        'You are now multifactor-authenticated. <a href="{}">Multifactor settings</a>.',
-        reverse('multifactor:home')
-    ))
+    if mf_settings['SHOW_LOGIN_MESSAGE']:
+        messages.info(request, format_html(mf_settings['LOGIN_MESSAGE'], reverse('multifactor:home')))
 
     if 'multifactor-next' in request.session:
         return redirect(request.session['multifactor-next'])
