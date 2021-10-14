@@ -33,12 +33,7 @@ class MultifactorUserAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         keys = UserKey.objects.filter(user=OuterRef('pk'), enabled=True)
-        return (
-            self.model.objects.filter(is_staff=True)
-            .annotate(
-                has_multifactors=Exists(keys),
-            )
-        )
+        return super().get_queryset(request).annotate(has_multifactors=Exists(keys))
 
     def get_list_display(self, request):
         if not self.multifactor_list_display:
