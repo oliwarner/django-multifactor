@@ -2,6 +2,8 @@ from django.conf import settings
 
 mf_settings = getattr(settings, 'MULTIFACTOR', {})
 
+mf_settings['LOGIN_MESSAGE'] = mf_settings.get('LOGIN_MESSAGE', 'You are now multifactor-authenticated. <a href="{}">Multifactor settings</a>.')
+mf_settings['SHOW_LOGIN_MESSAGE'] = mf_settings.get('SHOW_LOGIN_MESSAGE', True)
 mf_settings['LOGIN_CALLBACK'] = mf_settings.get('LOGIN_CALLBACK', False)
 mf_settings['RECHECK'] = mf_settings.get('RECHECK', True)
 mf_settings['RECHECK_MIN'] = mf_settings.get('RECHECK_MIN', 60 * 60 * 3)

@@ -43,6 +43,10 @@ Add `multifactor` to `settings.INSTALLED_APPS` and override whichever setting yo
         'FIDO_SERVER_NAME': 'Django App',    # Human-readable name for FIDO request
         'TOKEN_ISSUER_NAME': 'Django App',   # TOTP token issuing name (to be shown in authenticator)
         'U2F_APPID': 'https://example.com',  # U2F request issuer
+        
+        # Optional Keys - Only include these keys if you wish to deviate from the default actions
+        'LOGIN_MESSAGE': '<a href="{}">Manage multifactor settings</a>.',  # {OPTIONAL} When set overloads the default post-login message.
+        'SHOW_LOGIN_MESSAGE': False,  # {OPTIONAL} <bool> Set to False to not create a post-login message
     }
 
 Ensure that [`django.contrib.messages`](https://docs.djangoproject.com/en/2.2/ref/contrib/messages/) is installed.
