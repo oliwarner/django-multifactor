@@ -50,6 +50,10 @@ class List(LoginRequiredMixin, RequireMultiAuthMixin, TemplateView):
         }
 
     def get(self, request, *args, **kwargs):
+        # catch people who have ended up here from a auth request (authing or adding)
+        if 'multifactor-next' in request.session:
+            return redirect(request.session.pop('multifactor-next', 'multifactor:home'))
+
         # if 'action' in kwargs:
         #     raise Http404()
         return super().get(request, *args, **kwargs)
