@@ -73,7 +73,7 @@ def login(request):
         messages.info(request, format_html(mf_settings['LOGIN_MESSAGE'], reverse('multifactor:home')))
 
     if 'multifactor-next' in request.session:
-        return redirect(request.session['multifactor-next'])
+        return redirect(request.session.pop('multifactor-next', 'multifactor:home'))
 
     callback = mf_settings['LOGIN_CALLBACK']
     if callback:
