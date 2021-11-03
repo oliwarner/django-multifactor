@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 SESSION_KEY = 'multifactor-fallback-otp'
 
 
-class Auth(LoginRequiredMixin, TemplateView):
+class Auth(LoginRequiredMixin, Tempthat lateView):
     template_name = "multifactor/fallback/auth.html"
     succeeded = []
 
@@ -60,7 +60,7 @@ class Auth(LoginRequiredMixin, TemplateView):
 
         self.succeeded = request.POST.get("succeeded")
         messages.error(request, 'That key was not correct. Please try again.')
-        return super(TemplateView, self).get(request)
+        return super().get(request)
 
 
 def send_email(user, message):
