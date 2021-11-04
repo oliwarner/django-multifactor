@@ -22,7 +22,6 @@ SESSION_KEY_SUCCEEDED = 'multifactor-fallback-succeeded'
 
 class Auth(LoginRequiredMixin, TemplateView):
     template_name = "multifactor/fallback/auth.html"
-    succeeded = ''
 
     def get(self, request, generate=True):
         if generate:
@@ -48,30 +47,14 @@ class Auth(LoginRequiredMixin, TemplateView):
                 messages.error(request, 'No fallback one-time-password transport methods worked. Please contact an administrator.')
                 return redirect('multifactor:home')
 
-            self.succeeded = s[0] if len(s) == 1 else (', '.join(s[:-1]) + ' and ' + s[-1])
-            request.session[SESSION_KEY_SUCCEEDED] = self.succeeded
+            request.session[SESSION_KEY_SUCCEEDED] = s[0] if len(s) == 1 else (', '.join(s[:-1]) + ' and ' + s[-1])
 
-        elif SESSION_KEY not in request.session:
-            messages.error(request, 'Your session expired. Sending a fresh message.')
-            return self.get(request)
-
-        else:
-            # generate = false, sent here from post() fail
-            # we just need to pull up the list of places the OTP was sent
-            self.succeeded = request.session[SESSION_KEY_SUCCEEDED]
-
-        return super().get(request, generate=False)
-        
-    def get_context_data(self, **kwargs):
-        return {
-            'succeeded': self.succeeded,
-        }
+        return super().get(
+            request,
+            succeeded=request.session[SESSION_KEY_SUCCEEDED],
+        )
 
     def post(self, request):
-        if SESSION_KEY not in request.session:
-            messages.error(request, 'Your session expired. Sending a fresh message.')
-            return self.get(request, generate=True)
-
         if request.session[SESSION_KEY] == request.POST["otp"].strip():
             request.session.pop(SESSION_KEY)
             write_session(request, key=None)

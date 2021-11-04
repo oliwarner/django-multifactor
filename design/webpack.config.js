@@ -2,7 +2,7 @@ const path = require('path');
 const glob = require('glob')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const PurgecssPlugin = require('purgecss-webpack-plugin')
-// const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 module.exports = {
   entry: './src/index.js',
@@ -10,6 +10,7 @@ module.exports = {
     path: path.resolve(__dirname, '../multifactor/static/multifactor'),  // in django static
     filename: 'js/multifactor.bundle.js'
   },
+  devtool: 'source-map',
   module: {
     rules: [{
       test: /\.scss$/,
@@ -23,7 +24,12 @@ module.exports = {
             loader: 'sass-loader',
             options: {
               sourceMap: true,
-              // options...
+              sassOptions: {
+                sourceMap: true,
+                includePaths: [
+                  require('path').resolve(__dirname, 'node_modules')
+                ],
+              },
             }
           }
         ]
@@ -40,13 +46,11 @@ module.exports = {
         ...glob.sync(path.join(__dirname, '../multifactor/templates/**/*'),  { nodir: true }),
       ],
     }),
-    // can't use in webpack 5 yet
-    // new OptimizeCssAssetsPlugin({
-    //   cssProcessor: require('cssnano'),
-    //   cssProcessorPluginOptions: {
-    //     preset: ['default', { discardComments: { removeAll: true } }],
-    //   },
-    //   canPrint: true
-    // })
-  ]
+  ],
+
+  optimization: {
+    minimizer: [
+      new CssMinimizerPlugin(),
+    ],
+  },
 };

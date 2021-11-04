@@ -9,12 +9,14 @@ $primary: #33A9FF;
 $success: #54BC2B;
 $info: #0287FC;
 $warning: #FFF028;
-$danger: #FF4B3A;
+$danger: #ed1400;
 
 $body-background-color: #EEE;
 $control-border-width: 3px;
 
-@import "../node_modules/bulma/bulma.sass";
+$custom-colors: ("error": $danger,);
+
+@import "~bulma/bulma.sass";
 
 html, body {min-height:100vh;}
 body {
@@ -115,7 +117,8 @@ body > .column {
 p {margin-bottom: 1em;}
 
 .table {
-	width: 100%;
+	margin-left: -12px;
+	margin-right: -12px;
 	td {
 		vertical-align: middle;
 		:last-child {
@@ -262,4 +265,8 @@ h4 {
 	&:after {
 		content: "✖"
 	}
+}
+
+.is-error {
+	@extend .is-danger
 }
