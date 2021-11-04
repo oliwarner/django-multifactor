@@ -8,9 +8,8 @@ module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, '../multifactor/static/multifactor'),  // in django static
-    filename: 'js/multifactor.bundle.js'
+    filename: 'js/multifactor.bundle.js',
   },
-  devtool: 'source-map',
   module: {
     rules: [{
       test: /\.scss$/,
@@ -23,9 +22,7 @@ module.exports = {
           {
             loader: 'sass-loader',
             options: {
-              sourceMap: true,
               sassOptions: {
-                sourceMap: true,
                 includePaths: [
                   require('path').resolve(__dirname, 'node_modules')
                 ],
