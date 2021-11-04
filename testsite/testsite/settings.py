@@ -1,6 +1,12 @@
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
+MULTIFACTOR = {
+    'FALLBACKS': {
+        'console': (lambda user: user, 'multifactor.factors.fallback.debug_print_console'),
+    }
+}
+
 SECRET_KEY = 'zng@fpiuz-n#6&cys3h&6+s-pegop#iqm!$_-86cu_pb_(*ugy'
 
 DEBUG = True

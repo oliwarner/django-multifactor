@@ -119,7 +119,7 @@ Then hook that into `settings.MULTIFACTOR`:
     MULTIFACTOR = {
         # ...
         'FALLBACKS': {
-            'email': (lambda user: user.email, 'multifactor.factors.fallback.send_email'),
+            'email': (lambda user: user, 'multifactor.factors.fallback.send_email'),
             'pigeon': (lambda user: user.address, 'path.to.send_carrier_pigeon'),
         }
     }
