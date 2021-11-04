@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 SESSION_KEY = 'multifactor-fallback-otp'
 
 
-class Auth(LoginRequiredMixin, Tempthat lateView):
+class Auth(LoginRequiredMixin, TemplateView):
     template_name = "multifactor/fallback/auth.html"
     succeeded = []
 
