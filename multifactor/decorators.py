@@ -1,3 +1,4 @@
+import django
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
@@ -40,7 +41,7 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                 return view_func(request, *args, **kwargs)
 
             def force_authenticate():
-                if request.is_ajax():
+                if django.VERSION < (4, 0) and request.is_ajax():
                     raise PermissionDenied('Multifactor authentication required')
                 request.session['multifactor-next'] = request.get_full_path()
                 return redirect('multifactor:authenticate')
