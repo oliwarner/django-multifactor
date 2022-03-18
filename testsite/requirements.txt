@@ -1,4 +1,4 @@
 pip
-Django<=3.2.999
+Django<=4.0.999
 django-decorator-include
 -e ../
