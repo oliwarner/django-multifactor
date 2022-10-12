@@ -19,10 +19,21 @@ FIDO2/WebAuthn is the big-ticket item for MFA. It allows the browser to interfac
  * **android-safetynet** (Chrome 70+)
  * **NFC devices using PCSC** (Not Tested, but as supported in fido2)
 
-This project targets modern stacks. Django 2.2+ and Python 3.5+.
-
 **Database support**: Depends on *either* PostgreSQL or Django 3.1+, or both for a sane JSONField implementation. If you're on Postgres, you can carry on using Django 2.x but SQLite3, MySQL, Oracle, etc users will need to upgrade.
 
+# Python and Django Support
+This project targets modern stacks. Django 2.2+ and Python 3.5+.
+
+This project officially supports Python 3.8+ and Django 3.2+.
+
+| **Python/Django** | **2.2** |**3.2** | **4.0** | **4.1** | **4.2** |
+|-------------------|---------|--------|---------|---------|---------|
+| 3.5               | Y       | N      | N       | N       | N/A     |
+| 3.6               | Y       | Y      | N       | N       | N/A     |
+| 3.7               | Y       | Y      | N       | N       | N/A     |
+| 3.8               | Y       | Y      | Y       | Y       | N/A     |
+| 3.9               | Y       | Y      | Y       | Y       | N/A     |
+| 3.10              | N       | Y      | Y       | Y       | N/A     |
 
 
 ## Installation:
