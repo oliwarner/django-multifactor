@@ -44,7 +44,7 @@ django = "> 2.2, <5"
 pyotp = '^2.6'
 python-u2flib-server = '^5.0'
 python-jose = '^3'
-fido2 = '0.9.3'
+fido2 = '1.1.0'
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
