@@ -34,6 +34,9 @@ This project officially supports Python 3.8+ and Django 3.2+.
 | 3.8               | Y       | Y      | Y       | Y       | N/A     |
 | 3.9               | Y       | Y      | Y       | Y       | N/A     |
 | 3.10              | N       | Y      | Y       | Y       | N/A     |
+| 3.11              | N       | N      | N       | Y       | Y  
+
+* Python 3.11 only works with Django 4.1.3+
 
 
 ## Installation:
