@@ -1,8 +1,7 @@
 # ![django-multifactor - Easy multi-factor authentication for Django](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo3.png)
 
 Probably the easiest multi-factor for Django. Ships with standalone views, opinionated defaults 
-and a very simple integration pathway to retrofit onto mature sites. Supports [FIDO2/WebAuthn](https://en.wikipedia.org/wiki/WebAuthn)
-[U2F](https://en.wikipedia.org/wiki/Universal_2nd_Factor) and [TOTP authenticators](https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm), with removable fallbacks options for email, SMS, carrier pigeon, or whatever other token
+and a very simple integration pathway to retrofit onto mature sites. Supports [FIDO2/WebAuthn](https://en.wikipedia.org/wiki/WebAuthn) and [TOTP authenticators](https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm), with removable fallbacks options for email, SMS, carrier pigeon, or whatever other token
 exchange you can think of.
 
 This is ***not*** a passwordless authentication system. django-multifactor is a second layer of defence.
@@ -56,7 +55,6 @@ Add `multifactor` to `settings.INSTALLED_APPS` and override whichever setting yo
         'FIDO_SERVER_ID': 'example.com',     # Server ID for FIDO request
         'FIDO_SERVER_NAME': 'Django App',    # Human-readable name for FIDO request
         'TOKEN_ISSUER_NAME': 'Django App',   # TOTP token issuing name (to be shown in authenticator)
-        'U2F_APPID': 'https://example.com',  # U2F request issuer
         
         # Optional Keys - Only include these keys if you wish to deviate from the default actions
         'LOGIN_MESSAGE': '<a href="{}">Manage multifactor settings</a>.',  # {OPTIONAL} When set overloads the default post-login message.
@@ -105,13 +103,13 @@ At this stage any authenticated user can add a secondary factor to their account
     ]
 
 
-## Don't want to allow TOTP or U2F? Turn them off.
+## Don't want to allow TOTP? Turn them off.
 
 You can control the factors users can pick from in `settings.MULTIFACTOR`:
 
     MULTIFACTOR = {
         # ...
-        'FACTORS': ['FIDO2', 'U2F', 'TOTP'],  # <- this is the default
+        'FACTORS': ['FIDO2', 'TOTP'],  # <- this is the default
     }
 
 

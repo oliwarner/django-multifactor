@@ -13,18 +13,6 @@
 <div class="columns">
 	<div class="column"><div class="card">
 		<div class="card-header">
-			<h5 class="card-header-title is-centered">TOPT Authenticator</h5>
-		</div>
-		<div class="card-content">
-			<p>Install an authenticator from your phone's marketplace and get access to a secure rotating passcode. Once linked, verification is just a matter of copying that code back into here when prompted.</p>
-			<p>Benefits: free, portable.</p>
-		</div>
-		<div class="card-footer">
-			<a href="{% url 'multifactor:totp_start' %}" class="button is-100 is-primary">Add TOTP Authenticator</a>
-		</div>
-	</div></div>
-	<div class="column"><div class="card">
-		<div class="card-header">
 			<h5 class="card-header-title is-centered">FIDO2 Device</h5>
 		</div>
 		<div class="card-content">
@@ -37,14 +25,14 @@
 	</div></div>
 	<div class="column"><div class="card">
 		<div class="card-header">
-			<h5 class="card-header-title is-centered">U2F-FIDO Device</h5>
+			<h5 class="card-header-title is-centered">TOPT Authenticator</h5>
 		</div>
 		<div class="card-content">
-			<p>Predecessor to FIDO2, these are usually USB devices that start blinking when you need to authenticate. Press the button and you're done.</p>
-			<p>These are cheap and convenient for desktop-only installations.</p>
+			<p>Install an authenticator from your phone's marketplace and get access to a secure rotating passcode. Once linked, verification is just a matter of copying that code back into here when prompted.</p>
+			<p>Benefits: free, portable.</p>
 		</div>
 		<div class="card-footer">
-			<a href="{% url 'multifactor:u2f_start' %}" class="button is-100 is-primary">Add U2F Device</a>
+			<a href="{% url 'multifactor:totp_start' %}" class="button is-100 is-primary">Add TOTP Authenticator</a>
 		</div>
 	</div></div>
 </div>

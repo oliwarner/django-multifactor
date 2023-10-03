@@ -1,1 +1,1 @@
-
+function t(o,e){document.getElementById("card").classList.add(`has-background-${o}-dark`,"has-text-white","has-text-centered"),document.getElementById("content").innerHTML=e}window.display_error=function(o){t("danger",o)};window.display_succcess=function(o){t("success",o)};document.body.addEventListener("click",function(o){o.target.classList.contains("delete-button")&&(confirm("Are you sure you want to delete this factor?")||o.preventDefault())},!1);

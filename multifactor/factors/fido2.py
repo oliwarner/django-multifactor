@@ -11,7 +11,7 @@ from fido2.utils import websafe_decode, websafe_encode
 from fido2.ctap2 import AttestedCredentialData
 import logging
 
-from ..models import UserKey, KEY_TYPE_FIDO2
+from ..models import UserKey, KeyTypes
 from ..common import render, write_session, login
 from ..app_settings import mf_settings
 
@@ -76,7 +76,7 @@ def complete_reg(request):
                 "type": att_obj.fmt,
                 "domain": request.get_host(),
             },
-            key_type=KEY_TYPE_FIDO2,
+            key_type=KeyTypes.FIDO2,
         )
         write_session(request, key)
         messages.success(request, 'FIDO2 Token added!')
@@ -96,7 +96,7 @@ def get_user_credentials(request):
         AttestedCredentialData(websafe_decode(uk.properties["device"]))
         for uk in UserKey.objects.filter(
             user=request.user,
-            key_type=KEY_TYPE_FIDO2,
+            key_type=KeyTypes.FIDO2,
             properties__domain=request.get_host(),
             enabled=True,
         )

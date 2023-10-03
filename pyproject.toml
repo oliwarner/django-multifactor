@@ -19,6 +19,7 @@ classifiers = [
     "Framework :: Django :: 4.0",
     "Framework :: Django :: 4.1",
     "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -29,6 +30,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 packages = [
@@ -40,11 +42,9 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.5, ^3.6 || ^3.7 || ^3.8 || ^3.9 || ^3.10 || ^3.11"
-django = "> 2.2, <5"
-pyotp = '^2.6'
-python-u2flib-server = '^5.0'
-python-jose = '^3'
+python = "^3.5, ^3.6 || ^3.7 || ^3.8 || ^3.9 || ^3.10 || ^3.11 || ^3.12"
+django = "> 2.2, <= 5.0"
+pyotp = '^2.9'
 fido2 = '0.9.3'
 
 [tool.poetry.dev-dependencies]

@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .factors import fido2, u2f, totp, fallback
+from .factors import fido2, totp, fallback
 
 
 app_name = 'multifactor'
@@ -20,9 +20,6 @@ urlpatterns = [
     path('fido2/complete-auth/', fido2.authenticate_complete, name="fido2_complete_auth"),
     path('fido2/begin-reg/', fido2.begin_registration, name="fido2_begin_reg"),
     path('fido2/complete-reg/', fido2.complete_reg, name="fido2_complete_reg"),
-
-    path('u2f/new/', u2f.Create.as_view(), name="u2f_start"),
-    path('u2f/auth/', u2f.Auth.as_view(), name="u2f_auth"),
 
     path('totp/new/', totp.Create.as_view(), name="totp_start"),
     path('totp/auth/', totp.Auth.as_view(), name="totp_auth"),

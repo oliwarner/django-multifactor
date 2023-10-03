@@ -7,25 +7,21 @@ except ImportError:
     from django.contrib.postgres.fields import JSONField
 
 
-KEY_TYPE_FIDO2 = 'FIDO2'
-KEY_TYPE_U2F = 'U2F'
-KEY_TYPE_TOPT = 'TOTP'
 
-KEY_CHOICES = (
-    (KEY_TYPE_FIDO2, "FIDO2 Security Device"),
-    (KEY_TYPE_U2F, "U2F Security Key"),
-    (KEY_TYPE_TOPT, "TOTP Authenticator"),
-)
+class KeyTypes(models.TextChoices):
+    FIDO2 = 'FIDO2', "FIDO2 Security Device"
+    TOPT = 'TOTP', "TOTP Authenticator"
+
 
 # keys that can only be used on one domain
-DOMAIN_KEYS = (KEY_TYPE_FIDO2, KEY_TYPE_U2F)
+DOMAIN_KEYS = (KeyTypes.FIDO2)
 
 
 class UserKey(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='multifactor_keys')
     name = models.CharField(max_length=30, help_text="Easy to remember name to distinguish from any other keys of this sort you own.", blank=True, null=True)
     properties = JSONField(null=True)
-    key_type = models.CharField(max_length=25, choices=KEY_CHOICES)
+    key_type = models.CharField(max_length=25, choices=KeyTypes.choices)
     enabled = models.BooleanField(default=True)
 
     added_on = models.DateTimeField(auto_now_add=True)
@@ -44,10 +40,8 @@ class UserKey(models.Model):
 
     @property
     def device(self):
-        if self.key_type == KEY_TYPE_FIDO2:
+        if self.key_type == KeyTypes.FIDO2:
             return self.properties.get("type", "----")
-        elif self.key_type == KEY_TYPE_U2F:
-            return self.properties.get("device", "----")
         return ""
 
     @property

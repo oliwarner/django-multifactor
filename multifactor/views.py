@@ -12,8 +12,7 @@ from django.views.generic import TemplateView, UpdateView
 
 from collections import defaultdict
 
-from .models import UserKey, DisabledFallback, KEY_CHOICES, DOMAIN_KEYS
-# from .forms import RenameForm
+from .models import UserKey, DisabledFallback, KeyTypes, DOMAIN_KEYS
 from .common import render, method_url, active_factors, has_multifactor, disabled_fallbacks
 from .app_settings import mf_settings
 from .decorators import multifactor_protected
@@ -105,7 +104,7 @@ class Add(LoginRequiredMixin, PreferMultiAuthMixin, TemplateView):
             **super().get_context_data(**kwargs),
             "methods": [
                 (f"multifactor:{value.lower()}_start", label)
-                for value, label in KEY_CHOICES
+                for value, label in KeyTypes.choices
             ],
         }
 
@@ -158,7 +157,7 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        method_names = dict(KEY_CHOICES)
+        method_names = dict(KeyTypes.choices)
 
         # build up a reminder string as one of the following:
         #  - 2 available

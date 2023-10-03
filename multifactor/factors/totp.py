@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 import pyotp
 
-from ..models import UserKey, KEY_TYPE_TOPT
+from ..models import UserKey, KeyTypes
 from ..common import write_session, login
 from ..app_settings import mf_settings
 
@@ -36,7 +36,7 @@ class Create(LoginRequiredMixin, TemplateView):
             key = UserKey.objects.create(
                 user=request.user,
                 properties={"secret_key": self.secret_key},
-                key_type=KEY_TYPE_TOPT
+                key_type=KeyTypes.TOPT
             )
             write_session(request, key)
             messages.success(request, 'TOPT Authenticator added.')
@@ -59,6 +59,6 @@ class Auth(LoginRequiredMixin, TemplateView):
         return super().get(request, *args, **kwargs)
 
     def verify_login(self, token):
-        for key in UserKey.objects.filter(user=self.request.user, key_type=KEY_TYPE_TOPT, enabled=True):
+        for key in UserKey.objects.filter(user=self.request.user, key_type=KeyTypes.TOPT, enabled=True):
             if pyotp.TOTP(key.properties["secret_key"]).verify(token, valid_window=WINDOW):
                 return key
