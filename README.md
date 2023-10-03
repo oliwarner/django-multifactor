@@ -139,6 +139,27 @@ Then hook that into `settings.MULTIFACTOR`:
 Now if the user selects the fallback option, they will receive an email *and* a pigeon. You can remove email by omitting that line. You can disable fallback entirely by setting FALLBACKS to an empty dict.
 
 
+## Conditional bypass
+
+It's sometimes useful to be able to be able to conditionally bypass multifactor requirements. You might be in local testing, you might be in automated testing or impersonating other users. That's between you and your gods. `settings.MULTIFACTOR.BYPASS` accepts a single path to a function accepting a request. If that returns True, multifactor will bypass its normal checks on a page.
+
+    MULTIFACTOR = {
+        # ...
+        'BYPASS': 'path.to.bypass_when_impersonating'
+    }
+
+These are relatively easy to implement
+
+    def bypass_when_impersonating(request):
+        from loginas.utils import is_impersonated_session
+        if is_impersonated_session(request):
+            return True
+
+    def bypass_when_debug(request):
+        from django.config import settings
+        return settings.DEBUG
+
+
 ## UserAdmin integration
 
 It's often useful to monitor which of your users is using django-multifactor and, in emergencies, critical to be able to turn their secondary factors off. We ship a opinionated mixin class that you can add to your existing UserAdmin definition.

@@ -11,7 +11,7 @@ import functools
 import time
 import inspect
 
-from .common import method_url, active_factors, has_multifactor
+from .common import method_url, active_factors, has_multifactor, is_bypassed
 
 
 __all__ = ['multifactor_protected']
@@ -47,6 +47,9 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                 return redirect('multifactor:authenticate')
 
             if not request.user.is_authenticated:
+                return baulk()
+            
+            if is_bypassed(request):
                 return baulk()
 
             if user_filter is not None:

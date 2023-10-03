@@ -19,3 +19,5 @@ mf_settings['FACTORS'] = mf_settings.get('FACTORS', ['FIDO2', 'TOTP'])
 mf_settings['FALLBACKS'] = mf_settings.get('FALLBACKS', {
     'email': (lambda user: user.email, 'multifactor.factors.fallback.send_email'),
 })
+
+mf_settings['BYPASS'] = mf_settings.get('BYPASS', None)

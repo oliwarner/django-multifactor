@@ -4,6 +4,7 @@ from django.shortcuts import render as dj_render, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.module_loading import import_string
 
 import random
 
@@ -77,8 +78,15 @@ def login(request):
 
     callback = mf_settings['LOGIN_CALLBACK']
     if callback:
-        callable_func = import_string(callback)
-        return callable_func(request, username=request.session["base_username"])
+        return import_string(callback)(request, username=request.session["base_username"])
 
     # punch back to the login URL and let it decide what to do with you
     return redirect(settings.LOGIN_URL)
+
+
+def is_bypassed(request):
+    bypass = mf_settings['BYPASS']
+    if bypass:
+        return import_string(bypass)(request)
+    
+    return False
