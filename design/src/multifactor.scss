@@ -16,7 +16,7 @@ $control-border-width: 3px;
 
 $custom-colors: ("error": $danger,);
 
-@import "~bulma/bulma.sass";
+@import "~/bulma/bulma.sass";
 
 html, body {min-height:100vh;}
 body {
@@ -227,7 +227,7 @@ h4 {
 	&:hover {
 	}
 	&.is-toggled-on {
-		@extend .button.is-success;
+		// @extend .button .is-success;
 		&:before {
 			left: 0px;
 		}
@@ -237,19 +237,19 @@ h4 {
 			color: #363636 !important;
 		}
 		&:hover {
-			@extend .button.is-light:hover;
+			// @extend .button .is-light:hover;
 		}
 		&:hover:before {
 			left: calc(100% - 12px);
 		}
 	}
 	&.is-toggled-off {
-		@extend .button.is-light;
+		// @extend .button .is-light;
 		&:before {
 			right: 0px;
 		}
 		&:hover {
-			@extend .button.is-success:hover;
+			// @extend .button .is-success:hover;
 		}
 		&:hover:before {
 			right: calc(100% - 12px);

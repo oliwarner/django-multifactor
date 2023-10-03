@@ -45,9 +45,6 @@ function authenticate() {
 	})
 }
 
-if (location.protocol != 'https:')
-	display_error("FIDO2 only works under HTTPS");
-else
-	setTimeout(authenticate, 500);
+setTimeout(authenticate, 300);
 </script>
 {% endblock fido_scripting %}

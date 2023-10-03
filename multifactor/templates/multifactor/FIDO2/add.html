@@ -11,22 +11,23 @@
 
 {% block head %}
 {{ block.super }}
+
 <script type="application/javascript" src="{% static 'multifactor/js/cbor.min.js'%}"></script>
 {% block fido_scripting %}
 <script type="application/javascript">
 function authenticate() {
-	fetch("{% url 'multifactor:fido2_begin_reg' %}", {})
-	.then(function(response) {
+	fetch("{% url 'multifactor:fido2_begin_reg' %}")
+	.then((response) => {
 		if(response.ok)
-			return response.arrayBuffer();
-		throw new Error('Error getting registration data!');
+			return response.arrayBuffer()
+		throw new Error('Error getting registration data!')
 	})
-	.then(CBOR.decode)
-	.then(function(options) {
+	.then(response => {return CBOR.decode(response)})
+	.then((options) => {
 		options.publicKey.attestation = "direct"
-		return navigator.credentials.create(options);
+		return navigator.credentials.create(options)
 	})
-	.then(function(attestation) {
+	.then((attestation) => {
 		return fetch("{% url 'multifactor:fido2_complete_reg' %}", {
 			method: 'POST',
 			headers: {'Content-Type': 'application/cbor'},
@@ -35,29 +36,24 @@ function authenticate() {
 				"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
 			})
 		});
-	}, function(error) {
-		var el = document.getElementById('authtype');
-		el.classList.add('manual');
-		el.classList.remove('automatic');
+	}, (error) => {
+		let el = document.getElementById('authtype')
+		el.classList.add('manual')
+		el.classList.remove('automatic')
+		return Promise.reject(error)
 	})
-	.then(function(response) {
-		var stat = response.ok ? 'successful' : 'unsuccessful';
-		return response.json();
-	})
-	.then(function (res) {
+	.then((response) => response.json())
+	.then((res) => {
 		if (res["status"] =='OK')
-			window.location.href = "{% url 'multifactor:home' %}";
+			window.location.href = "{% url 'multifactor:home' %}"
 		else
-			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
-	}, function(reason) {
-		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>");
-	});
+			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>")
+	}, (reason) => {
+		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>")
+	})
 }
 
-if (location.protocol != 'https:')
-	display_error("FIDO2 only works under HTTPS");
-else
-	setTimeout(authenticate, 500);
+setTimeout(authenticate, 500);
 </script>
 {% endblock fido_scripting %}
 {% endblock %}

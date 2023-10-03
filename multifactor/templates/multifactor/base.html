@@ -8,7 +8,7 @@
 	<meta name="author" content="">
 	<title>{% block title %}Multi-Factor Verification{% endblock %}</title>
 
-	<link href="{% static 'multifactor/css/multifactor-main.bundle.css' %}" rel="stylesheet">
+	<link href="{% static 'multifactor/multifactor.css' %}" rel="stylesheet">
 </head>
 
 <body class="columns"><div class="column {% block container_class %}curt{% endblock %}">
@@ -31,7 +31,7 @@
 	</div>
 	{% endblock page %}
 
-	<script src="{%static 'multifactor/js/multifactor.js' %}"></script>
+	<script src="{%static 'multifactor/multifactor.js' %}"></script>
 	{% block head %}
 	{% endblock %}
 </div></body>

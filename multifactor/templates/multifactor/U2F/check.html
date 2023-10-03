@@ -2,26 +2,21 @@
 
 {% block u2f_scripting %}
 <script type="text/javascript">
-if (location.protocol != 'https:')
-	display_error("U2F only works under HTTPS");
+const data = JSON.parse('{{ token|safe }}')
+u2f.sign(data.appId, data.challenge, data.registeredKeys, function (response) {
+	document.getElementById('response').value = JSON.stringify(response);
 
-else {
-	data = JSON.parse('{{ token|safe }}')
-	u2f.sign(data.appId, data.challenge, data.registeredKeys, function (response) {
-		document.getElementById('response').value = JSON.stringify(response);
+	if (response.hasOwnProperty("errorCode") && response.errorCode != 0)
+		display_error('Error handling request: ' + {
+			1: "Unknown error.",
+			2: "Bad request",
+			3: "Client configuration is not supported",
+			4: "Invalid Security Key, this security isn't linked to your account",
+			5: "Validation timed out. Please reload to try again",
+		}[response.errorCode]);
 
-		if (response.hasOwnProperty("errorCode") && response.errorCode != 0)
-			display_error('Error handling request: ' + {
-				1: "Unknown error.",
-				2: "Bad request",
-				3: "Client configuration is not supported",
-				4: "Invalid Security Key, this security isn't linked to your account",
-				5: "Validation timed out. Please reload to try again",
-			}[response.errorCode]);
-
-		else 
-			document.getElementById('u2f_login').submit();
-	}, 10000)
-}
+	else 
+		document.getElementById('u2f_login').submit();
+}, 10000)
 </script>
 {% endblock u2f_scripting %}

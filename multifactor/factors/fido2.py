@@ -30,7 +30,11 @@ def auth(request):
 
 
 def get_server():
-    rp = PublicKeyCredentialRpEntity(mf_settings['FIDO_SERVER_ID'], mf_settings['FIDO_SERVER_NAME'], mf_settings['FIDO_SERVER_ICON'])
+    rp = PublicKeyCredentialRpEntity(
+        mf_settings['FIDO_SERVER_ID'],
+        mf_settings['FIDO_SERVER_NAME'],
+        mf_settings['FIDO_SERVER_ICON']
+    )
     return Fido2Server(rp)
 
 

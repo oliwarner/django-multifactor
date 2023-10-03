@@ -17,16 +17,11 @@
 <script src="{% static 'multifactor/js/u2f-api.min.js' %}" type="text/javascript"></script>
 {% block u2f_scripting %}
 <script type="text/javascript">
-if (location.protocol != 'https:')
-	display_error("U2F only works under HTTPS");
-
-else {
-	data = JSON.parse('{{ token|safe }}');
-	u2f.register(data.appId, data.registerRequests, data.registeredKeys, function (response) {
-		document.getElementById('response').value = JSON.stringify(response);
-		document.getElementById('u2f_login').submit();
-	}, 10000)
-}
+const data = JSON.parse('{{ token|safe }}');
+u2f.register(data.appId, data.registerRequests, data.registeredKeys, function (response) {
+	document.getElementById('response').value = JSON.stringify(response);
+	document.getElementById('u2f_login').submit();
+}, 10000)
 </script>
 {% endblock u2f_scripting %}
 {% endblock head %}
