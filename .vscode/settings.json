@@ -1,9 +1,15 @@
 {
     "cSpell.words": [
         "cbor",
+        "collectstatic",
         "ctap",
+        "keychain",
+        "loginas",
         "multifactor",
+        "passwordless",
+        "TOPT",
         "totp",
+        "urlpatterns",
         "webauthn"
     ]
 }

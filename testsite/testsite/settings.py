@@ -5,10 +5,16 @@
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
+
+# Configure FIDO_SERVER_ID this with something real for testing
+# cloudflared is a quick and easy service to expose this to the
+# real world but it's only a temporary name, so you'll need to
+# update this.
 MULTIFACTOR = {
-    'FIDO_SERVER_ID': 'require-beginners-sake-writers.trycloudflare.com',
+    'FIDO_SERVER_ID': '',  
     'FALLBACKS': {
-        'console': (lambda user: user, 'multifactor.factors.fallback.debug_print_console'),
+        'console': (lambda user: user,
+                    'multifactor.factors.fallback.debug_print_console'),
     }
 }
 
@@ -35,7 +41,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'testsite.disable_csrf.DisableCSRFMiddleware',
+    'testsite.disable_csrf.DisableCSRFMiddleware',  # disables CSRF globally
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]

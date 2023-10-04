@@ -1,12 +1,9 @@
 # ![django-multifactor - Easy multi-factor authentication for Django](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo3.png)
 
 Probably the easiest multi-factor for Django. Ships with standalone views, opinionated defaults 
-and a very simple integration pathway to retrofit onto mature sites. Supports [FIDO2/WebAuthn](https://en.wikipedia.org/wiki/WebAuthn) and [TOTP authenticators](https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm), with removable fallbacks options for email, SMS, carrier pigeon, or whatever other token
-exchange you can think of.
+and a very simple integration pathway to retrofit onto mature sites. Supports [FIDO2/WebAuthn](https://en.wikipedia.org/wiki/WebAuthn) and [TOTP authenticators](https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm), with removable fallback options for email, SMS, carrier pigeon, or whatever other token exchange you can think of. U2F has been removed in 0.6.
 
 This is ***not*** a passwordless authentication system. django-multifactor is a second layer of defence.
-
-Based on [`django-mfa2`](https://pypi.org/project/django-mfa2/) but quickly diverging.
 
 [![PyPI version](https://badge.fury.io/py/django-multifactor.svg)](https://badge.fury.io/py/django-multifactor)
 
@@ -18,18 +15,11 @@ FIDO2/WebAuthn is the big-ticket item for MFA. It allows the browser to interfac
  * **android-safetynet** (Chrome 70+)
  * **NFC devices using PCSC** (Not Tested, but as supported in fido2)
 
-**Database support**: Depends on *either* PostgreSQL or Django 3.1+, or both for a sane JSONField implementation. If you're on Postgres, you can carry on using Django 2.x but SQLite3, MySQL, Oracle, etc users will need to upgrade.
-
 # Python and Django Support
-This project targets modern stacks. Django 2.2+ and Python 3.5+.
-
-This project officially supports Python 3.8+ and Django 3.2+.
+This project targets modern stacks, officially supporting Python 3.8+ and Django 3.2+.
 
 | **Python/Django** | **2.2** |**3.2** | **4.0** | **4.1** | **4.2** |
 |-------------------|---------|--------|---------|---------|---------|
-| 3.5               | Y       | N      | N       | N       | N/A     |
-| 3.6               | Y       | Y      | N       | N       | N/A     |
-| 3.7               | Y       | Y      | N       | N       | N/A     |
 | 3.8               | Y       | Y      | Y       | Y       | N/A     |
 | 3.9               | Y       | Y      | Y       | Y       | N/A     |
 | 3.10              | N       | Y      | Y       | Y       | N/A     |
@@ -49,7 +39,7 @@ Add `multifactor` to `settings.INSTALLED_APPS` and override whichever setting yo
     MULTIFACTOR = {
         'LOGIN_CALLBACK': False,             # False, or dotted import path to function to process after successful authentication
         'RECHECK': True,                     # Invalidate previous authorisations at random intervals
-        'RECHECK_MIN': 60 * 60 * 3,          # No recheks before 3 hours
+        'RECHECK_MIN': 60 * 60 * 3,          # No rechecks before 3 hours
         'RECHECK_MAX': 60 * 60 * 6,          # But within 6 hours
     
         'FIDO_SERVER_ID': 'example.com',     # Server ID for FIDO request
@@ -86,7 +76,7 @@ At this stage any authenticated user can add a secondary factor to their account
         ...
 
  - `factors` is the minimum number of active, authenticated secondary factors. 0 will mean users will only be prompted if they have keys. It can also accept a lambda/function with one request argument that returns a number. This allows you to tune whether factors are required based on custom logic (eg if local IP return 0 else return 1)
- - `user_filter` can be a dictonary to be passed to `User.objects.filter()` to see if the current user matches these conditions. If empty or None, it will match all users.
+ - `user_filter` can be a dictionary to be passed to `User.objects.filter()` to see if the current user matches these conditions. If empty or None, it will match all users.
  - `max_age=600` will ensure the the user has authenticated with their secondary factor within 10 minutes. You can tweak this for higher security at the cost of inconvenience.
  - `advertise=True` will send an info-level message via django.contrib.messages with a link to the main django-multifactor page that allows them to add factors for future use. This is useful to increase optional uptake when introducing multifactor to an organisation.
 
@@ -179,4 +169,4 @@ It adds a column to show if that user has active factors, a filter to just show 
 
 If you want to use the styles and form that django-multifactor supplies, your users may think they're on another site. To help there is an empty placeholder template `multifactor/brand.html` that you can override in your project. This slots in just before the h1 title tag and has `text-align: centre` as standard.
 
-You can use this to include your product logo, or an explantion.
+You can use this to include your product logo, or an explanation.

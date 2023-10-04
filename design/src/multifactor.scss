@@ -119,6 +119,7 @@ p {margin-bottom: 1em;}
 .table {
 	margin-left: -12px;
 	margin-right: -12px;
+	width: 100%;
 	td {
 		vertical-align: middle;
 		:last-child {
@@ -133,7 +134,6 @@ p {margin-bottom: 1em;}
 			display: inline;
 		}
 	}
-
 
 	@include until($tablet) {
 		td {
@@ -227,7 +227,7 @@ h4 {
 	&:hover {
 	}
 	&.is-toggled-on {
-		// @extend .button .is-success;
+		@extend .is-success;
 		&:before {
 			left: 0px;
 		}
@@ -249,7 +249,7 @@ h4 {
 			right: 0px;
 		}
 		&:hover {
-			// @extend .button .is-success:hover;
+			// @extend .button, .is-success:hover;
 		}
 		&:hover:before {
 			right: calc(100% - 12px);
