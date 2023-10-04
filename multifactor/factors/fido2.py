@@ -10,7 +10,7 @@ import fido2.features
 import logging
 
 from ..models import UserKey, KeyTypes
-from ..common import render, write_session, login
+from ..common import write_session, login
 from ..app_settings import mf_settings
 
 import json
@@ -92,7 +92,10 @@ def get_user_credentials(request):
 @login_required
 def authenticate_begin(request):
     server = get_server()
-    auth_data, state = server.authenticate_begin(get_user_credentials(request))
+    auth_data, state = server.authenticate_begin(
+        credentials=get_user_credentials(request),
+        user_verification="discouraged",
+    )
     request.session['fido_state'] = state
     return JsonResponse({**auth_data})
 

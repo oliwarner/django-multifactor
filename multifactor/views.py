@@ -127,7 +127,6 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
 
         for factor in self.factors:
             if factor.key_type in DOMAIN_KEYS:
-                # print(factor)
                 domain = factor.properties.get('domain', '')
                 if not domain:
                     continue

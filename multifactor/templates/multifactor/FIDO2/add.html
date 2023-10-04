@@ -52,8 +52,9 @@ function authenticate() {
 		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>")
 	})
 }
+window.authenticate = authenticate
 
-setTimeout(authenticate, 500);
+setTimeout(authenticate, 500)
 </script>
 {% endblock fido_scripting %}
 {% endblock %}

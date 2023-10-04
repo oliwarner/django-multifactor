@@ -3,6 +3,7 @@
         "cbor",
         "ctap",
         "multifactor",
-        "totp"
+        "totp",
+        "webauthn"
     ]
 }
