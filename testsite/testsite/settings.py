@@ -1,3 +1,7 @@
+# Be careful about any settings you COPY from this file
+# Multiple settings are here to make things easier to test
+# They will make your site less secure.
+
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -11,8 +15,7 @@ MULTIFACTOR = {
 SECRET_KEY = 'zng@fpiuz-n#6&cys3h&6+s-pegop#iqm!$_-86cu_pb_(*ugy'
 
 DEBUG = True
-ALLOWED_HOSTS = ['require-beginners-sake-writers.trycloudflare.com']
-CSRF_TRUSTED_ORIGINS = ['https://*.trycloudflare.com']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -30,13 +33,11 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'testsite.disable_csrf.DisableCSRFMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'testsite.urls'
