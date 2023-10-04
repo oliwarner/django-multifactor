@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-multifactor"
-version = "0.5.5"
+version = "0.6.0"
 description = "Drop-in multifactor authentication subsystem for Django."
 authors = ["Oli Warner <oli@thepcspy.com>"]
 repository = "https://github.com/oliwarner/django-multifactor"
@@ -42,10 +42,10 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.5, ^3.6 || ^3.7 || ^3.8 || ^3.9 || ^3.10 || ^3.11 || ^3.12"
+python = ">=3.7, <4.0"
 django = "> 2.2, <= 5.0"
 pyotp = '^2.9'
-fido2 = '0.9.3'
+fido2 = '1.1.2'
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"

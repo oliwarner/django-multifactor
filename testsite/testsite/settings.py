@@ -2,7 +2,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
 MULTIFACTOR = {
-    'FIDO_SERVER_ID': 'localhost',
+    'FIDO_SERVER_ID': 'require-beginners-sake-writers.trycloudflare.com',
     'FALLBACKS': {
         'console': (lambda user: user, 'multifactor.factors.fallback.debug_print_console'),
     }
@@ -11,7 +11,8 @@ MULTIFACTOR = {
 SECRET_KEY = 'zng@fpiuz-n#6&cys3h&6+s-pegop#iqm!$_-86cu_pb_(*ugy'
 
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['require-beginners-sake-writers.trycloudflare.com']
+CSRF_TRUSTED_ORIGINS = ['https://*.trycloudflare.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',

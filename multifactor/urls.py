@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import TemplateView
 
 from . import views
 from .factors import fido2, totp, fallback
@@ -14,8 +15,8 @@ urlpatterns = [
     path('add/', views.Add.as_view(), name="add"),
     path('rename/<int:pk>/', views.Rename.as_view(), name="rename"),
 
-    path('fido2/new/', fido2.start, name="fido2_start"),
-    path('fido2/auth/', fido2.auth, name="fido2_auth"),
+    path('fido2/new/', TemplateView.as_view(template_name='multifactor/FIDO2/add.html'), name="fido2_start"),
+    path('fido2/auth/', TemplateView.as_view(template_name='multifactor/FIDO2/check.html'), name="fido2_auth"),
     path('fido2/begin-auth/', fido2.authenticate_begin, name="fido2_begin_auth"),
     path('fido2/complete-auth/', fido2.authenticate_complete, name="fido2_complete_auth"),
     path('fido2/begin-reg/', fido2.begin_registration, name="fido2_begin_reg"),

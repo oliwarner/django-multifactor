@@ -12,30 +12,30 @@
 {% block head %}
 {{ block.super }}
 
-<script type="application/javascript" src="{% static 'multifactor/js/cbor.min.js'%}"></script>
 {% block fido_scripting %}
-<script type="application/javascript">
+<script type="module">
+import {
+	create,
+	parseCreationOptionsFromJSON,
+} from '{% static 'multifactor/js/webauthn-json.browser-ponyfill.js'%}'
+
 function authenticate() {
 	fetch("{% url 'multifactor:fido2_begin_reg' %}")
 	.then((response) => {
 		if(response.ok)
-			return response.arrayBuffer()
+			return response.json()
 		throw new Error('Error getting registration data!')
 	})
-	.then(response => {return CBOR.decode(response)})
-	.then((options) => {
-		options.publicKey.attestation = "direct"
-		return navigator.credentials.create(options)
+	.then((json) => {
+		const options = parseCreationOptionsFromJSON(json)
+		return create(options)
 	})
-	.then((attestation) => {
+	.then((response) => {
 		return fetch("{% url 'multifactor:fido2_complete_reg' %}", {
 			method: 'POST',
-			headers: {'Content-Type': 'application/cbor'},
-			body: CBOR.encode({
-				"attestationObject": new Uint8Array(attestation.response.attestationObject),
-				"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
-			})
-		});
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(response)
+		})
 	}, (error) => {
 		let el = document.getElementById('authtype')
 		el.classList.add('manual')
