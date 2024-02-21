@@ -1,9 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.utils.module_loading import import_string
 from django.shortcuts import redirect
+from django.template.loader import get_template, render_to_string
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -66,13 +67,13 @@ class Auth(LoginRequiredMixin, TemplateView):
 
 def send_email(user, message):
     try:
-        send_mail(
-            subject='One Time Password',
-            message=message,
-            from_email=settings.SERVER_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False
-        )
+        context = {'user': user, 'message': message}
+        content = render_to_string('multifactor/fallback/email.html', context)
+
+        mail = EmailMessage(subject='One Time Password', body=content,
+                            from_email=settings.SERVER_EMAIL, to=[user.email])
+        mail.content_subtype = 'html'
+        mail.send()
         return "email"
     except Exception:
         logger.exception('Could not send email.')
