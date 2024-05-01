@@ -11,6 +11,8 @@ from django.utils.module_loading import import_string
 from django.views.generic import TemplateView, UpdateView
 
 from collections import defaultdict
+from urllib.parse import urlparse
+
 
 from .models import UserKey, DisabledFallback, KeyTypes, DOMAIN_KEYS
 from .common import render, method_url, active_factors, has_multifactor, disabled_fallbacks
@@ -130,7 +132,7 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
                 domain = factor.properties.get('domain', '')
                 if not domain:
                     continue
-                if domain != self.request.get_host():
+                if domain != urlparse(self.request.get_host()).scheme:
                     other_domains.add(domain)
                     continue
             self.available_methods[factor.key_type].append(factor)

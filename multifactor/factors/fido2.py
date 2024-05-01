@@ -14,6 +14,7 @@ from ..common import write_session, login
 from ..app_settings import mf_settings
 
 import json
+from urllib.parse import urlparse
 
 fido2.features.webauthn_json_mapping.enabled = True
 
@@ -82,7 +83,7 @@ def get_user_credentials(request):
         for key in UserKey.objects.filter(
             user=request.user,
             key_type=KeyTypes.FIDO2,
-            properties__domain=request.get_host(),
+            properties__domain=urlparse(request.get_host()).scheme,
             enabled=True,
         )
     ]
