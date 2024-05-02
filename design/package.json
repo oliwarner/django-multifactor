@@ -12,10 +12,12 @@
   "private": true,
   "dependencies": {
     "bulma": "^0.9.4",
-    "sass": "^1.68.0",
-    "vite": "^4.5.3"
+    "sass": "^1.76.0",
+    "vite": "^5.2.11"
   },
   "devDependencies": {
-    "@fullhuman/postcss-purgecss": "^5.0.0"
+    "@fullhuman/postcss-purgecss": "^6.0.0",
+    "postcss": "^8.4.38",
+    "postcss-variable-compress": "^3.0.0"
   }
 }

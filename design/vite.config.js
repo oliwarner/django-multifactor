@@ -11,6 +11,7 @@ export default defineConfig({
   },
   build: {
     outDir: '../multifactor/static/multifactor',
+    emptyOutDir: false,
     rollupOptions: {
       input: {
         multifactor: fileURLToPath(new URL('./src/multifactor.js', import.meta.url)),
