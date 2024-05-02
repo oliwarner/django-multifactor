@@ -1,6 +1,7 @@
 # Be careful about any settings you COPY from this file
 # Multiple settings are here to make things easier to test
 # They will make your site less secure.
+import os
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -11,7 +12,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # real world but it's only a temporary name, so you'll need to
 # update this.
 MULTIFACTOR = {
-    'FIDO_SERVER_ID': '',  
+    'FIDO_SERVER_ID': os.environ.get('DOMAIN', 'localhost'),
     'FALLBACKS': {
         'console': (lambda user: user,
                     'multifactor.factors.fallback.debug_print_console'),

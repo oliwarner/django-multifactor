@@ -3,4 +3,11 @@ Django<=5
 django-decorator-include
 django_extensions
 django-debug-toolbar
+
+# for local https testing
+Werkzeug
+pyOpenSSL
+setuptools
+
+
 -e ../
