@@ -43,7 +43,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">=3.7, <4.0"
-django = "> 2.2, <= 5.0"
+django = "> 2.2, <= 5.1"
 pyotp = '^2.9'
 fido2 = '1.1.2'
 

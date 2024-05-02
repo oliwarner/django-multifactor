@@ -1,5 +1,5 @@
 pip
-Django<=5
+Django<=5.1
 django-decorator-include
 django_extensions
 django-debug-toolbar
