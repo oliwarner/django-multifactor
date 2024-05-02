@@ -130,7 +130,7 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
                 domain = factor.properties.get('domain', '')
                 if not domain:
                     continue
-                if domain != self.request.get_host():
+                if domain != self.request.get_host().split(":")[0]:
                     other_domains.add(domain)
                     continue
             self.available_methods[factor.key_type].append(factor)
