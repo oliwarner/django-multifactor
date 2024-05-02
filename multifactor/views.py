@@ -135,7 +135,7 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
                     continue
             self.available_methods[factor.key_type].append(factor)
 
-        if not self.available_methods:
+        if not other_domains and not self.available_methods:
             return redirect('multifactor:add')
 
         disabled_fbs = disabled_fallbacks(self.request)
