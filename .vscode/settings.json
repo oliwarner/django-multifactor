@@ -8,6 +8,7 @@
         "multifactor",
         "passwordless",
         "TOPT",
+        "TOTP",
         "totp",
         "urlpatterns",
         "webauthn"
