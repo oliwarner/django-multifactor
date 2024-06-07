@@ -10,7 +10,7 @@ except ImportError:
 
 class KeyTypes(models.TextChoices):
     FIDO2 = 'FIDO2', "FIDO2 Security Device"
-    TOPT = 'TOTP', "TOTP Authenticator"
+    TOTP = 'TOTP', "TOTP Authenticator"
 
 
 # keys that can only be used on one domain

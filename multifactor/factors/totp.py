@@ -36,10 +36,10 @@ class Create(LoginRequiredMixin, TemplateView):
             key = UserKey.objects.create(
                 user=request.user,
                 properties={"secret_key": self.secret_key},
-                key_type=KeyTypes.TOPT
+                key_type=KeyTypes.TOTP
             )
             write_session(request, key)
-            messages.success(request, 'TOPT Authenticator added.')
+            messages.success(request, 'TOTP Authenticator added.')
             return redirect("multifactor:home")
 
         messages.error(request, 'Could not validate key, please try again.')
@@ -59,6 +59,6 @@ class Auth(LoginRequiredMixin, TemplateView):
         return super().get(request, *args, **kwargs)
 
     def verify_login(self, token):
-        for key in UserKey.objects.filter(user=self.request.user, key_type=KeyTypes.TOPT, enabled=True):
+        for key in UserKey.objects.filter(user=self.request.user, key_type=KeyTypes.TOTP, enabled=True):
             if pyotp.TOTP(key.properties["secret_key"]).verify(token, valid_window=WINDOW):
                 return key
