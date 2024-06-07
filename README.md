@@ -108,7 +108,9 @@ You can control the factors users can pick from in `settings.MULTIFACTOR`:
 
 `django-multifactor` has a fallback system that allows the user to be contacted via a number of sub-secure methods **simultaneously**. The rationale is that if somebody hacks their email account, they'll still know something is going on when they get an SMS. Providing sane options for your users is critical to security here. A poor fallback can undermine otherwise solid factors.
 
-The included fallback uses `user.email` to send an email. You can plumb in additional functions to carry the OTP message over any
+The included fallback uses `user.email` to send an email. This now sends as plain+HTML. You can send just plain by setting `settings.MULTIFACTOR.HTML_EMAIL` to `False`.
+
+You can plumb in additional functions to carry the OTP message over any
 other system you like. The function should look something like:
 
     def send_carrier_pigeon(user, message):
@@ -169,5 +171,7 @@ It adds a column to show if that user has active factors, a filter to just show 
 ## Branding
 
 If you want to use the styles and form that django-multifactor supplies, your users may think they're on another site. To help there is an empty placeholder template `multifactor/brand.html` that you can override in your project. This slots in just before the h1 title tag and has `text-align: centre` as standard.
+
+If you use HTML emails for your email fallback, you can create a `multifactor/email.html` template (accepting user, message context variables).
 
 You can use this to include your product logo, or an explanation.
