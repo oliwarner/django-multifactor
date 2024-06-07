@@ -7,7 +7,6 @@
         "loginas",
         "multifactor",
         "passwordless",
-        "TOPT",
         "TOTP",
         "totp",
         "urlpatterns",
