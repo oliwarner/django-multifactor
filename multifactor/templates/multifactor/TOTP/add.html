@@ -19,7 +19,8 @@
 	<input type="hidden" name="key" value="{{secret_key|safe}}">
 
 	<div class="field"><div class="control">
-		<input class="input is-primary has-text-centered is-large" type="text" maxlength="6" size="6"  name="answer" placeholder="e.g 123456" autocomplete="off" autofocus>
+		<input class="input is-primary has-text-centered is-large" type="text" maxlength="6" size="6"  name="answer" placeholder="e.g 123456" autocomplete="off"
+		inputmode="numeric" pattern="[0-9]{6}" autofocus>
 	</div></div>
 
 	<button type="submit" class="button is-primary is-large is-fullwidth">Verify</button>
