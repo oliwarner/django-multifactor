@@ -20,4 +20,6 @@ mf_settings['FALLBACKS'] = mf_settings.get('FALLBACKS', {
     'email': (lambda user: user.email, 'multifactor.factors.fallback.send_email'),
 })
 
+mf_settings['HTML_EMAIL'] = mf_settings.get('HTML_EMAIL', True)
+
 mf_settings['BYPASS'] = mf_settings.get('BYPASS', None)

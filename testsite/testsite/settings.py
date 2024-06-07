@@ -14,10 +14,12 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 MULTIFACTOR = {
     'FIDO_SERVER_ID': os.environ.get('DOMAIN', 'localhost'),
     'FALLBACKS': {
-        'console': (lambda user: user,
+        'debug-console': (lambda user: user,
                     'multifactor.factors.fallback.debug_print_console'),
+        'email': (lambda user: user.email, 'multifactor.factors.fallback.send_email'),
     }
 }
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SECRET_KEY = 'zng@fpiuz-n#6&cys3h&6+s-pegop#iqm!$_-86cu_pb_(*ugy'
 

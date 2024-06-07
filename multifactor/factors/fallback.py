@@ -1,17 +1,16 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.utils.module_loading import import_string
 from django.shortcuts import redirect
-from django.template.loader import get_template, render_to_string
+from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from random import randint
 import logging
 
-from ..common import render, write_session, login, disabled_fallbacks
+from ..common import write_session, login, disabled_fallbacks
 from ..app_settings import mf_settings
 
 
@@ -67,16 +66,26 @@ class Auth(LoginRequiredMixin, TemplateView):
 
 def send_email(user, message):
     try:
-        context = {'user': user, 'message': message}
-        content = render_to_string('multifactor/fallback/email.html', context)
+        msg = EmailMultiAlternatives(
+            subject='One Time Password',
+            body=message,
+            from_email=settings.SERVER_EMAIL,
+            to=[user.email]
+        )
 
-        mail = EmailMessage(subject='One Time Password', body=content,
-                            from_email=settings.SERVER_EMAIL, to=[user.email])
-        mail.content_subtype = 'html'
-        mail.send()
+        if mf_settings['HTML_EMAIL']:
+            # add a HTML version if allowed
+            html_message = render_to_string(
+                'multifactor/fallback/email.html',
+                {'user': user, 'message': message}
+            )
+            msg.attach_alternative(html_message, "text/html")
+
+        msg.send()
+
         return "email"
     except Exception:
-        logger.exception('Could not send email.')
+        logger.exception('Could not send email:', user)
         return False
 
 
