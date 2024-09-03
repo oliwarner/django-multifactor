@@ -16,7 +16,7 @@ FIDO2/WebAuthn is the big-ticket item for MFA. It allows the browser to interfac
  * **NFC devices using PCSC** (Not Tested, but as supported in fido2)
 
 # Python and Django Support
-This project targets modern stacks, officially supporting Python 3.8+ and Django 3.2+.
+This project targets modern stacks, officially supporting Python 3.8+ and Django 3.2+. We advise using the latest supported combinations where possible.
 
 | **Python/Django** | **2.2** |**3.2** | **4.0** | **4.1** | **4.2** | **5.0** |
 |-------------------|---------|--------|---------|---------|---------|---------|
