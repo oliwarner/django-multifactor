@@ -20,6 +20,7 @@ classifiers = [
     "Framework :: Django :: 4.1",
     "Framework :: Django :: 4.2",
     "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -43,9 +44,9 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">=3.7, <4.0"
-django = "> 2.2, <= 5.1"
+django = "> 2.2, < 5.2"
 pyotp = '^2.9'
-fido2 = '1.1.2'
+fido2 = ">=1.1.2,<1.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
