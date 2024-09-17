@@ -13,7 +13,7 @@
   "dependencies": {
     "bulma": "^0.9.4",
     "sass": "^1.76.0",
-    "vite": "^5.2.11"
+    "vite": "^5.2.14"
   },
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^6.0.0",
