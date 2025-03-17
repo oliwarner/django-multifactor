@@ -8,12 +8,13 @@ import pyotp
 from ..models import UserKey, KeyTypes
 from ..common import write_session, login
 from ..app_settings import mf_settings
+from ..mixins import RequireMultiAuthMixin
 
 
 WINDOW = 60
 
 
-class Create(LoginRequiredMixin, TemplateView):
+class Create(RequireMultiAuthMixin, TemplateView):
     template_name = "multifactor/TOTP/add.html"
 
     def dispatch(self, request, *args, **kwargs):
