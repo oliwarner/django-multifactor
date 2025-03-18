@@ -17,10 +17,8 @@ urlpatterns = [
 
     path('fido2/new/', TemplateView.as_view(template_name='multifactor/FIDO2/add.html'), name="fido2_start"),
     path('fido2/auth/', TemplateView.as_view(template_name='multifactor/FIDO2/check.html'), name="fido2_auth"),
-    path('fido2/begin-auth/', fido2.AuthenticateStart.as_view(), name="fido2_begin_auth"),
-    path('fido2/complete-auth/', fido2.AuthenticateComplete.as_view(), name="fido2_complete_auth"),
-    path('fido2/begin-reg/', fido2.Register.as_view(), name="fido2_begin_reg"),
-    path('fido2/complete-reg/', fido2.Register.as_view(), name="fido2_complete_reg"),
+    path('fido2/register/', fido2.Register.as_view(), name="fido2_register"),
+    path('fido2/authenticate/', fido2.Authenticate.as_view(), name="fido2_authenticate"),
 
     path('totp/new/', totp.Create.as_view(), name="totp_start"),
     path('totp/auth/', totp.Auth.as_view(), name="totp_auth"),

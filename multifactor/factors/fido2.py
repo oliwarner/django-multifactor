@@ -90,8 +90,8 @@ class Register(RequireMultiAuthMixin, FidoClass):
             })
 
 
-class AuthenticateStart(LoginRequiredMixin, FidoClass):
-    def post(self, request, *args, **kwargs):
+class Authenticate(LoginRequiredMixin, FidoClass):
+    def get(self, request, *args, **kwargs):
         auth_data, state = self.server.authenticate_begin(
             credentials=self.get_user_credentials(),
             user_verification="discouraged",
@@ -99,8 +99,6 @@ class AuthenticateStart(LoginRequiredMixin, FidoClass):
         request.session['fido_state'] = state
         return JsonResponse({**auth_data})
 
-
-class AuthenticateComplete(LoginRequiredMixin, FidoClass):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
 

@@ -8,7 +8,7 @@ import {
 } from '{% static 'multifactor/js/webauthn-json.browser-ponyfill.js'%}'
 
 function authenticate() {
-	fetch("{% url 'multifactor:fido2_begin_auth' %}", {method: 'POST'})
+	fetch("{% url 'multifactor:fido2_authenticate' %}")
 	.then((response) => {
 		if(response.ok)
 			return response.json()
@@ -19,7 +19,7 @@ function authenticate() {
 		return get(options)
 	})
 	.then((attest) => {
-		return fetch("{% url 'multifactor:fido2_complete_auth' %}", {
+		return fetch("{% url 'multifactor:fido2_authenticate' %}", {
 			method: 'POST',
 			body: JSON.stringify(attest),
 		})
