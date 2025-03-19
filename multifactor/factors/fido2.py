@@ -13,7 +13,7 @@ import logging
 from ..models import UserKey, KeyTypes
 from ..common import write_session, login
 from ..app_settings import mf_settings
-from ..mixins import RequireMultiAuthMixin
+from ..mixins import PreferMultiAuthMixin
 
 import json
 
@@ -48,7 +48,7 @@ class FidoClass(View):
         ]
 
 
-class Register(RequireMultiAuthMixin, FidoClass):
+class Register(PreferMultiAuthMixin, FidoClass):
     def get(self, request, *args, **kwargs):
         registration_data, state = self.server.register_begin(
             user=PublicKeyCredentialUserEntity(
