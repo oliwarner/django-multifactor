@@ -42,7 +42,7 @@ class FidoClass(View):
             for key in UserKey.objects.filter(
                 user=self.request.user,
                 key_type=str(KeyTypes.FIDO2),
-                properties__domain=request.get_host().split(":")[0],
+                properties__domain=self.request.get_host().split(":")[0],
                 enabled=True,
             )
         ]
