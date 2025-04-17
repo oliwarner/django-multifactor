@@ -18,14 +18,14 @@ FIDO2/WebAuthn is the big-ticket item for MFA. It allows the browser to interfac
 # Python and Django Support
 This project targets modern stacks, officially supporting Python 3.8+ and Django 3.2+. Please refer to the [Django documentation](https://docs.djangoproject.com/en/dev/faq/install/) for more
 
-| **Python/Django** | **2.2** |**3.2** | **4.0** | **4.1** | **4.2** | **5.0** | **5.1** |
-|-------------------|---------|--------|---------|---------|---------|---------|---------|
-| 3.8               | Y       | Y      | Y       | Y       | N/A     | N/A     | N/A     |
-| 3.9               | Y       | Y      | Y       | Y       | N/A     | N/A     | N/A     |
-| 3.10              | N       | Y      | Y       | Y       | N/A     | Y       | Y       |
-| 3.11              | N       | N      | N       | Y       | Y       | Y       | Y       |
-| 3.12              | N       | N      | N       | N       | Y       | Y       | Y       |
-| 3.13              | N       | N      | N       | N       | N       | N       | Y       |
+| **Python/Django** | **2.2** |**3.2** | **4.0** | **4.1** | **4.2** | **5.0** | **5.1** | **5.2** |
+|-------------------|---------|--------|---------|---------|---------|---------|---------|---------|
+| 3.8               | Y       | Y      | Y       | Y       | N/A     | N/A     | N/A     | N/A     |
+| 3.9               | Y       | Y      | Y       | Y       | N/A     | N/A     | N/A     | N/A     |
+| 3.10              | N       | Y      | Y       | Y       | N/A     | Y       | Y       | Y       |
+| 3.11              | N       | N      | N       | Y       | Y       | Y       | Y       | Y       |
+| 3.12              | N       | N      | N       | N       | Y       | Y       | Y       | Y       |
+| 3.13              | N       | N      | N       | N       | N       | N       | Y       | Y       |
 
 ## Installation:
 

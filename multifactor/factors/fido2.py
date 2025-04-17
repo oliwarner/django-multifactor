@@ -41,7 +41,7 @@ class FidoClass(View):
             AttestedCredentialData(websafe_decode(key.properties["device"]))
             for key in UserKey.objects.filter(
                 user=self.request.user,
-                key_type=KeyTypes.FIDO2,
+                key_type=str(KeyTypes.FIDO2),
                 properties__domain=self.request.get_host(),
                 enabled=True,
             )
@@ -76,7 +76,7 @@ class Register(PreferMultiAuthMixin, FidoClass):
                     "type": data['type'],
                     "domain": self.server.rp.id,
                 },
-                key_type=KeyTypes.FIDO2,
+                key_type=str(KeyTypes.FIDO2),
             )
             write_session(request, key)
             messages.success(request, 'FIDO2 Token added!')
@@ -110,7 +110,7 @@ class Authenticate(LoginRequiredMixin, FidoClass):
 
         keys = UserKey.objects.filter(
             user=request.user,
-            key_type=KeyTypes.FIDO2,
+            key_type=str(KeyTypes.FIDO2),
             enabled=True,
         )
 
