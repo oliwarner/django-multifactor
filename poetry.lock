@@ -1022,7 +1022,7 @@ files = [
 ]
 
 [package.dependencies]
-cryptography = ">=2.6,<35 || >35,<46"
+cryptography = ">=2.6,<35 || >35,<45"
 
 [package.extras]
 pcsc = ["pyscard (>=1.9,<3)"]
