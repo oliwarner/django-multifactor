@@ -1,3 +1,6 @@
+from importlib.metadata import version
+from packaging.version import Version
+
 from django.http import JsonResponse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
@@ -17,7 +20,8 @@ from ..mixins import PreferMultiAuthMixin
 
 import json
 
-fido2.features.webauthn_json_mapping.enabled = True
+if Version(version("fido2")) < Version("2.0.0"): # 2.0.0+ no longer requies this
+    fido2.features.webauthn_json_mapping.enabled = True
 
 logger = logging.getLogger(__name__)
 
