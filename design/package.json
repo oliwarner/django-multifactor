@@ -16,7 +16,7 @@
     "vite": "^6.4.1"
   },
   "devDependencies": {
-    "@fullhuman/postcss-purgecss": "^6.0.0",
+    "@fullhuman/postcss-purgecss": "^7.0.2",
     "postcss": "^8.4.38",
     "postcss-variable-compress": "^3.0.0"
   }
