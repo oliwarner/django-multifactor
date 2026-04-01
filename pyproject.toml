@@ -69,6 +69,13 @@ branch = true
 parallel = true
 source = ["multifactor"]
 
+[tool.coverage.paths]
+source = [
+    "multifactor",
+    ".tox/*/lib/python*/site-packages/multifactor",
+    ".tox/*/site-packages/multifactor",
+]
+
 [tool.coverage.report]
 show_missing = true
 
