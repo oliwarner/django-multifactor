@@ -32,6 +32,7 @@ class FallbackTests(TestCase):
     def test_post_with_matching_otp_logs_in(self):
         session = self.client.session
         session[SESSION_KEY] = "123456"
+        session[SESSION_KEY_SUCCEEDED] = "email"
         session.save()
 
         with patch("multifactor.factors.fallback.write_session") as write_session, \
@@ -42,6 +43,18 @@ class FallbackTests(TestCase):
         self.assertEqual(response.status_code, 200)
         write_session.assert_called_once()
         login.assert_called_once()
+
+    def test_post_with_bad_otp_shows_error(self):
+        session = self.client.session
+        session[SESSION_KEY] = "123456"
+        session[SESSION_KEY_SUCCEEDED] = "email"
+        session.save()
+
+        with patch("multifactor.factors.fallback.messages.error") as msg_error:
+            response = self.client.post("/admin/multifactor/fallback/auth/", {"otp": "000000"})
+
+        self.assertEqual(response.status_code, 200)
+        msg_error.assert_called_once()
 
     def test_disabled_fallback_round_trip(self):
         DisabledFallback.objects.create(user=self.user, fallback="email")

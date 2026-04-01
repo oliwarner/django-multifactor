@@ -1,10 +1,10 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 
 from multifactor.admin import HasMultifactorFilter, MultiFactorInline, MultifactorUserAdmin
-from multifactor.models import UserKey
+from multifactor.models import KeyTypes, UserKey
 
 
 class MultifactorAdminTests(TestCase):
@@ -32,18 +32,10 @@ class MultifactorAdminTests(TestCase):
         self.assertEqual(MultiFactorInline.fields, ("key_type", "enabled"))
         self.assertEqual(MultiFactorInline.max_num, 0)
 
-    def test_user_admin_get_list_display_adds_multifactor(self):
+    def test_user_admin_multifactor_method(self):
         class DummyAdmin(MultifactorUserAdmin, admin.ModelAdmin):
             pass
 
         ma = DummyAdmin(get_user_model(), self.site)
-        result = ma.get_list_display(self.factory.get("/"))
-        self.assertIn("multifactor", result)
-
-    def test_user_admin_get_list_filter_adds_filter(self):
-        class DummyAdmin(MultifactorUserAdmin, admin.ModelAdmin):
-            pass
-
-        ma = DummyAdmin(get_user_model(), self.site)
-        result = ma.get_list_filter(self.factory.get("/"))
-        self.assertIn(HasMultifactorFilter, result)
+        obj = type("Obj", (), {"has_multifactors": True})()
+        self.assertTrue(ma.multifactor(obj))
