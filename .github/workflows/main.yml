@@ -71,12 +71,14 @@ jobs:
         run: tox -e ${{ matrix.tox-env }}
 
       - name: Upload coverage data
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-data-${{ matrix.tox-env }}
-          path: .coverage.*
+          path: |
+            .coverage
+            .coverage.*
           include-hidden-files: true
-          if-no-files-found: error
 
   coverage:
     name: Coverage
