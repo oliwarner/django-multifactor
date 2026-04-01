@@ -48,11 +48,10 @@ fido2 = [
 [tool.poetry.dev-dependencies]
 pytest = ">=7,<10"
 pytest-cov = ">4,<8"
-#dephell = "*"
-#
-#[tool.dephell.main]
-#from = {format = "poetry", path = "pyproject.toml"}
-#to = {format = "setuppy", path = "setup.py"}
+
+[tool.pytest.ini_options]
+python_files = ["test_*.py", "*_tests.py", "tests.py"]
+addopts = "--cov=multifactor --cov-report=term-missing --cov-report=xml"
 
 [tool.poetry-dynamic-versioning]
 enable = true
