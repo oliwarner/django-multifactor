@@ -20,64 +20,82 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
-        django-version: ["5.2", "6.0"]
-        exclude:
-          - python-version: "3.10"
-            django-version: "6.0"
-          - python-version: "3.11"
-            django-version: "6.0"
+        include:
+          - name: Python 3.10 / Django 5.2
+            python-version: "3.10"
+            tox-env: py310-django52
+
+          - name: Python 3.11 / Django 5.2
+            python-version: "3.11"
+            tox-env: py311-django52
+
+          - name: Python 3.12 / Django 5.2
+            python-version: "3.12"
+            tox-env: py312-django52
+
+          - name: Python 3.12 / Django 6.0
+            python-version: "3.12"
+            tox-env: py312-django60
+
+          - name: Python 3.13 / Django 5.2
+            python-version: "3.13"
+            tox-env: py313-django52
+
+          - name: Python 3.13 / Django 6.0
+            python-version: "3.13"
+            tox-env: py313-django60
+
+          - name: Python 3.14 / Django 5.2
+            python-version: "3.14"
+            tox-env: py314-django52
+
+          - name: Python 3.14 / Django 6.0
+            python-version: "3.14"
+            tox-env: py314-django60
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          allow-prereleases: true
 
-      - name: Upgrade packaging tools on Python 3.15
-        if: matrix.python-version == '3.15'
-        run: python -m pip install --upgrade pip setuptools wheel
+      - name: Install tox
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v2
+      - name: Run tox target
+        run: tox -e ${{ matrix.tox-env }}
+
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
         with:
-          enable-cache: true
-
-      - name: Install dependencies
-        run: uv pip install --system tox tox-uv
-
-
-    - name: Run tox target
-      continue-on-error: ${{ matrix.allow-failure == true }}
-      run: tox run -f ${{ matrix.tox-env }}
-
-    - name: Upload coverage data
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-data-${{ matrix.tox-env }}
-        path: '${{ github.workspace }}/.coverage.*'
-        include-hidden-files: true
-        if-no-files-found: error
+          name: coverage-data-${{ matrix.tox-env }}
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: error
 
   coverage:
     name: Coverage
     runs-on: ubuntu-24.04
-    needs: tests
+    needs: test
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v1
-
-      - name: Install dependencies
-        run: uv pip install --system coverage[toml]
+      - name: Install coverage
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install coverage[toml]
 
       - name: Download data
         uses: actions/download-artifact@v4
@@ -86,7 +104,7 @@ jobs:
           pattern: coverage-data-*
           merge-multiple: true
 
-      - name: Combine coverage and fail if it's <100%
+      - name: Combine coverage and report
         run: |
           python -m coverage combine
           python -m coverage html --skip-covered --skip-empty
@@ -100,4 +118,3 @@ jobs:
         with:
           name: html-report
           path: htmlcov
-
