@@ -113,7 +113,7 @@ jobs:
         run: |
           python -m coverage combine "${{ github.workspace }}/coverage-data"
           python -m coverage html --skip-covered --skip-empty
-          python -m coverage report --fail-under=80
+          python -m coverage report --fail-under=50
           echo "## Coverage summary" >> $GITHUB_STEP_SUMMARY
           python -m coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
 

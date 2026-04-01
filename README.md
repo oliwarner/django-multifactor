@@ -176,3 +176,7 @@ If you want to use the styles and form that django-multifactor supplies, your us
 If you use HTML emails for your email fallback, you can create a `multifactor/email.html` template (accepting user, message context variables).
 
 You can use this to include your product logo, or an explanation.
+
+# Testing
+This project uses [tox](https://tox.readthedocs.io/en/latest/) for testing. Install tox via pip and run `tox` to run 
+the tests.
