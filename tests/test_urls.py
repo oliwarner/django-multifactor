@@ -6,16 +6,16 @@ from multifactor import views
 
 class UrlsTests(SimpleTestCase):
     def test_home_url_resolves(self):
-        match = resolve("/multifactor/")
+        match = resolve("/admin/multifactor/")
         self.assertEqual(match.func.view_class, views.List)
 
     def test_help_url_resolves(self):
-        match = resolve("/multifactor/help/")
+        match = resolve("/admin/multifactor/help/")
         self.assertEqual(match.func.view_class, views.Help)
 
     def test_add_url_resolves(self):
-        match = resolve("/multifactor/add/")
+        match = resolve("/admin/multifactor/add/")
         self.assertEqual(match.func.view_class, views.Add)
 
     def test_reverse_home(self):
-        self.assertEqual(reverse("multifactor:home"), "/multifactor/")
+        self.assertEqual(reverse("multifactor:home"), "/admin/multifactor/")

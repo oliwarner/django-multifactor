@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 from django.test import TestCase
 
 from multifactor.factors.fallback import SESSION_KEY, SESSION_KEY_SUCCEEDED
@@ -22,7 +23,7 @@ class FallbackTests(TestCase):
         transport = lambda user, message: "email"
         import_string.return_value = transport
 
-        response = self.client.get("/multifactor/fallback/auth/")
+        response = self.client.get("/admin/multifactor/fallback/auth/")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(SESSION_KEY, self.client.session)
@@ -34,8 +35,9 @@ class FallbackTests(TestCase):
         session.save()
 
         with patch("multifactor.factors.fallback.write_session") as write_session, \
-             patch("multifactor.factors.fallback.login") as login:
-            response = self.client.post("/multifactor/fallback/auth/", {"otp": "123456"})
+                patch("multifactor.factors.fallback.login") as login:
+            login.return_value = HttpResponse()
+            response = self.client.post("/admin/multifactor/fallback/auth/", {"otp": "123456"})
 
         self.assertEqual(response.status_code, 200)
         write_session.assert_called_once()

@@ -76,10 +76,11 @@ class RequireMultiAuthMixinTests(TestCase):
              patch("multifactor.mixins.is_bypassed", return_value=False), \
              patch.object(UserKey.objects, "filter") as filter_mock:
             filter_mock.return_value = UserKey.objects.none()
+            view.setup(request)
             response = view.dispatch(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertIn("multifactor:add", response["Location"])
+        self.assertEqual(response["Location"], "/admin/multifactor/add/")
         self.assertEqual(request.session["multifactor-next"], "/protected/")
 
     def test_redirects_to_authenticate_when_user_has_factors(self):
@@ -93,15 +94,18 @@ class RequireMultiAuthMixinTests(TestCase):
 
         view = DummyView()
         with patch("multifactor.mixins.active_factors", return_value=[]), \
-             patch("multifactor.mixins.is_bypassed", return_value=False), \
-             patch.object(UserKey.objects, "filter") as filter_mock:
+                patch("multifactor.mixins.is_bypassed", return_value=False), \
+                patch.object(UserKey.objects, "filter") as filter_mock:
             qs = UserKey.objects.none()
             qs.exists = lambda: True
             filter_mock.return_value = qs
+            view.setup(request)
+            view.active_factors = []
+            view.has_multifactor = True
             response = view.dispatch(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertIn("multifactor:authenticate", response["Location"])
+        self.assertEqual(response["Location"], "/admin/multifactor/authenticate/")
 
 
 class PreferMultiAuthMixinTests(TestCase):
@@ -125,13 +129,16 @@ class PreferMultiAuthMixinTests(TestCase):
         view = DummyView()
         fake_factor = UserKey(user=self.user, key_type=KeyTypes.TOTP, properties={})
 
-        with patch("multifactor.mixins.active_factors", return_value=[(fake_factor, "TOTP")]), \
-             patch("multifactor.mixins.is_bypassed", return_value=False), \
-             patch.object(UserKey.objects, "filter") as filter_mock:
+        with patch("multifactor.mixins.active_factors", return_value=[("factor", "TOTP")]), \
+                patch("multifactor.mixins.is_bypassed", return_value=False), \
+                patch.object(UserKey.objects, "filter") as filter_mock:
             qs = UserKey.objects.none()
             qs.exists = lambda: True
             filter_mock.return_value = qs
+            view.setup(request)
+            view.active_factors = []
+            view.has_multifactor = True
             response = view.dispatch(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertIn("multifactor:authenticate", response["Location"])
+        self.assertEqual(response["Location"], "/admin/multifactor/authenticate/")

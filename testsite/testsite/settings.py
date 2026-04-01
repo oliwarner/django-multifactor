@@ -44,12 +44,12 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'testsite.disable_csrf.DisableCSRFMiddleware',  # disables CSRF globally
+    'testsite.testsite.disable_csrf.DisableCSRFMiddleware',  # disables CSRF globally
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-ROOT_URLCONF = 'testsite.urls'
+ROOT_URLCONF = 'testsite.testsite.urls'
 LOGIN_URL = 'admin:login'
 
 TEMPLATES = [

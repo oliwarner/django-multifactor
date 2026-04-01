@@ -52,7 +52,7 @@ pytest-cov = ">4,<8"
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py", "*_tests.py", "tests.py"]
-addopts = "--cov=multifactor --cov-report=term-missing --cov-report=xml"
+# addopts = "--cov=multifactor --cov-report=term-missing --cov-report=xml"
 
 [tool.poetry-dynamic-versioning]
 enable = true

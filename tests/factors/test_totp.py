@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -58,8 +59,9 @@ class TOTPTests(TestCase):
         )
 
         with patch("multifactor.factors.totp.pyotp.TOTP") as totp_cls, \
-             patch("multifactor.factors.totp.write_session") as write_session, \
-             patch("multifactor.factors.totp.login") as login:
+                patch("multifactor.factors.totp.write_session") as write_session, \
+                patch("multifactor.factors.totp.login") as login:
+            login.return_value = HttpResponse()
             totp = MagicMock()
             totp.verify.return_value = True
             totp_cls.return_value = totp

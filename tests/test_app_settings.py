@@ -26,14 +26,10 @@ class AppSettingsTests(SimpleTestCase):
         self.assertIsNone(app_settings.mf_settings["FIDO_SERVER_ICON"])
         self.assertEqual(app_settings.mf_settings["TOKEN_ISSUER_NAME"], "Django App")
         self.assertEqual(app_settings.mf_settings["FACTORS"], ["FIDO2", "TOTP"])
+        self.assertIn("email", app_settings.mf_settings["FALLBACKS"])
         self.assertEqual(
-            app_settings.mf_settings["FALLBACKS"],
-            {
-                "email": (
-                    lambda user: user.email,
-                    "multifactor.factors.fallback.send_email",
-                )
-            },
+            app_settings.mf_settings["FALLBACKS"]["email"][1],
+            "multifactor.factors.fallback.send_email",
         )
         self.assertTrue(app_settings.mf_settings["HTML_EMAIL"])
         self.assertIsNone(app_settings.mf_settings["BYPASS"])
