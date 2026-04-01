@@ -63,10 +63,10 @@ style = "pep440"
 name = "pypi-public"
 url = "https://pypi.org/simple/"
 
-# NEW
 [tool.coverage.run]
 branch = true
 parallel = true
+relative_files = true
 source = ["multifactor"]
 
 [tool.coverage.paths]
