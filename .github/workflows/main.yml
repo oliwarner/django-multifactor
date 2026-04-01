@@ -1,4 +1,4 @@
-name: tests
+name: CI
 
 on:
   push:
@@ -8,9 +8,15 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+
     strategy:
       fail-fast: false
       matrix:
@@ -26,23 +32,72 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
 
-      - name: Install tox
-        run: python -m pip install --upgrade pip tox
+      - name: Upgrade packaging tools on Python 3.15
+        if: matrix.python-version == '3.15'
+        run: python -m pip install --upgrade pip setuptools wheel
 
-      - name: Run tests
-        env:
-          TOX_ENV: py${{ matrix.python-version }}-django${{ matrix.django-version }}
-        run: tox -e "${TOX_ENV}"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
 
-      - name: Upload coverage
-        if: always()
+      - name: Install dependencies
+        run: uv pip install --system tox tox-uv
+
+
+    - name: Run tox target
+      continue-on-error: ${{ matrix.allow-failure == true }}
+      run: tox run -f ${{ matrix.tox-env }}
+
+    - name: Upload coverage data
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-data-${{ matrix.tox-env }}
+        path: '${{ github.workspace }}/.coverage.*'
+        include-hidden-files: true
+        if-no-files-found: error
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-24.04
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v1
+
+      - name: Install dependencies
+        run: uv pip install --system coverage[toml]
+
+      - name: Download data
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ github.workspace }}
+          pattern: coverage-data-*
+          merge-multiple: true
+
+      - name: Combine coverage and fail if it's <100%
+        run: |
+          python -m coverage combine
+          python -m coverage html --skip-covered --skip-empty
+          python -m coverage report --fail-under=80
+          echo "## Coverage summary" >> $GITHUB_STEP_SUMMARY
+          python -m coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload HTML report
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-${{ matrix.python-version }}-django-${{ matrix.django-version }}
-          path: coverage.xml
-  
+          name: html-report
+          path: htmlcov
+
