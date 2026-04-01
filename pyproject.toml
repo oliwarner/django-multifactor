@@ -62,6 +62,15 @@ style = "pep440"
 name = "pypi-public"
 url = "https://pypi.org/simple/"
 
+# NEW
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["multifactor"]
+
+[tool.coverage.report]
+show_missing = true
+
 [build-system]
 requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
