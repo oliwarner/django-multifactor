@@ -1,8 +1,10 @@
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.http import HttpResponse
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, TestCase
+from django.utils import timezone
 
 from multifactor.common import (
     active_factors,
@@ -30,9 +32,10 @@ class CommonTests(TestCase):
         request = self.factory.get(path)
         request.user = self.user
         request.session = {}
+        request._messages = FallbackStorage(request)
         return request
 
-    @override_settings(MULTIFACTOR={"RECHECK_MIN": 10, "RECHECK_MAX": 10})
+    @patch("multifactor.common.mf_settings", {"RECHECK_MIN": 10, "RECHECK_MAX": 10})
     @patch("multifactor.common.random.randint", return_value=10)
     @patch("multifactor.common.timezone.now")
     def test_next_check_uses_recheck_window(self, now, randint):
@@ -97,7 +100,7 @@ class CommonTests(TestCase):
         ])
         self.assertEqual(request.session["multifactor"], factors)
 
-    @override_settings(MULTIFACTOR={"SHOW_LOGIN_MESSAGE": True, "LOGIN_MESSAGE": 'Logged in via {}'})
+    @patch("multifactor.common.mf_settings", {"SHOW_LOGIN_MESSAGE": True, "LOGIN_MESSAGE": "Logged in via {}"})
     def test_login_with_next_redirects_and_pops_session(self):
         request = self._request()
         request.session["multifactor-next"] = "/target/"
@@ -111,7 +114,7 @@ class CommonTests(TestCase):
         self.assertNotIn("multifactor-next", request.session)
         msg_info.assert_called_once()
 
-    @override_settings(MULTIFACTOR={"SHOW_LOGIN_MESSAGE": False, "LOGIN_CALLBACK": False})
+    @patch("multifactor.common.mf_settings", {"SHOW_LOGIN_MESSAGE": False, "LOGIN_CALLBACK": False})
     def test_login_without_next_redirects_to_login_url(self):
         request = self._request()
 
@@ -121,7 +124,7 @@ class CommonTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/login/")
 
-    @override_settings(MULTIFACTOR={"LOGIN_CALLBACK": "path.to.callback"})
+    @patch("multifactor.common.mf_settings", {"LOGIN_CALLBACK": "path.to.callback", "SHOW_LOGIN_MESSAGE": False})
     def test_login_uses_callback_when_configured(self):
         request = self._request()
         request.session["base_username"] = "alice"
@@ -133,7 +136,7 @@ class CommonTests(TestCase):
         callback.assert_called_once_with(request, username="alice")
         self.assertEqual(response.status_code, 200)
 
-    @override_settings(MULTIFACTOR={"BYPASS": "path.to.bypass"})
+    @patch("multifactor.common.mf_settings", {"BYPASS": "path.to.bypass"})
     def test_is_bypassed_uses_callback(self):
         request = self._request()
 
@@ -142,39 +145,44 @@ class CommonTests(TestCase):
 
         imp.assert_called_once_with("path.to.bypass")
 
-    @override_settings(MULTIFACTOR={"BYPASS": None})
+    @patch("multifactor.common.mf_settings", {"BYPASS": None})
     def test_is_bypassed_returns_false_when_unconfigured(self):
         request = self._request()
         self.assertFalse(is_bypassed(request))
 
-    @override_settings(MULTIFACTOR={"RECHECK": True, "RECHECK_MIN": 60, "RECHECK_MAX": 60})
-    @patch("multifactor.common.next_check", return_value=999)
-    @patch("multifactor.common.timezone.now")
-    def test_write_session_saves_key_and_updates_last_used(self, now, next_check_mock):
+    def test_write_session_saves_key_and_updates_last_used(self):
         request = self._request()
         key = UserKey.objects.create(
             user=self.user,
             key_type=KeyTypes.TOTP,
             properties={},
         )
-        now.return_value.timestamp.return_value = 123
-        now.return_value = now.return_value
 
-        write_session(request, key)
+        fake_now = timezone.now()
+
+        with patch("multifactor.common.mf_settings", {"RECHECK": True}), \
+             patch("multifactor.common.next_check", return_value=999), \
+             patch("multifactor.common.timezone.now") as now:
+            now.return_value = fake_now
+
+            write_session(request, key)
 
         self.assertEqual(request.session["multifactor"][0][0], "TOTP")
         self.assertEqual(request.session["multifactor"][0][1], key.id)
-        self.assertEqual(request.session["multifactor"][0][2], 123)
+        self.assertEqual(request.session["multifactor"][0][2], fake_now.timestamp())
         self.assertEqual(request.session["multifactor"][0][3], 999)
         key.refresh_from_db()
         self.assertIsNotNone(key.last_used)
 
-    @override_settings(MULTIFACTOR={"RECHECK": False})
-    @patch("multifactor.common.timezone.now")
-    def test_write_session_without_key_stores_false_recheck(self, now):
+    def test_write_session_without_key_stores_false_recheck(self):
         request = self._request()
-        now.return_value.timestamp.return_value = 123
 
-        write_session(request, None)
+        with patch("multifactor.common.mf_settings", {"RECHECK": False}), \
+             patch("multifactor.common.timezone.now") as now:
+            fake_now = MagicMock()
+            fake_now.timestamp.return_value = 123
+            now.return_value = fake_now
+
+            write_session(request, None)
 
         self.assertEqual(request.session["multifactor"][0], (None, None, 123, False))

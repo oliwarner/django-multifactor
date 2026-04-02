@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
-from django.urls import reverse
 from unittest.mock import patch
 
 from multifactor.models import KeyTypes, UserKey
@@ -31,6 +30,7 @@ class ViewTests(TestCase):
         view.object = None
         view.has_multifactor = False
         view.active_factors = []
+        view.factors = UserKey.objects.none()
 
         context = view.get_context_data()
 
@@ -40,20 +40,16 @@ class ViewTests(TestCase):
     def test_help_template_name(self):
         self.assertEqual(Help.template_name, "multifactor/help.html")
 
-    @patch("multifactor.views.active_factors", return_value=[])
-    @patch("multifactor.views.has_multifactor", return_value=True)
-    def test_authenticate_redirects_to_add_when_no_available_methods(self, has_multifactor, active_factors):
+    def test_authenticate_redirects_to_add_when_no_available_methods(self):
         request = self._request("/admin/multifactor/authenticate/")
         request.user = self.user
 
-        UserKey.objects.create(
-            user=self.user,
-            key_type=KeyTypes.FIDO2,
-            enabled=True,
-            properties={"domain": "other.example.com"},
-        )
+        view = Authenticate()
+        view.request = request
+        view.object = None
+        view.setup(request)
 
-        response = Authenticate.as_view()(request)
+        response = view.get(request)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/admin/multifactor/add/")
 

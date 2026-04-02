@@ -1,21 +1,16 @@
-from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.utils.html import format_html
-from django.utils.module_loading import import_string
+from django.utils.html import format_html, format_html_join
 from django.views.generic import TemplateView, UpdateView
 
 from collections import defaultdict
 
 from .models import UserKey, DisabledFallback, KeyTypes, DOMAIN_KEYS
-from .common import render, method_url, active_factors, has_multifactor, disabled_fallbacks
+from .common import method_url, disabled_fallbacks
 from .app_settings import mf_settings
-from .decorators import multifactor_protected
 from .mixins import RequireMultiAuthMixin, PreferMultiAuthMixin, MultiFactorMixin
 
 
@@ -150,7 +145,11 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
             return redirect(method_url(list(self.available_methods)[0]))
 
         if other_domains:
-            domains = format_html(', '.join(['<a href="https://{0}{1}">{0}</a>'.format(d, self.request.path) for d in other_domains]))
+            domains = format_html_join(
+                ', ',
+                '<a href="https://{0}{1}">{0}</a>',
+                [(d, self.request.path) for d in other_domains],
+            )
             messages.info(self.request, format_html("You also have active domain-locked factors available on: {}", domains))
 
         return super().get(request, *args, **kwargs)

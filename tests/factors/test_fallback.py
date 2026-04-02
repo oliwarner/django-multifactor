@@ -61,6 +61,7 @@ class FallbackTests(TestCase):
         self.assertEqual(DisabledFallback.objects.filter(user=self.user).count(), 1)
 
     @override_settings(SERVER_EMAIL="noreply@example.com", MULTIFACTOR={"HTML_EMAIL": False})
+    @patch("multifactor.factors.fallback.mf_settings", {"HTML_EMAIL": False})
     @patch("multifactor.factors.fallback.EmailMultiAlternatives")
     def test_send_email_plain_text_only(self, email_cls):
         email = email_cls.return_value
@@ -71,9 +72,11 @@ class FallbackTests(TestCase):
         self.assertEqual(result, "email")
         email.attach_alternative.assert_not_called()
 
+    @patch("multifactor.factors.fallback.logger.exception")
     @patch("multifactor.factors.fallback.EmailMultiAlternatives", side_effect=Exception("boom"))
-    def test_send_email_handles_errors(self, email_cls):
+    def test_send_email_handles_errors(self, email_cls, logger_exception):
         self.assertFalse(send_email(self.user, "Hello"))
+        logger_exception.assert_called_once()
 
     def test_debug_print_console_returns_marker(self):
         self.assertEqual(debug_print_console(self.user, "Hello"), "command line")
@@ -83,12 +86,13 @@ class FallbackTests(TestCase):
         request.user = self.user
         request.session = {}
 
-        view = Auth.as_view()
+        view = Auth()
+        view.setup(request)
 
         with patch("multifactor.factors.fallback.disabled_fallbacks", return_value=[]), \
              patch("multifactor.factors.fallback.import_string", side_effect=Exception("bad transport")), \
              patch("multifactor.factors.fallback.messages.error") as msg_error:
-            response = view(request)
+            response = view.get(request)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/admin/multifactor/")
