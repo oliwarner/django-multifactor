@@ -26,6 +26,7 @@ Please refer to the [Django documentation](https://docs.djangoproject.com/en/dev
 | 3.12               | Y          | Y      |
 | 3.13               | Y          | Y      |
 | 3.14               | Y (5.2.8+) | Y      |
+| 3.15               | Y (5.2.8+) | Y      |
 
 If you are using an older version of Django or Python please consider upgrading your project, alternatively you can use
 Version 0.8.4 which the supports Django 2.2 - 5.2, with Python 3.8 - 3.13

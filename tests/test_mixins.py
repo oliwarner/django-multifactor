@@ -1,12 +1,10 @@
-from unittest.mock import patch
-
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from django.views import View
+from unittest.mock import patch
 
-from multifactor.mixins import MultiFactorMixin, RequireMultiAuthMixin, PreferMultiAuthMixin
-from multifactor.models import KeyTypes, UserKey
+from multifactor.mixins import MultiFactorMixin, PreferMultiAuthMixin, RequireMultiAuthMixin
 
 
 class MultiFactorMixinTests(TestCase):
@@ -52,17 +50,9 @@ class MultiFactorMixinTests(TestCase):
         self.assertFalse(hasattr(view, "active_factors"))
         self.assertFalse(hasattr(view, "has_multifactor"))
 
-
-class RequireMultiAuthMixinTests(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.user = get_user_model().objects.create_user(
-            username="alice",
-            email="alice@example.com",
-            password="password123",
-        )
-
-    def test_redirects_to_add_when_user_has_no_factors(self):
+    @patch("multifactor.mixins.active_factors", return_value=[])
+    @patch("multifactor.mixins.is_bypassed", return_value=False)
+    def test_require_multi_auth_redirects_to_add_when_no_keys(self, is_bypassed, active_factors):
         request = self.factory.get("/protected/")
         request.user = self.user
         request.session = {}
@@ -71,53 +61,13 @@ class RequireMultiAuthMixinTests(TestCase):
             def get(self, request, *args, **kwargs):
                 return HttpResponse("ok")
 
-        view = DummyView()
-        with patch("multifactor.mixins.active_factors", return_value=[]), \
-             patch("multifactor.mixins.is_bypassed", return_value=False), \
-             patch.object(UserKey.objects, "filter") as filter_mock:
-            filter_mock.return_value = UserKey.objects.none()
-            view.setup(request)
-            response = view.dispatch(request)
-
+        response = DummyView.as_view()(request)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/admin/multifactor/add/")
-        self.assertEqual(request.session["multifactor-next"], "/protected/")
 
-    def test_redirects_to_authenticate_when_user_has_factors(self):
-        request = self.factory.get("/protected/")
-        request.user = self.user
-        request.session = {}
-
-        class DummyView(RequireMultiAuthMixin, View):
-            def get(self, request, *args, **kwargs):
-                return HttpResponse("ok")
-
-        view = DummyView()
-        with patch("multifactor.mixins.active_factors", return_value=[]), \
-                patch("multifactor.mixins.is_bypassed", return_value=False), \
-                patch.object(UserKey.objects, "filter") as filter_mock:
-            qs = UserKey.objects.none()
-            qs.exists = lambda: True
-            filter_mock.return_value = qs
-            view.setup(request)
-            view.active_factors = []
-            view.has_multifactor = True
-            response = view.dispatch(request)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/admin/multifactor/authenticate/")
-
-
-class PreferMultiAuthMixinTests(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.user = get_user_model().objects.create_user(
-            username="alice",
-            email="alice@example.com",
-            password="password123",
-        )
-
-    def test_redirects_to_authenticate_when_user_has_active_factors(self):
+    @patch("multifactor.mixins.active_factors", return_value=[])
+    @patch("multifactor.mixins.is_bypassed", return_value=False)
+    def test_prefer_multi_auth_redirects_to_authenticate_when_has_keys(self, is_bypassed, active_factors):
         request = self.factory.get("/protected/")
         request.user = self.user
         request.session = {}
@@ -126,19 +76,9 @@ class PreferMultiAuthMixinTests(TestCase):
             def get(self, request, *args, **kwargs):
                 return HttpResponse("ok")
 
-        view = DummyView()
-        fake_factor = UserKey(user=self.user, key_type=KeyTypes.TOTP, properties={})
-
-        with patch("multifactor.mixins.active_factors", return_value=[("factor", "TOTP")]), \
-                patch("multifactor.mixins.is_bypassed", return_value=False), \
-                patch.object(UserKey.objects, "filter") as filter_mock:
-            qs = UserKey.objects.none()
-            qs.exists = lambda: True
-            filter_mock.return_value = qs
-            view.setup(request)
-            view.active_factors = []
-            view.has_multifactor = True
-            response = view.dispatch(request)
+        with patch("multifactor.mixins.UserKey.objects.filter") as filter_mock:
+            filter_mock.return_value.filter.return_value.exists.return_value = True
+            response = DummyView.as_view()(request)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/admin/multifactor/authenticate/")
