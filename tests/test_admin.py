@@ -114,3 +114,42 @@ class AdminTests(TestCase):
 
         self.assertTrue(instances)
         self.assertIn(MultiFactorInline, ma.inlines)
+
+    def test_get_inline_instances_does_not_duplicate_inline(self):
+        request = self.factory.get("/")
+        request.user = self.superuser
+
+        ma = MultifactorUserAdmin(get_user_model(), admin.site)
+        ma.inlines = (MultiFactorInline,)
+
+        instances = ma.get_inline_instances(request)
+
+        self.assertTrue(instances)
+        self.assertEqual(ma.inlines.count(MultiFactorInline), 1)
+
+    def test_get_inline_instances_respects_disabled_inline_flag(self):
+        request = self.factory.get("/")
+        request.user = self.superuser
+
+        ma = MultifactorUserAdmin(get_user_model(), admin.site)
+        ma.multifactor_inline = False
+        ma.inlines = ()
+
+        instances = ma.get_inline_instances(request)
+
+        self.assertEqual(instances, [])
+        self.assertNotIn(MultiFactorInline, ma.inlines)
+
+    def test_get_inline_instances_adds_inline_when_enabled(self):
+        request = self.factory.get("/")
+        request.user = self.superuser
+
+        ma = MultifactorUserAdmin(get_user_model(), admin.site)
+        ma.multifactor_inline = True
+        ma.inlines = ()
+
+        instances = ma.get_inline_instances(request)
+
+        self.assertTrue(instances)
+        self.assertIn(MultiFactorInline, ma.inlines)
+        self.assertEqual(ma.inlines.count(MultiFactorInline), 1)
