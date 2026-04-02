@@ -12,6 +12,9 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: ${{ matrix.name }}
@@ -121,7 +124,7 @@ jobs:
         run: |
           python -m coverage combine "${{ github.workspace }}/coverage-data"
           python -m coverage html --skip-covered --skip-empty
-          python -m coverage report --fail-under=50
+          python -m coverage report --fail-under=90
           echo "## Coverage summary" >> $GITHUB_STEP_SUMMARY
           python -m coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
 
