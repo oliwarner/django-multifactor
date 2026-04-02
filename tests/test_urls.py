@@ -19,3 +19,9 @@ class UrlsTests(SimpleTestCase):
 
     def test_reverse_home(self):
         self.assertEqual(reverse("multifactor:home"), "/admin/multifactor/")
+
+    def test_reverse_help(self):
+        self.assertEqual(reverse("multifactor:help"), "/admin/multifactor/help/")
+
+    def test_reverse_add(self):
+        self.assertEqual(reverse("multifactor:add"), "/admin/multifactor/add/")

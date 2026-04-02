@@ -34,6 +34,16 @@ class AppSettingsTests(SimpleTestCase):
         self.assertTrue(app_settings.mf_settings["HTML_EMAIL"])
         self.assertIsNone(app_settings.mf_settings["BYPASS"])
 
+    @override_settings(MULTIFACTOR={})
+    def test_default_email_fallback_uses_user_email(self):
+        app_settings = self._reload_module()
+
+        email_getter, sender_path = app_settings.mf_settings["FALLBACKS"]["email"]
+
+        user = type("User", (), {"email": "alice@example.com"})()
+        self.assertEqual(email_getter(user), "alice@example.com")
+        self.assertEqual(sender_path, "multifactor.factors.fallback.send_email")
+
     @override_settings(
         MULTIFACTOR={
             "LOGIN_MESSAGE": "custom",

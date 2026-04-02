@@ -1,8 +1,7 @@
-from unittest.mock import patch
-
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
+from unittest.mock import patch
 
 from multifactor.decorators import multifactor_protected
 
@@ -117,3 +116,16 @@ class DecoratorTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/admin/multifactor/authenticate/")
+
+    def test_allows_access_when_required_factors_are_met(self):
+        request = self._request()
+
+        @multifactor_protected(factors=1)
+        def view(request):
+            return HttpResponse("ok")
+
+        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), \
+             patch("multifactor.decorators.has_multifactor", return_value=True):
+            response = view(request)
+
+        self.assertEqual(response.status_code, 200)

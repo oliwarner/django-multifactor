@@ -1,10 +1,9 @@
-from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from multifactor.models import KeyTypes, UserKey
+from multifactor.models import DisabledFallback, KeyTypes, UserKey
 
 
 class UserKeyModelTests(TestCase):
@@ -98,7 +97,15 @@ class UserKeyModelTests(TestCase):
             key_type=KeyTypes.TOTP,
             properties={},
         )
-
         with patch("multifactor.common.method_url", return_value="/fake-url/") as method_url:
             self.assertEqual(key.auth_url, "/fake-url/")
             method_url.assert_called_once_with(KeyTypes.TOTP)
+
+    def test_disabled_fallback_can_be_saved(self):
+        fallback = DisabledFallback.objects.create(
+            user=self.user,
+            fallback="email",
+        )
+
+        self.assertEqual(fallback.user, self.user)
+        self.assertEqual(fallback.fallback, "email")
