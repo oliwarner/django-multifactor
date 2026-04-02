@@ -53,7 +53,7 @@ class ViewTests(TestCase):
         self.assertIn("methods", context)
         self.assertTrue(context["methods"])
 
-    def test_list_get_redirects_next(self):
+    def test_list_get_redirects_next_when_already_authenticated(self):
         request = self._request()
         request.session["multifactor-next"] = "/go/"
 
@@ -70,6 +70,19 @@ class ViewTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/go/")
+
+    def test_list_get_redirects_to_add_when_no_keys(self):
+        request = self._request()
+        request.session["multifactor-next"] = "/go/"
+
+        with patch("multifactor.mixins.active_factors", return_value=[]), \
+             patch("multifactor.mixins.is_bypassed", return_value=False), \
+             patch("multifactor.mixins.UserKey.objects.filter") as filter_mock:
+            filter_mock.return_value.filter.return_value.exists.return_value = False
+            response = List.as_view()(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/admin/multifactor/add/")
 
     def test_list_post_toggle_factor(self):
         key = UserKey.objects.create(
@@ -90,6 +103,29 @@ class ViewTests(TestCase):
 
         with patch.object(view, "action_toggle_factor") as action:
             response = view.post(request, "toggle_factor", key.pk)
+
+        self.assertEqual(response.status_code, 302)
+        action.assert_called_once()
+
+    def test_list_post_delete_factor(self):
+        key = UserKey.objects.create(
+            user=self.user,
+            key_type=KeyTypes.TOTP,
+            properties={},
+            enabled=True,
+        )
+        request = self._request("/admin/multifactor/")
+        request.method = "POST"
+        request.POST = {}
+        request.user = self.user
+
+        view = List()
+        view.request = request
+        view.object = None
+        view.factors = UserKey.objects.filter(user=self.user)
+
+        with patch.object(view, "action_delete_factor") as action:
+            response = view.post(request, "delete_factor", key.pk)
 
         self.assertEqual(response.status_code, 302)
         action.assert_called_once()
@@ -137,3 +173,51 @@ class ViewTests(TestCase):
 
         qs = view.get_queryset()
         self.assertIsNotNone(qs)
+
+    def test_authenticate_redirects_to_add_when_no_methods_available(self):
+        request = self._request("/admin/multifactor/authenticate/")
+        request.user = self.user
+
+        with patch("multifactor.views.disabled_fallbacks", return_value=[]), \
+             patch("multifactor.views.mf_settings", {"FALLBACKS": {}}):
+            response = Authenticate.as_view()(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/admin/multifactor/add/")
+
+    def test_authenticate_redirects_to_single_method_when_no_fallbacks(self):
+        request = self._request("/admin/multifactor/authenticate/")
+        request.user = self.user
+
+        UserKey.objects.create(
+            user=self.user,
+            key_type=KeyTypes.TOTP,
+            properties={},
+            enabled=True,
+        )
+
+        with patch("multifactor.views.disabled_fallbacks", return_value=[]), \
+             patch("multifactor.views.mf_settings", {"FALLBACKS": {}}):
+            response = Authenticate.as_view()(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/admin/multifactor/totp/auth/")
+
+    def test_authenticate_shows_other_domain_message(self):
+        request = self._request("/admin/multifactor/authenticate/")
+        request.user = self.user
+
+        UserKey.objects.create(
+            user=self.user,
+            key_type=KeyTypes.FIDO2,
+            enabled=True,
+            properties={"domain": "other.example.com"},
+        )
+
+        with patch("multifactor.views.disabled_fallbacks", return_value=[]), \
+             patch("multifactor.views.mf_settings", {"FALLBACKS": {"email": (lambda u: u.email, "x")}}), \
+             patch("multifactor.views.messages.info") as msg_info:
+            response = Authenticate.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)
+        msg_info.assert_called_once()
