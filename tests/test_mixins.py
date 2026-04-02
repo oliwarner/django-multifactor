@@ -82,3 +82,20 @@ class MultiFactorMixinTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/admin/multifactor/authenticate/")
+
+    @patch("multifactor.mixins.active_factors", return_value=[("k1", "TOTP")])
+    @patch("multifactor.mixins.is_bypassed", return_value=False)
+    def test_require_multi_auth_allows_when_active(self, is_bypassed, active_factors):
+        request = self.factory.get("/protected/")
+        request.user = self.user
+        request.session = {}
+
+        class DummyView(RequireMultiAuthMixin, View):
+            def get(self, request, *args, **kwargs):
+                return HttpResponse("ok")
+
+        with patch("multifactor.mixins.UserKey.objects.filter") as filter_mock:
+            filter_mock.return_value.filter.return_value.exists.return_value = True
+            response = DummyView.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)

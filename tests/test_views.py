@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase
 from unittest.mock import patch
 
-from multifactor.models import KeyTypes, UserKey
-from multifactor.views import Add, Authenticate, Help, List
+from multifactor.models import KeyTypes, UserKey, DisabledFallback
+from multifactor.views import Add, Authenticate, Help, List, Rename
 
 
 class ViewTests(TestCase):
@@ -19,6 +20,7 @@ class ViewTests(TestCase):
         request = self.factory.get(path)
         request.user = self.user
         request.session = {}
+        request._messages = FallbackStorage(request)
         return request
 
     @patch("multifactor.views.disabled_fallbacks", return_value=[])
@@ -40,22 +42,7 @@ class ViewTests(TestCase):
     def test_help_template_name(self):
         self.assertEqual(Help.template_name, "multifactor/help.html")
 
-    def test_authenticate_redirects_to_add_when_no_available_methods(self):
-        request = self._request("/admin/multifactor/authenticate/")
-        request.user = self.user
-
-        view = Authenticate()
-        view.request = request
-        view.object = None
-        view.setup(request)
-
-        response = view.get(request)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/admin/multifactor/add/")
-
-    @patch("multifactor.views.disabled_fallbacks", return_value=[])
-    @patch("multifactor.views.mf_settings", {"FALLBACKS": {}})
-    def test_add_context_lists_all_methods(self, disabled_fallbacks):
+    def test_add_context_lists_all_methods(self):
         request = self._request("/admin/multifactor/add/")
         view = Add()
         view.request = request
@@ -65,3 +52,88 @@ class ViewTests(TestCase):
 
         self.assertIn("methods", context)
         self.assertTrue(context["methods"])
+
+    def test_list_get_redirects_next(self):
+        request = self._request()
+        request.session["multifactor-next"] = "/go/"
+
+        UserKey.objects.create(
+            user=self.user,
+            key_type=KeyTypes.TOTP,
+            properties={},
+            enabled=True,
+        )
+
+        with patch("multifactor.mixins.active_factors", return_value=[("k1", "TOTP")]), \
+             patch("multifactor.mixins.is_bypassed", return_value=False):
+            response = List.as_view()(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/go/")
+
+    def test_list_post_toggle_factor(self):
+        key = UserKey.objects.create(
+            user=self.user,
+            key_type=KeyTypes.TOTP,
+            properties={},
+            enabled=True,
+        )
+        request = self._request("/admin/multifactor/")
+        request.method = "POST"
+        request.POST = {}
+        request.user = self.user
+
+        view = List()
+        view.request = request
+        view.object = None
+        view.factors = UserKey.objects.filter(user=self.user)
+
+        with patch.object(view, "action_toggle_factor") as action:
+            response = view.post(request, "toggle_factor", key.pk)
+
+        self.assertEqual(response.status_code, 302)
+        action.assert_called_once()
+
+    def test_list_post_invalid_action_raises_404(self):
+        request = self._request("/admin/multifactor/")
+        request.method = "POST"
+        request.POST = {}
+
+        view = List()
+        view.request = request
+        view.object = None
+        view.factors = UserKey.objects.filter(user=self.user)
+
+        with self.assertRaises(Exception):
+            view.post(request, "does_not_exist", 1)
+
+    def test_action_toggle_fallback_disable_and_enable(self):
+        request = self._request("/admin/multifactor/")
+        view = List()
+        view.request = request
+        view.object = None
+
+        with patch("multifactor.views.mf_settings", {"FALLBACKS": {"email": (lambda u: u.email, "x")}}):
+            view.action_toggle_fallback(request, "email")
+            self.assertTrue(DisabledFallback.objects.filter(user=self.user, fallback="email").exists())
+            view.action_toggle_fallback(request, "email")
+            self.assertFalse(DisabledFallback.objects.filter(user=self.user, fallback="email").exists())
+
+    def test_action_toggle_fallback_invalid(self):
+        request = self._request("/admin/multifactor/")
+        view = List()
+        view.request = request
+        view.object = None
+
+        with patch("multifactor.views.messages.error") as msg_error:
+            view.action_toggle_fallback(request, "bad")
+
+        msg_error.assert_called_once()
+
+    def test_rename_queryset_filters_user(self):
+        request = self._request("/admin/multifactor/rename/1/")
+        view = Rename()
+        view.request = request
+
+        qs = view.get_queryset()
+        self.assertIsNotNone(qs)

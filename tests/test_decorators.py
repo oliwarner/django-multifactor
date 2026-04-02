@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from unittest.mock import patch
@@ -19,7 +20,6 @@ class DecoratorTests(TestCase):
         request = self.factory.get(path)
         request.user = self.user
         request.session = {}
-        from django.contrib.messages.storage.fallback import FallbackStorage
         request._messages = FallbackStorage(request)
         return request
 
@@ -53,7 +53,10 @@ class DecoratorTests(TestCase):
         def view(request):
             return HttpResponse("ok")
 
-        response = view(request)
+        with patch("multifactor.decorators.get_user_model") as gum:
+            gum.return_value.objects.filter.return_value.exists.return_value = False
+            response = view(request)
+
         self.assertEqual(response.status_code, 200)
 
     def test_redirects_when_required_factors_not_met(self):
@@ -121,6 +124,19 @@ class DecoratorTests(TestCase):
         request = self._request()
 
         @multifactor_protected(factors=1)
+        def view(request):
+            return HttpResponse("ok")
+
+        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), \
+             patch("multifactor.decorators.has_multifactor", return_value=True):
+            response = view(request)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_function_based_factors_are_evaluated(self):
+        request = self._request()
+
+        @multifactor_protected(factors=lambda req: 1)
         def view(request):
             return HttpResponse("ok")
 

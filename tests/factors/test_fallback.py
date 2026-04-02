@@ -4,7 +4,13 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
-from multifactor.factors.fallback import Auth, SESSION_KEY, SESSION_KEY_SUCCEEDED, debug_print_console, send_email
+from multifactor.factors.fallback import (
+    Auth,
+    SESSION_KEY,
+    SESSION_KEY_SUCCEEDED,
+    debug_print_console,
+    send_email,
+)
 from multifactor.models import DisabledFallback
 
 
@@ -36,7 +42,7 @@ class FallbackTests(TestCase):
         session.save()
 
         with patch("multifactor.factors.fallback.write_session") as write_session, \
-                patch("multifactor.factors.fallback.login") as login:
+             patch("multifactor.factors.fallback.login") as login:
             login.return_value = HttpResponse()
             response = self.client.post("/admin/multifactor/fallback/auth/", {"otp": "123456"})
 
@@ -91,6 +97,23 @@ class FallbackTests(TestCase):
 
         with patch("multifactor.factors.fallback.disabled_fallbacks", return_value=[]), \
              patch("multifactor.factors.fallback.import_string", side_effect=Exception("bad transport")), \
+             patch("multifactor.factors.fallback.messages.error") as msg_error:
+            response = view.get(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/admin/multifactor/")
+        msg_error.assert_called_once()
+
+    def test_auth_get_no_transports_redirects_home(self):
+        request = self.client.request().wsgi_request
+        request.user = self.user
+        request.session = {}
+
+        view = Auth()
+        view.setup(request)
+
+        with patch("multifactor.factors.fallback.disabled_fallbacks", return_value=[]), \
+             patch("multifactor.factors.fallback.mf_settings", {"FALLBACKS": {}}), \
              patch("multifactor.factors.fallback.messages.error") as msg_error:
             response = view.get(request)
 
