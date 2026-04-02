@@ -1,10 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.contrib.messages.storage.fallback import FallbackStorage
+from django.utils.html import format_html
+from django.shortcuts import reverse
 from django.test import RequestFactory, TestCase
 from unittest.mock import patch
 
 from multifactor.models import KeyTypes, UserKey, DisabledFallback
 from multifactor.views import Add, Authenticate, Help, List, Rename
+
 
 
 class ViewTests(TestCase):
@@ -51,7 +54,38 @@ class ViewTests(TestCase):
         context = view.get_context_data()
 
         self.assertIn("methods", context)
-        self.assertTrue(context["methods"])
+        self.assertTrue(context["methods"])\
+
+
+    @patch("multifactor.views.messages")
+    def test_get_context_data_triggers_warning_message(self, mocked_messages):
+        with patch("multifactor.mixins.active_factors", return_value=[]):
+            request = self._request("/admin/multifactor/add/")
+            view = List()
+            view.request = request
+            view.has_multifactor = True
+            view.active_factors = []
+            view.factors = UserKey.objects.none()
+            view.object = None
+
+            context = view.get_context_data()
+
+        self.assertIn("factors", context)
+        self.assertIn("authed_kids", context)
+        self.assertIn("can_edit", context)
+        self.assertIn("available_fallbacks", context)
+        self.assertFalse(context["can_edit"])
+
+        mocked_messages.warning.assert_called_once()
+        mocked_messages.warning.assert_called_with(
+            request,
+            format_html(
+                'You will not be able to change these settings or add new '
+                'factors until until you <a href="{}" class="alert-link">authenticate</a> with '
+                'one of your existing secondary factors.',
+                reverse("multifactor:authenticate"),
+            ),
+        )
 
     def test_list_get_redirects_next_when_already_authenticated(self):
         request = self._request()
