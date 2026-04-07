@@ -101,6 +101,7 @@ class Add(LoginRequiredMixin, PreferMultiAuthMixin, TemplateView):
                 (f"multifactor:{value.lower()}_start", label)
                 for value, label in KeyTypes.choices
             ],
+            "available_factors": mf_settings['FACTORS']
         }
 
 
