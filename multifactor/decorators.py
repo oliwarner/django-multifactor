@@ -1,3 +1,7 @@
+import functools
+import inspect
+import time
+
 import django
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -7,14 +11,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
-import functools
-import time
-import inspect
+from .common import active_factors, has_multifactor, is_bypassed, method_url
 
-from .common import method_url, active_factors, has_multifactor, is_bypassed
-
-
-__all__ = ['multifactor_protected']
+__all__ = ["multifactor_protected"]
 
 
 def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=False):
@@ -34,6 +33,7 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
     advertise : bool
         Advertise to the user that they can optionally add keys for factors=0 views.
     """
+
     def _func_wrapper(view_func, *args, **kwargs):
         @functools.wraps(view_func)
         def _wrapped_view_func(request, *args, **kwargs):
@@ -42,13 +42,13 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
 
             def force_authenticate():
                 if django.VERSION < (4, 0) and request.is_ajax():
-                    raise PermissionDenied('Multifactor authentication required')
-                request.session['multifactor-next'] = request.get_full_path()
-                return redirect('multifactor:authenticate')
+                    raise PermissionDenied("Multifactor authentication required")
+                request.session["multifactor-next"] = request.get_full_path()
+                return redirect("multifactor:authenticate")
 
             if not request.user.is_authenticated:
                 return baulk()
-            
+
             if is_bypassed(request):
                 return baulk()
 
@@ -68,8 +68,8 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                     # has authenticated but not recently enough for this view
                     messages.warning(
                         request,
-                        f'This page requires secondary authentication every {max_age} seconds. '
-                        'Please re-authenticate.'
+                        f"This page requires secondary authentication every {max_age} seconds. "
+                        "Please re-authenticate.",
                     )
                     return force_authenticate()
 
@@ -81,20 +81,25 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                 # view needs more active factors than provided
                 messages.warning(
                     request,
-                    f'This page requires {required_factors} active security '
-                    f'factor{"" if required_factors == 1 else "s"}.'
+                    f"This page requires {required_factors} active security "
+                    f'factor{"" if required_factors == 1 else "s"}.',
                 )
                 return force_authenticate()
 
-            if not active and advertise and 'multifactor-advertised' not in request.session:
+            if not active and advertise and "multifactor-advertised" not in request.session:
                 # tell them that they can add keys but it's entirely optional
-                messages.info(request, format_html(
-                    'Make your account more secure by <a href="{}" class="alert-link">adding a second security factor</a> '
-                    'such as a USB Security Token, or an Authenticator App.',
-                    reverse('multifactor:home')
-                ))
-                request.session['multifactor-advertised'] = True
+                messages.info(
+                    request,
+                    format_html(
+                        'Make your account more secure by <a href="{}" class="alert-link">adding a second security factor</a> '
+                        "such as a USB Security Token, or an Authenticator App.",
+                        reverse("multifactor:home"),
+                    ),
+                )
+                request.session["multifactor-advertised"] = True
 
             return baulk()
+
         return _wrapped_view_func
+
     return _func_wrapper

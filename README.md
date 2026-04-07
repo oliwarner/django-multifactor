@@ -1,4 +1,6 @@
 # ![django-multifactor - Easy multi-factor authentication for Django](https://raw.githubusercontent.com/oliwarner/django-multifactor/master/logo3.png)
+![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)
+![Pre-Commit Enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=for-the-badge)
 
 Probably the easiest multi-factor for Django. Ships with standalone views, opinionated defaults 
 and a very simple integration pathway to retrofit onto mature sites. Supports [FIDO2/WebAuthn](https://en.wikipedia.org/wiki/WebAuthn) and [TOTP authenticators](https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm), with removable fallback options for email, SMS, carrier pigeon, or whatever other token exchange you can think of. U2F has been removed in 0.6.
@@ -178,6 +180,92 @@ If you use HTML emails for your email fallback, you can create a `multifactor/em
 
 You can use this to include your product logo, or an explanation.
 
+# Contributing
+This project welcomes contributions to submit PRs and issues.
+
+This project supports pre-commit hooks to re-format code using black and isort. 
+
+To install pre-commit run `pip install pre-commit` then `pre-commit install`.
+
+To update the pre-commit-config.yaml run `pre-commit autoupdate`.
+
+To run pre-commit hooks againt all files run `pre-commit run --all-files`.
+
 # Testing
 This project uses [tox](https://tox.readthedocs.io/en/latest/) for testing. Install tox via pip and run `tox` to run 
 the tests.
+
+# Flowchart
+```mermaid
+flowchart TD
+    Start([User attempts to access protected page]) --> Auth{User authenticated?}
+    
+    Auth -->|No| AllowAccess[Allow access - no MFA required]
+    Auth -->|Yes| Bypass{Bypass enabled?}
+    
+    Bypass -->|Yes| AllowAccess
+    Bypass -->|No| UserFilter{User matches filter?}
+    
+    UserFilter -->|No filter set or<br/>user matches| CheckKeys{User has<br/>MFA keys?}
+    UserFilter -->|User doesn't match| AllowAccess
+    
+    CheckKeys -->|No keys| CheckRequired{factors > 0?}
+    CheckKeys -->|Has keys| CheckActive{Keys authenticated<br/>in session?}
+    
+    CheckRequired -->|No| Advertise{advertise=true?}
+    CheckRequired -->|Yes| RequireAuth[Redirect to authenticate]
+    
+    Advertise -->|Yes| ShowMessage[Show optional MFA message]
+    Advertise -->|No| AllowAccess
+    ShowMessage --> AllowAccess
+    
+    CheckActive -->|No| RequireAuth
+    CheckActive -->|Yes| CheckAge{max_age set?}
+    
+    CheckAge -->|No| CheckFactorCount
+    CheckAge -->|Yes| AgeValid{Auth timestamp<br/>within max_age?}
+    
+    AgeValid -->|No| ShowWarning[Show re-auth warning]
+    AgeValid -->|Yes| CheckFactorCount{Active factors >=<br/>required factors?}
+    
+    ShowWarning --> RequireAuth
+    
+    CheckFactorCount -->|No| ShowFactorWarning[Show factor count warning]
+    CheckFactorCount -->|Yes| AllowAccess
+    
+    ShowFactorWarning --> RequireAuth
+    
+    RequireAuth --> AuthPage[MFA Authentication Page]
+    
+    AuthPage --> SelectMethod{Select auth method}
+    
+    SelectMethod -->|FIDO2| FIDO2Auth[Authenticate with<br/>Security Key/Biometric]
+    SelectMethod -->|TOTP| TOTPAuth[Enter TOTP code<br/>from Authenticator]
+    SelectMethod -->|Fallback| FallbackAuth[Send OTP via<br/>email/SMS/custom]
+    
+    FIDO2Auth --> Verify{Verification<br/>successful?}
+    TOTPAuth --> Verify
+    FallbackAuth --> Verify
+    
+    Verify -->|No| AuthPage
+    Verify -->|Yes| WriteSession[Write auth to session<br/>with timestamp]
+    
+    WriteSession --> Recheck{RECHECK enabled?}
+    
+    Recheck -->|Yes| SetExpiry[Set random expiry<br/>between MIN and MAX]
+    Recheck -->|No| SetNever[Set no expiry]
+    
+    SetExpiry --> Redirect[Redirect to original page]
+    SetNever --> Redirect
+    
+    Redirect --> Start
+    
+    AllowAccess --> Done([Access granted])
+    
+    style Start fill:#e1f5ff
+    style Done fill:#d4edda
+    style RequireAuth fill:#fff3cd
+    style AllowAccess fill:#d4edda
+    style AuthPage fill:#cfe2ff
+    style WriteSession fill:#cfe2ff
+```

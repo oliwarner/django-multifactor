@@ -47,9 +47,7 @@ class Fido2Tests(TestCase):
         from multifactor.factors.fido2 import FidoClass
 
         view = FidoClass()
-        view.request = SimpleNamespace(
-            user=SimpleNamespace(is_authenticated=False)
-        )
+        view.request = SimpleNamespace(user=SimpleNamespace(is_authenticated=False))
 
         self.assertEqual(view.get_user_credentials(), [])
 
@@ -109,8 +107,9 @@ class Fido2Tests(TestCase):
             "response": {"clientDataJSON": "x", "attestationObject": "y"},
         }
 
-        with patch("multifactor.factors.fido2.write_session") as write_session, \
-             patch("multifactor.factors.fido2.messages.success") as msg_success:
+        with patch("multifactor.factors.fido2.write_session") as write_session, patch(
+            "multifactor.factors.fido2.messages.success"
+        ) as msg_success:
             response = self.client.post(
                 reverse("multifactor:fido2_register"),
                 data=json.dumps(request_body),
@@ -188,8 +187,9 @@ class Fido2Tests(TestCase):
         session["fido_state"] = {"state": "xyz"}
         session.save()
 
-        with patch("multifactor.factors.fido2.write_session") as write_session, \
-             patch("multifactor.factors.fido2.login") as login:
+        with patch("multifactor.factors.fido2.write_session") as write_session, patch(
+            "multifactor.factors.fido2.login"
+        ) as login:
             login_response = HttpResponse()
             login_response["Location"] = "/admin/multifactor/"
             login.return_value = login_response

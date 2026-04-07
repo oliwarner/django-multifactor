@@ -1,10 +1,15 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from django.views import View
-from unittest.mock import patch
 
-from multifactor.mixins import MultiFactorMixin, PreferMultiAuthMixin, RequireMultiAuthMixin
+from multifactor.mixins import (
+    MultiFactorMixin,
+    PreferMultiAuthMixin,
+    RequireMultiAuthMixin,
+)
 
 
 class MultiFactorMixinTests(TestCase):

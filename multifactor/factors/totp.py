@@ -1,15 +1,13 @@
+import pyotp
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 
-import pyotp
-
-from ..models import UserKey, KeyTypes
-from ..common import write_session, login
 from ..app_settings import mf_settings
+from ..common import login, write_session
 from ..mixins import PreferMultiAuthMixin
-
+from ..models import KeyTypes, UserKey
 
 WINDOW = 60
 
@@ -26,8 +24,7 @@ class Create(PreferMultiAuthMixin, TemplateView):
         return {
             **super().get_context_data(**kwargs),
             "qr": self.totp.provisioning_uri(
-                self.request.user.get_username(),
-                issuer_name=mf_settings['TOKEN_ISSUER_NAME']
+                self.request.user.get_username(), issuer_name=mf_settings["TOKEN_ISSUER_NAME"]
             ),
             "secret_key": self.secret_key,
         }
@@ -35,15 +32,13 @@ class Create(PreferMultiAuthMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         if self.totp.verify(request.POST["answer"], valid_window=WINDOW):
             key = UserKey.objects.create(
-                user=request.user,
-                properties={"secret_key": self.secret_key},
-                key_type=str(KeyTypes.TOTP)
+                user=request.user, properties={"secret_key": self.secret_key}, key_type=str(KeyTypes.TOTP)
             )
             write_session(request, key)
-            messages.success(request, 'TOTP Authenticator added.')
+            messages.success(request, "TOTP Authenticator added.")
             return redirect("multifactor:home")
 
-        messages.error(request, 'Could not validate key, please try again.')
+        messages.error(request, "Could not validate key, please try again.")
         return super().get(request, *args, **kwargs)
 
 
@@ -56,7 +51,7 @@ class Auth(LoginRequiredMixin, TemplateView):
             write_session(request, key)
             return login(request)
 
-        messages.error(request, 'Could not validate key, please try again.')
+        messages.error(request, "Could not validate key, please try again.")
         return super().get(request, *args, **kwargs)
 
     def verify_login(self, token):

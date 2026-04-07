@@ -1,13 +1,13 @@
-from django.contrib.auth import get_user_model
-from django.contrib.messages.storage.fallback import FallbackStorage
-from django.utils.html import format_html
-from django.shortcuts import reverse
-from django.test import RequestFactory, TestCase
 from unittest.mock import patch
 
-from multifactor.models import KeyTypes, UserKey, DisabledFallback
-from multifactor.views import Add, Authenticate, Help, List, Rename
+from django.contrib.auth import get_user_model
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.shortcuts import reverse
+from django.test import RequestFactory, TestCase
+from django.utils.html import format_html
 
+from multifactor.models import DisabledFallback, KeyTypes, UserKey
+from multifactor.views import Add, Authenticate, Help, List, Rename
 
 
 class ViewTests(TestCase):
@@ -54,8 +54,7 @@ class ViewTests(TestCase):
         context = view.get_context_data()
 
         self.assertIn("methods", context)
-        self.assertTrue(context["methods"])\
-
+        self.assertTrue(context["methods"])
 
     @patch("multifactor.views.messages")
     def test_get_context_data_triggers_warning_message(self, mocked_messages):
@@ -80,9 +79,9 @@ class ViewTests(TestCase):
         mocked_messages.warning.assert_called_with(
             request,
             format_html(
-                'You will not be able to change these settings or add new '
+                "You will not be able to change these settings or add new "
                 'factors until until you <a href="{}" class="alert-link">authenticate</a> with '
-                'one of your existing secondary factors.',
+                "one of your existing secondary factors.",
                 reverse("multifactor:authenticate"),
             ),
         )
@@ -98,8 +97,9 @@ class ViewTests(TestCase):
             enabled=True,
         )
 
-        with patch("multifactor.mixins.active_factors", return_value=[("k1", "TOTP")]), \
-             patch("multifactor.mixins.is_bypassed", return_value=False):
+        with patch("multifactor.mixins.active_factors", return_value=[("k1", "TOTP")]), patch(
+            "multifactor.mixins.is_bypassed", return_value=False
+        ):
             response = List.as_view()(request)
 
         self.assertEqual(response.status_code, 302)
@@ -109,9 +109,9 @@ class ViewTests(TestCase):
         request = self._request()
         request.session["multifactor-next"] = "/go/"
 
-        with patch("multifactor.mixins.active_factors", return_value=[]), \
-             patch("multifactor.mixins.is_bypassed", return_value=False), \
-             patch("multifactor.mixins.UserKey.objects.filter") as filter_mock:
+        with patch("multifactor.mixins.active_factors", return_value=[]), patch(
+            "multifactor.mixins.is_bypassed", return_value=False
+        ), patch("multifactor.mixins.UserKey.objects.filter") as filter_mock:
             filter_mock.return_value.filter.return_value.exists.return_value = False
             response = List.as_view()(request)
 
@@ -212,8 +212,9 @@ class ViewTests(TestCase):
         request = self._request("/admin/multifactor/authenticate/")
         request.user = self.user
 
-        with patch("multifactor.views.disabled_fallbacks", return_value=[]), \
-             patch("multifactor.views.mf_settings", {"FALLBACKS": {}}):
+        with patch("multifactor.views.disabled_fallbacks", return_value=[]), patch(
+            "multifactor.views.mf_settings", {"FALLBACKS": {}}
+        ):
             response = Authenticate.as_view()(request)
 
         self.assertEqual(response.status_code, 302)
@@ -230,8 +231,9 @@ class ViewTests(TestCase):
             enabled=True,
         )
 
-        with patch("multifactor.views.disabled_fallbacks", return_value=[]), \
-             patch("multifactor.views.mf_settings", {"FALLBACKS": {}}):
+        with patch("multifactor.views.disabled_fallbacks", return_value=[]), patch(
+            "multifactor.views.mf_settings", {"FALLBACKS": {}}
+        ):
             response = Authenticate.as_view()(request)
 
         self.assertEqual(response.status_code, 302)
@@ -248,9 +250,9 @@ class ViewTests(TestCase):
             properties={"domain": "other.example.com"},
         )
 
-        with patch("multifactor.views.disabled_fallbacks", return_value=[]), \
-             patch("multifactor.views.mf_settings", {"FALLBACKS": {"email": (lambda u: u.email, "x")}}), \
-             patch("multifactor.views.messages.info") as msg_info:
+        with patch("multifactor.views.disabled_fallbacks", return_value=[]), patch(
+            "multifactor.views.mf_settings", {"FALLBACKS": {"email": (lambda u: u.email, "x")}}
+        ), patch("multifactor.views.messages.info") as msg_info:
             response = Authenticate.as_view()(request)
 
         self.assertEqual(response.status_code, 200)

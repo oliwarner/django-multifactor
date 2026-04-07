@@ -6,6 +6,7 @@ from django.test import SimpleTestCase, override_settings
 class AppSettingsTests(SimpleTestCase):
     def _reload_module(self):
         import multifactor.app_settings as app_settings
+
         return reload(app_settings)
 
     @override_settings(MULTIFACTOR={})

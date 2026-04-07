@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('multifactor', '0003_userkey_name'),
+        ("multifactor", "0003_userkey_name"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userkey',
-            name='key_type',
-            field=models.CharField(choices=[('FIDO2', 'FIDO2 Security Device'), ('TOTP', 'TOTP Authenticator')], max_length=25),
+            model_name="userkey",
+            name="key_type",
+            field=models.CharField(
+                choices=[("FIDO2", "FIDO2 Security Device"), ("TOTP", "TOTP Authenticator")], max_length=25
+            ),
         ),
     ]

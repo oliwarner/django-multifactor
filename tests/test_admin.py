@@ -2,7 +2,11 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 
-from multifactor.admin import HasMultifactorFilter, MultiFactorInline, MultifactorUserAdmin
+from multifactor.admin import (
+    HasMultifactorFilter,
+    MultiFactorInline,
+    MultifactorUserAdmin,
+)
 from multifactor.models import KeyTypes, UserKey
 
 

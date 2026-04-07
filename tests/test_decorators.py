@@ -1,8 +1,9 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
-from unittest.mock import patch
 
 from multifactor.decorators import multifactor_protected
 
@@ -66,8 +67,9 @@ class DecoratorTests(TestCase):
         def view(request):
             return HttpResponse("ok")
 
-        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), \
-             patch("multifactor.decorators.has_multifactor", return_value=True):
+        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), patch(
+            "multifactor.decorators.has_multifactor", return_value=True
+        ):
             response = view(request)
 
         self.assertEqual(response.status_code, 302)
@@ -81,8 +83,9 @@ class DecoratorTests(TestCase):
         def view(request):
             return HttpResponse("ok")
 
-        with patch("multifactor.decorators.active_factors", return_value=[]), \
-             patch("multifactor.decorators.has_multifactor", return_value=True):
+        with patch("multifactor.decorators.active_factors", return_value=[]), patch(
+            "multifactor.decorators.has_multifactor", return_value=True
+        ):
             response = view(request)
 
         self.assertEqual(response.status_code, 302)
@@ -95,10 +98,11 @@ class DecoratorTests(TestCase):
         def view(request):
             return HttpResponse("ok")
 
-        with patch("multifactor.decorators.active_factors", return_value=[]), \
-             patch("multifactor.decorators.has_multifactor", return_value=False), \
-             patch("multifactor.decorators.is_bypassed", return_value=False), \
-             patch("multifactor.decorators.messages.info") as msg_info:
+        with patch("multifactor.decorators.active_factors", return_value=[]), patch(
+            "multifactor.decorators.has_multifactor", return_value=False
+        ), patch("multifactor.decorators.is_bypassed", return_value=False), patch(
+            "multifactor.decorators.messages.info"
+        ) as msg_info:
             response = view(request)
 
         self.assertEqual(response.status_code, 200)
@@ -111,9 +115,9 @@ class DecoratorTests(TestCase):
         def view(request):
             return HttpResponse("ok")
 
-        with patch("multifactor.decorators.active_factors", return_value=[("key", "TOTP", "name", 0)]), \
-             patch("multifactor.decorators.has_multifactor", return_value=True), \
-             patch("multifactor.decorators.timezone.now") as now:
+        with patch("multifactor.decorators.active_factors", return_value=[("key", "TOTP", "name", 0)]), patch(
+            "multifactor.decorators.has_multifactor", return_value=True
+        ), patch("multifactor.decorators.timezone.now") as now:
             now.return_value.timestamp.return_value = 999999
             response = view(request)
 
@@ -127,8 +131,9 @@ class DecoratorTests(TestCase):
         def view(request):
             return HttpResponse("ok")
 
-        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), \
-             patch("multifactor.decorators.has_multifactor", return_value=True):
+        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), patch(
+            "multifactor.decorators.has_multifactor", return_value=True
+        ):
             response = view(request)
 
         self.assertEqual(response.status_code, 200)
@@ -140,8 +145,9 @@ class DecoratorTests(TestCase):
         def view(request):
             return HttpResponse("ok")
 
-        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), \
-             patch("multifactor.decorators.has_multifactor", return_value=True):
+        with patch("multifactor.decorators.active_factors", return_value=[("k1", "TOTP")]), patch(
+            "multifactor.decorators.has_multifactor", return_value=True
+        ):
             response = view(request)
 
         self.assertEqual(response.status_code, 200)

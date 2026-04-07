@@ -94,10 +94,13 @@ class CommonTests(TestCase):
             now.return_value.timestamp.return_value = 100
             factors = active_factors(request)
 
-        self.assertEqual(factors, [
-            ("TOTP", 2, 50, False),
-            ("TOTP", 3, 50, 999),
-        ])
+        self.assertEqual(
+            factors,
+            [
+                ("TOTP", 2, 50, False),
+                ("TOTP", 3, 50, 999),
+            ],
+        )
         self.assertEqual(request.session["multifactor"], factors)
 
     @patch("multifactor.common.mf_settings", {"SHOW_LOGIN_MESSAGE": True, "LOGIN_MESSAGE": "Logged in via {}"})
@@ -160,9 +163,9 @@ class CommonTests(TestCase):
 
         fake_now = timezone.now()
 
-        with patch("multifactor.common.mf_settings", {"RECHECK": True}), \
-             patch("multifactor.common.next_check", return_value=999), \
-             patch("multifactor.common.timezone.now") as now:
+        with patch("multifactor.common.mf_settings", {"RECHECK": True}), patch(
+            "multifactor.common.next_check", return_value=999
+        ), patch("multifactor.common.timezone.now") as now:
             now.return_value = fake_now
 
             write_session(request, key)
@@ -177,8 +180,9 @@ class CommonTests(TestCase):
     def test_write_session_without_key_stores_false_recheck(self):
         request = self._request()
 
-        with patch("multifactor.common.mf_settings", {"RECHECK": False}), \
-             patch("multifactor.common.timezone.now") as now:
+        with patch("multifactor.common.mf_settings", {"RECHECK": False}), patch(
+            "multifactor.common.timezone.now"
+        ) as now:
             fake_now = MagicMock()
             fake_now.timestamp.return_value = 123
             now.return_value = fake_now

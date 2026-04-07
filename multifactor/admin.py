@@ -1,17 +1,17 @@
 from django.contrib import admin
-from django.db.models import OuterRef, Exists
+from django.db.models import Exists, OuterRef
 
 from .models import UserKey
 
 
 class HasMultifactorFilter(admin.SimpleListFilter):
-    title = 'Using Multifactor authentication?'
-    parameter_name = 'multifactor'
+    title = "Using Multifactor authentication?"
+    parameter_name = "multifactor"
 
     def lookups(self, request, model_admin):
         return [
-            (True, 'Yes'),
-            (False, 'No'),
+            (True, "Yes"),
+            (False, "No"),
         ]
 
     def queryset(self, request, queryset):
@@ -21,8 +21,8 @@ class HasMultifactorFilter(admin.SimpleListFilter):
 
 class MultiFactorInline(admin.TabularInline):
     model = UserKey
-    readonly_fields = ('key_type',)
-    fields = ('key_type', 'enabled')
+    readonly_fields = ("key_type",)
+    fields = ("key_type", "enabled")
     max_num = 0
 
 
@@ -32,7 +32,7 @@ class MultifactorUserAdmin(admin.ModelAdmin):
     multifactor_inline = True
 
     def get_queryset(self, request):
-        keys = UserKey.objects.filter(user=OuterRef('pk'), enabled=True)
+        keys = UserKey.objects.filter(user=OuterRef("pk"), enabled=True)
         return super().get_queryset(request).annotate(has_multifactors=Exists(keys))
 
     def get_list_display(self, request):
@@ -41,7 +41,7 @@ class MultifactorUserAdmin(admin.ModelAdmin):
 
         return (
             *super().get_list_display(request),
-            'multifactor',
+            "multifactor",
         )
 
     def get_list_filter(self, request):
@@ -55,7 +55,8 @@ class MultifactorUserAdmin(admin.ModelAdmin):
 
     def multifactor(self, obj):
         return obj.has_multifactors
-    multifactor.admin_order_field = 'has_multifactors'
+
+    multifactor.admin_order_field = "has_multifactors"
     multifactor.boolean = True
 
     def get_inline_instances(self, request, obj=None):

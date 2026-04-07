@@ -28,8 +28,9 @@ class TOTPTests(TestCase):
         totp.verify.return_value = True
         totp_cls.return_value = totp
 
-        with patch("multifactor.factors.totp.write_session") as write_session, \
-             patch("multifactor.factors.totp.messages.success") as msg_success:
+        with patch("multifactor.factors.totp.write_session") as write_session, patch(
+            "multifactor.factors.totp.messages.success"
+        ) as msg_success:
             response = self.client.post(reverse("multifactor:totp_start"), {"answer": "123456"})
 
         self.assertEqual(response.status_code, 302)
@@ -58,9 +59,9 @@ class TOTPTests(TestCase):
             properties={"secret_key": "SECRET123"},
         )
 
-        with patch("multifactor.factors.totp.pyotp.TOTP") as totp_cls, \
-                patch("multifactor.factors.totp.write_session") as write_session, \
-                patch("multifactor.factors.totp.login") as login:
+        with patch("multifactor.factors.totp.pyotp.TOTP") as totp_cls, patch(
+            "multifactor.factors.totp.write_session"
+        ) as write_session, patch("multifactor.factors.totp.login") as login:
             login.return_value = HttpResponse()
             totp = MagicMock()
             totp.verify.return_value = True
