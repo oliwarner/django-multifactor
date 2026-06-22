@@ -40,6 +40,10 @@ jobs:
             python-version: "3.12"
             tox-env: py312-django60
 
+          - name: Python 3.12 / Django 6.1
+            python-version: "3.12"
+            tox-env: py312-django61
+
           - name: Python 3.13 / Django 5.2
             python-version: "3.13"
             tox-env: py313-django52
@@ -47,6 +51,10 @@ jobs:
           - name: Python 3.13 / Django 6.0
             python-version: "3.13"
             tox-env: py313-django60
+
+          - name: Python 3.13 / Django 6.1
+            python-version: "3.13"
+            tox-env: py313-django61
 
           - name: Python 3.14 / Django 5.2
             python-version: "3.14"
@@ -56,6 +64,10 @@ jobs:
             python-version: "3.14"
             tox-env: py314-django60
 
+          - name: Python 3.14 / Django 6.1
+            python-version: "3.14"
+            tox-env: py314-django61
+
           - name: Python 3.15 / Django 5.2
             python-version: "3.15"
             tox-env: py315-django52
@@ -63,6 +75,10 @@ jobs:
           - name: Python 3.15 / Django 6.0
             python-version: "3.15"
             tox-env: py315-django60
+
+          - name: Python 3.15 / Django 6.1
+            python-version: "3.15"
+            tox-env: py315-django61
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
