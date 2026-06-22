@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^7.0.2",
-    "postcss": "^8.4.38",
+    "postcss": "^8.5.15",
     "postcss-variable-compress": "^3.0.0"
   }
 }
