@@ -1,4 +1,4 @@
-{% extends "multifactor/FIDO2/add.html" %}{% load static %}
+{% extends "multifactor/FIDO2/add.html" %}{% load static i18n %}
 
 {% block fido_scripting %}
 <script type="module">
@@ -12,7 +12,7 @@ function authenticate() {
 	.then((response) => {
 		if(response.ok)
 			return response.json()
-		throw new Error('No credential available to authenticate!')
+		throw new Error('{% trans "No credential available to authenticate!" %}')
 	})
 	.then((json) => {
 		const options = parseRequestOptionsFromJSON(json)
@@ -32,7 +32,7 @@ function authenticate() {
 				window.location.href = res.redirect
 			}
 			else {
-				display_error("Error occured, please reload to try again.")
+				display_error("{% trans 'Error occured, please reload to try again.' %}")
 			}
 		})
 	}, (error)  =>{

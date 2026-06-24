@@ -2,6 +2,7 @@ import pyotp
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
 from ..app_settings import mf_settings
@@ -35,10 +36,10 @@ class Create(PreferMultiAuthMixin, TemplateView):
                 user=request.user, properties={"secret_key": self.secret_key}, key_type=str(KeyTypes.TOTP)
             )
             write_session(request, key)
-            messages.success(request, "TOTP Authenticator added.")
+            messages.success(request, _("TOTP Authenticator added."))
             return redirect("multifactor:home")
 
-        messages.error(request, "Could not validate key, please try again.")
+        messages.error(request, _("Could not validate key, please try again."))
         return super().get(request, *args, **kwargs)
 
 
@@ -51,7 +52,7 @@ class Auth(LoginRequiredMixin, TemplateView):
             write_session(request, key)
             return login(request)
 
-        messages.error(request, "Could not validate key, please try again.")
+        messages.error(request, _("Could not validate key, please try again."))
         return super().get(request, *args, **kwargs)
 
     def verify_login(self, token):

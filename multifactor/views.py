@@ -6,6 +6,8 @@ from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.html import format_html, format_html_join
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views.generic import TemplateView, UpdateView
 
 from .app_settings import mf_settings
@@ -24,9 +26,11 @@ class List(LoginRequiredMixin, RequireMultiAuthMixin, TemplateView):
             messages.warning(
                 self.request,
                 format_html(
-                    "You will not be able to change these settings or add new "
-                    'factors until until you <a href="{}" class="alert-link">authenticate</a> with '
-                    "one of your existing secondary factors.",
+                    _(
+                        "You will not be able to change these settings or add new "
+                        'factors until until you <a href="{}" class="alert-link">authenticate</a> with '
+                        "one of your existing secondary factors."
+                    ),
                     reverse("multifactor:authenticate"),
                 ),
             )
@@ -67,31 +71,42 @@ class List(LoginRequiredMixin, RequireMultiAuthMixin, TemplateView):
             factor = self.factors.get(pk=ident)
             factor.enabled = not factor.enabled
             factor.save()
-            messages.info(
-                request, f'{factor.get_key_type_display()} has been {"enabled" if factor.enabled else "disabled"}.'
-            )
+            if factor.enabled:
+                msg = _("%(factor)s has been enabled.") % {"factor": factor.get_key_type_display()}
+            else:
+                msg = _("%(factor)s has been disabled.") % {"factor": factor.get_key_type_display()}
+            messages.info(request, msg)
 
         except UserKey.DoesNotExist:
-            messages.error(request, f"{factor.get_key_type_display()} not found.")
+            messages.error(request, _("%(factor)s not found.") % {"factor": factor.get_key_type_display()})
 
     def action_delete_factor(self, request, ident):
         try:
             factor = self.factors.get(pk=ident)
             factor.delete()
-            messages.info(request, f"{factor.get_key_type_display()} has been deleted.")
+            messages.info(
+                request,
+                _("%(factor)s has been deleted.") % {"factor": factor.get_key_type_display()},
+            )
 
         except UserKey.DoesNotExist:
-            messages.error(request, f"Couldn't find that factor.")
+            messages.error(request, _("Couldn't find that factor."))
 
     def action_toggle_fallback(self, request, ident):
         if not (ident and ident in mf_settings["FALLBACKS"]):
-            return messages.error("Invalid fallback.")
+            return messages.error(_("Invalid fallback."))
 
-        n, _ = DisabledFallback.objects.filter(user=request.user, fallback=ident).delete()
+        n, _deleted = DisabledFallback.objects.filter(user=request.user, fallback=ident).delete()
         if n:  # managed to delete something
-            return messages.info(request, f"{ident} fallback factor has been re-enabled.")
+            return messages.info(
+                request,
+                _("%(name)s fallback factor has been re-enabled.") % {"name": ident},
+            )
 
-        messages.info(request, f"{ident} fallback factor has been disabled.")
+        messages.info(
+            request,
+            _("%(name)s fallback factor has been disabled.") % {"name": ident},
+        )
         DisabledFallback(user=request.user, fallback=ident).save()
 
 
@@ -152,7 +167,8 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
                 [(d, self.request.path) for d in other_domains],
             )
             messages.info(
-                self.request, format_html("You also have active domain-locked factors available on: {}", domains)
+                self.request,
+                format_html(_("You also have active domain-locked factors available on: {}"), domains),
             )
 
         return super().get(request, *args, **kwargs)
@@ -169,17 +185,29 @@ class Authenticate(LoginRequiredMixin, MultiFactorMixin, TemplateView):
             named_factors = [f.name for f in factors if f.name]
 
             if not named_factors:
-                factor_string[method] = f"{len(factors)} available"
+                factor_string[method] = ngettext(
+                    "%(count)d available",
+                    "%(count)d available",
+                    len(factors),
+                ) % {"count": len(factors)}
 
             else:
                 anon = len(factors) - len(named_factors)
-                # print(factors, anon)
                 if anon:
-                    factor_string[method] = (
-                        ", ".join(named_factors) + f' or {len(factors)} other{"" if anon == 1 else "s"}'
-                    )
+                    others = ngettext(
+                        "%(count)d other",
+                        "%(count)d others",
+                        anon,
+                    ) % {"count": anon}
+                    factor_string[method] = _("%(named)s or %(others)s") % {
+                        "named": ", ".join(named_factors),
+                        "others": others,
+                    }
                 elif len(factors) > 1:
-                    factor_string[method] = ", ".join(named_factors[:1]) + " or " + named_factors[-1]
+                    factor_string[method] = _("%(first)s or %(last)s") % {
+                        "first": ", ".join(named_factors[:1]),
+                        "last": named_factors[-1],
+                    }
                 else:
                     factor_string[method] = named_factors[0]
 

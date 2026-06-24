@@ -8,6 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils.module_loading import import_string
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
 from ..app_settings import mf_settings
@@ -25,9 +26,12 @@ class Auth(LoginRequiredMixin, TemplateView):
     def get(self, request, generate=True):
         if generate:
             otp = request.session[SESSION_KEY] = request.session.get(SESSION_KEY, str(randint(0, 100000000)))
-            message = f"Your one-time-password is: {otp}"
+            message = _("Your one-time-password is: %(otp)s") % {"otp": otp}
             if request.user.get_full_name():
-                message = f"Dear {request.user.get_full_name()},\n{message}"
+                message = _("Dear %(name)s,\n%(message)s") % {
+                    "name": request.user.get_full_name(),
+                    "message": message,
+                }
 
             disabled = disabled_fallbacks(request)
             s = []
@@ -44,11 +48,18 @@ class Auth(LoginRequiredMixin, TemplateView):
 
             if not s:
                 messages.error(
-                    request, "No fallback one-time-password transport methods worked. Please contact an administrator."
+                    request,
+                    _("No fallback one-time-password transport methods worked. Please contact an administrator."),
                 )
                 return redirect("multifactor:home")
 
-            request.session[SESSION_KEY_SUCCEEDED] = s[0] if len(s) == 1 else (", ".join(s[:-1]) + " and " + s[-1])
+            if len(s) == 1:
+                request.session[SESSION_KEY_SUCCEEDED] = s[0]
+            else:
+                request.session[SESSION_KEY_SUCCEEDED] = _("%(items)s and %(last)s") % {
+                    "items": ", ".join(s[:-1]),
+                    "last": s[-1],
+                }
 
         return super().get(
             request,
@@ -61,14 +72,14 @@ class Auth(LoginRequiredMixin, TemplateView):
             write_session(request, key=None)
             return login(request)
 
-        messages.error(request, "That key was not correct. Please try again.")
+        messages.error(request, _("That key was not correct. Please try again."))
         return self.get(request, generate=False)
 
 
 def send_email(user, message):
     try:
         msg = EmailMultiAlternatives(
-            subject="One Time Password", body=message, from_email=settings.SERVER_EMAIL, to=[user.email]
+            subject=_("One Time Password"), body=message, from_email=settings.SERVER_EMAIL, to=[user.email]
         )
 
         if mf_settings["HTML_EMAIL"]:

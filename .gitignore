@@ -52,6 +52,8 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+# but DO ship the package's own compiled catalogs in the wheel
+!multifactor/locale/**/*.mo
 
 # Django stuff:
 *.log

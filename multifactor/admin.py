@@ -1,17 +1,18 @@
 from django.contrib import admin
 from django.db.models import Exists, OuterRef
+from django.utils.translation import gettext_lazy as _
 
 from .models import UserKey
 
 
 class HasMultifactorFilter(admin.SimpleListFilter):
-    title = "Using Multifactor authentication?"
+    title = _("Using Multifactor authentication?")
     parameter_name = "multifactor"
 
     def lookups(self, request, model_admin):
         return [
-            (True, "Yes"),
-            (False, "No"),
+            (True, _("Yes")),
+            (False, _("No")),
         ]
 
     def queryset(self, request, queryset):

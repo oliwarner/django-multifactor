@@ -1,17 +1,17 @@
-{% extends "multifactor/base.html" %}{% load static %}
+{% extends "multifactor/base.html" %}{% load static i18n %}
 
-{% block card_title %}Add TOTP Authenticator{% endblock %}
+{% block card_title %}{% trans "Add TOTP Authenticator" %}{% endblock %}
 
 {% block content %}
 {% block preform %}
-<p>Start by downloading an Authenticator App on your phone. <a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2' target='_blank'>Google Authenticator for Android</a> or <a href='https://itunes.apple.com/us/app/authy/id494168017' target='_blank'>Authy for iPhones</a>. Use it to scan in this QR code.</p>
+<p>{% blocktrans %}Start by downloading an Authenticator App on your phone. <a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2' target='_blank'>Google Authenticator for Android</a> or <a href='https://itunes.apple.com/us/app/authy/id494168017' target='_blank'>Authy for iPhones</a>. Use it to scan in this QR code.{% endblocktrans %}</p>
 
 <div class="qr-block">
 	<div id="qr"></div>
 	<p><code>{{secret_key}}</code></p>
 </div>
 
-<p>Once scanned, your Authenticator will give you a 6-digit, rotating code. Copy that code into the box below and click Verify.</p>
+<p>{% trans "Once scanned, your Authenticator will give you a 6-digit, rotating code. Copy that code into the box below and click Verify." %}</p>
 {% endblock preform %}
 
 <form action="" method="POST">
@@ -19,11 +19,11 @@
 	<input type="hidden" name="key" value="{{secret_key|safe}}">
 
 	<div class="field"><div class="control">
-		<input class="input is-primary has-text-centered is-large" type="text" maxlength="6" size="6"  name="answer" placeholder="e.g 123456" autocomplete="off"
+		<input class="input is-primary has-text-centered is-large" type="text" maxlength="6" size="6"  name="answer" placeholder="{% trans 'e.g 123456' %}" autocomplete="off"
 		inputmode="numeric" pattern="[0-9]{6}" autofocus>
 	</div></div>
 
-	<button type="submit" class="button is-primary is-large is-fullwidth">Verify</button>
+	<button type="submit" class="button is-primary is-large is-fullwidth">{% trans "Verify" %}</button>
 </form>
 {% endblock %}
 

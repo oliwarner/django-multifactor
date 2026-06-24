@@ -1,11 +1,11 @@
-{% extends "multifactor/base.html" %}{% load static %}
+{% extends "multifactor/base.html" %}{% load static i18n %}
 
-{% block card_title %}FIDO2 Security Key{% endblock %}
+{% block card_title %}{% trans "FIDO2 Security Key" %}{% endblock %}
 
 {% block content %}
 <div id="authtype" class="automatic">
-	<p class="has-text-centered ">Follow your browser's instructions to continue.</p>
-	<button type="button" class="button is-100 is-primary" onclick="authenticate()">Click here to Start</button>
+	<p class="has-text-centered ">{% trans "Follow your browser's instructions to continue." %}</p>
+	<button type="button" class="button is-100 is-primary" onclick="authenticate()">{% trans "Click here to Start" %}</button>
 </div>
 {% endblock %}
 
@@ -24,7 +24,7 @@ function authenticate() {
 	.then((response) => {
 		if(response.ok)
 			return response.json()
-		throw new Error('Error getting registration data!')
+		throw new Error('{% trans "Error getting registration data!" %}')
 	})
 	.then((json) => {
 		const options = parseCreationOptionsFromJSON(json)
@@ -47,9 +47,9 @@ function authenticate() {
 		if (res["status"] =='OK')
 			window.location.href = "{% url 'multifactor:home' %}"
 		else
-			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>")
+			display_error("<p>"+res["message"]+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>{% trans 'try again' %}</a> {% trans 'or' %} <a href='{% url 'multifactor:home' %}'>{% trans 'Go to Multifactor Dashboard' %}</a></p>")
 	}, (reason) => {
-		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>Try again</a> or <a href='{% url 'multifactor:home' %}'>Go to Multifactor Dashboard</a></p>")
+		display_error("<p>"+reason+"</p><p><a href='javascript:void(0)' onclick='authenticate()'>{% trans 'Try again' %}</a> {% trans 'or' %} <a href='{% url 'multifactor:home' %}'>{% trans 'Go to Multifactor Dashboard' %}</a></p>")
 	})
 }
 window.authenticate = authenticate

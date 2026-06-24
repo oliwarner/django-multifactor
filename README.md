@@ -180,6 +180,74 @@ If you use HTML emails for your email fallback, you can create a `multifactor/em
 
 You can use this to include your product logo, or an explanation.
 
+
+## Internationalisation (i18n)
+
+All user-facing strings in views, templates, model labels and flash messages are wrapped for translation, and the package ships compiled `.mo` files in the wheel. You do **not** need to run `makemessages` or `compilemessages` against this app in your own project.
+
+To take advantage of the translations in your project:
+
+1. Enable Django's i18n machinery in `settings.py` (these are Django defaults but worth confirming):
+
+   ```python
+   USE_I18N = True
+   LANGUAGE_CODE = "en"  # or your preferred default
+   ```
+
+2. If you want the language to switch per-request (based on the `Accept-Language` header, a session value, or a cookie), add `LocaleMiddleware` **after** `SessionMiddleware` and **before** `CommonMiddleware`:
+
+   ```python
+   MIDDLEWARE = [
+       # ...
+       "django.contrib.sessions.middleware.SessionMiddleware",
+       "django.middleware.locale.LocaleMiddleware",
+       "django.middleware.common.CommonMiddleware",
+       # ...
+   ]
+   ```
+
+3. The default `LOGIN_MESSAGE` setting is a translatable string. If you override `MULTIFACTOR['LOGIN_MESSAGE']` with your own text and want it translated, wrap it with `gettext_lazy`:
+
+   ```python
+   from django.utils.translation import gettext_lazy as _
+
+   MULTIFACTOR = {
+       # ...
+       "LOGIN_MESSAGE": _('<a href="{}">Manage multifactor settings</a>.'),
+   }
+   ```
+
+### Bundled languages
+
+| Locale | Status     |
+|--------|------------|
+| `en`   | Source (default) |
+
+If you have translated `django-multifactor` into another language, PRs are very welcome — see [Contributing translations](#contributing-translations) below.
+
+### Contributing translations
+
+Translations live in `multifactor/locale/<language>/LC_MESSAGES/django.po`. To add a new language (e.g. French):
+
+1. Clone the repo and install dev dependencies.
+2. From the `multifactor/` directory, generate the catalog for your locale:
+
+   ```bash
+   cd multifactor
+   django-admin makemessages -l fr
+   ```
+
+3. Translate the entries in `multifactor/locale/fr/LC_MESSAGES/django.po`.
+4. Compile the catalog so the `.mo` file is up-to-date:
+
+   ```bash
+   django-admin compilemessages
+   ```
+
+5. Commit both `django.po` and `django.mo` and open a PR.
+
+If you change any source strings, re-run `makemessages -a` (across all locales) and `compilemessages` before releasing so the bundled `.mo` files stay in sync with the source.
+
 # Contributing
 This project welcomes contributions to submit PRs and issues.
 
@@ -190,6 +258,8 @@ To install pre-commit run `pip install pre-commit` then `pre-commit install`.
 To update the pre-commit-config.yaml run `pre-commit autoupdate`.
 
 To run pre-commit hooks againt all files run `pre-commit run --all-files`.
+
+To contribute translations please see the [Contributing translations](#Contributing translations) section
 
 # Testing
 This project uses [tox](https://tox.readthedocs.io/en/latest/) for testing. Install tox via pip and run `tox` to run 

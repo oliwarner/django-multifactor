@@ -10,6 +10,8 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from .common import active_factors, has_multifactor, is_bypassed, method_url
 
@@ -42,7 +44,7 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
 
             def force_authenticate():
                 if django.VERSION < (4, 0) and request.is_ajax():
-                    raise PermissionDenied("Multifactor authentication required")
+                    raise PermissionDenied(_("Multifactor authentication required"))
                 request.session["multifactor-next"] = request.get_full_path()
                 return redirect("multifactor:authenticate")
 
@@ -68,8 +70,11 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                     # has authenticated but not recently enough for this view
                     messages.warning(
                         request,
-                        f"This page requires secondary authentication every {max_age} seconds. "
-                        "Please re-authenticate.",
+                        _(
+                            "This page requires secondary authentication every %(seconds)d seconds. "
+                            "Please re-authenticate."
+                        )
+                        % {"seconds": max_age},
                     )
                     return force_authenticate()
 
@@ -81,8 +86,12 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                 # view needs more active factors than provided
                 messages.warning(
                     request,
-                    f"This page requires {required_factors} active security "
-                    f'factor{"" if required_factors == 1 else "s"}.',
+                    ngettext(
+                        "This page requires %(count)d active security factor.",
+                        "This page requires %(count)d active security factors.",
+                        required_factors,
+                    )
+                    % {"count": required_factors},
                 )
                 return force_authenticate()
 
@@ -91,8 +100,10 @@ def multifactor_protected(factors=0, user_filter=None, max_age=0, advertise=Fals
                 messages.info(
                     request,
                     format_html(
-                        'Make your account more secure by <a href="{}" class="alert-link">adding a second security factor</a> '
-                        "such as a USB Security Token, or an Authenticator App.",
+                        _(
+                            'Make your account more secure by <a href="{}" class="alert-link">adding a second security factor</a> '
+                            "such as a USB Security Token, or an Authenticator App."
+                        ),
                         reverse("multifactor:home"),
                     ),
                 )

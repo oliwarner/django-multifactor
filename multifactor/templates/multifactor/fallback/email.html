@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>{% load i18n %}{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
-    <title>One Time Password</title>
+    <title>{% trans "One Time Password" %}</title>
 </head>
 <body>
     {{ message }}

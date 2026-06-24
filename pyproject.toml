@@ -31,6 +31,8 @@ packages = [
 include = [
     'multifactor/templates/**',
     'multifactor/static/**',
+    'multifactor/locale/**/*.po',
+    'multifactor/locale/**/*.mo',
 ]
 
 [tool.poetry.dependencies]

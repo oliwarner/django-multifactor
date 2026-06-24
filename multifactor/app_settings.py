@@ -1,9 +1,10 @@
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 mf_settings = getattr(settings, "MULTIFACTOR", {})
 
 mf_settings["LOGIN_MESSAGE"] = mf_settings.get(
-    "LOGIN_MESSAGE", 'You are now multifactor-authenticated. <a href="{}">Multifactor settings</a>.'
+    "LOGIN_MESSAGE", _('You are now multifactor-authenticated. <a href="{}">Multifactor settings</a>.')
 )
 mf_settings["SHOW_LOGIN_MESSAGE"] = mf_settings.get("SHOW_LOGIN_MESSAGE", True)
 mf_settings["LOGIN_CALLBACK"] = mf_settings.get("LOGIN_CALLBACK", False)

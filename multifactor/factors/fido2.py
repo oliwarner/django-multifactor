@@ -6,6 +6,7 @@ import fido2.features
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 from fido2.server import Fido2Server
@@ -78,7 +79,7 @@ class Register(PreferMultiAuthMixin, FidoClass):
                 key_type=str(KeyTypes.FIDO2),
             )
             write_session(request, key)
-            messages.success(request, "FIDO2 Token added!")
+            messages.success(request, _("FIDO2 Token added!"))
             return JsonResponse({"status": "OK"})
 
         except:
@@ -86,7 +87,7 @@ class Register(PreferMultiAuthMixin, FidoClass):
             return JsonResponse(
                 {
                     "status": "ERR",
-                    "message": "Error on server, please try again later",
+                    "message": _("Error on server, please try again later"),
                 }
             )
 

@@ -1,12 +1,12 @@
-<!DOCTYPE html>{% load static %}
-<html lang="en">
+<!DOCTYPE html>{% load static i18n %}{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<meta name="description" content="">
 	<meta name="author" content="">
-	<title>{% block title %}Multi-Factor Verification{% endblock %}</title>
+	<title>{% block title %}{% trans "Multi-Factor Verification" %}{% endblock %}</title>
 
 	<link href="{% static 'multifactor/multifactor.css' %}" rel="stylesheet">
 </head>
