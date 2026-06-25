@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "django-multifactor"
-version = "0.0.0"
+version = "0.9.0.post1.dev0+92d86d4"
 description = "Drop-in multifactor authentication subsystem for Django."
 authors = [
-    { name = "Oli Warner", email = "oli@thepcspy.com" },
-    { name = "Steve Mapes", email = "steve@mapestech.co.uk" },
+    "Oli Warner <oli@thepcspy.com>",
+    "Steve Mapes <steve@mapestech.co.uk>",
 ]
 repository = "https://github.com/oliwarner/django-multifactor"
 homepage = "https://github.com/oliwarner/django-multifactor"
@@ -54,7 +54,7 @@ python_files = ["test_*.py", "*_tests.py", "tests.py"]
 # addopts = "--cov=multifactor --cov-report=term-missing --cov-report=xml"
 
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 vcs = "git"
 style = "pep440"
 
