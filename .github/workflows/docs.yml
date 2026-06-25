@@ -1,0 +1,73 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".readthedocs.yaml"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".readthedocs.yaml"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install documentation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r docs/requirements.txt
+
+      - name: Build HTML (treat warnings as errors)
+        run: sphinx-build -W --keep-going -b html docs docs/_build/html
+
+      - name: Upload rendered HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-html
+          path: docs/_build/html
+          retention-days: 14
+
+  trigger-rtd:
+    name: Trigger Read the Docs build
+    runs-on: ubuntu-24.04
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Call Read the Docs build webhook
+        env:
+          RTD_WEBHOOK_URL: ${{ secrets.RTD_WEBHOOK_URL }}
+          RTD_WEBHOOK_TOKEN: ${{ secrets.RTD_WEBHOOK_TOKEN }}
+        run: |
+          if [ -z "$RTD_WEBHOOK_URL" ]; then
+            echo "RTD_WEBHOOK_URL is not configured; skipping Read the Docs trigger." >&2
+            exit 0
+          fi
+          curl --fail --silent --show-error -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"${RTD_WEBHOOK_TOKEN}\", \"branches\": \"main\"}" \
+            "${RTD_WEBHOOK_URL}"

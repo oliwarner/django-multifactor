@@ -2,7 +2,10 @@
 name = "django-multifactor"
 version = "0.0.0"
 description = "Drop-in multifactor authentication subsystem for Django."
-authors = ["Oli Warner <oli@thepcspy.com>"]
+authors = [
+    { name = "Oli Warner", email = "oli@thepcspy.com" },
+    { name = "Steve Mapes", email = "steve@mapestech.co.uk" },
+]
 repository = "https://github.com/oliwarner/django-multifactor"
 homepage = "https://github.com/oliwarner/django-multifactor"
 readme = 'README.md'
