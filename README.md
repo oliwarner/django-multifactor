@@ -11,8 +11,9 @@ This is ***not*** a passwordless authentication system. django-multifactor is a 
 
 ## Documentation
 
-Full documentation is available on Read the Docs: [django-multifactor architecture documentation](https://django-multifactor.readthedocs.io/en/latest/concepts/architecture.html).
+Full documentation is available on [Read the Docs](https://django-multifactor.readthedocs.io/).
 
+## Quick Start
 FIDO2/WebAuthn is the big-ticket item for MFA. It allows the browser to interface with a myriad of biometric and secondary authentication factors.
 
  * **Security keys** (Firefox 60+, Chrome 67+, Edge 18+),

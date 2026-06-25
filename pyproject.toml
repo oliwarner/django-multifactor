@@ -8,6 +8,7 @@ authors = [
 ]
 repository = "https://github.com/oliwarner/django-multifactor"
 homepage = "https://github.com/oliwarner/django-multifactor"
+documentation = "https://django-multifactor.readthedocs.io/en/latest/"
 readme = 'README.md'
 license = "MIT"
 classifiers = [
