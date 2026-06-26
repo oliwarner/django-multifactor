@@ -1,0 +1,617 @@
+# Brazilian Portuguese translations for django-multifactor.
+# Copyright (C) 2026 Oli Warner
+# This file is distributed under the same license as the django-multifactor package.
+#
+# Translators:
+# Alan Queiroz Castelo Branco <alanqcb@gmail.com>, 2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: django-multifactor\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-26 10:30-0300\n"
+"PO-Revision-Date: 2026-06-26\n"
+"Language-Team: pt <LL@li.org>\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\django-multifactor\multifactor\admin.py:9
+msgid "Using Multifactor authentication?"
+msgstr "Usando autenticação multifator?"
+
+#: .\django-multifactor\multifactor\admin.py:14
+msgid "Yes"
+msgstr "Sim"
+
+#: .\django-multifactor\multifactor\admin.py:15
+msgid "No"
+msgstr "Não"
+
+#: .\django-multifactor\multifactor\app_settings.py:7
+#, python-brace-format
+msgid ""
+"You are now multifactor-authenticated. <a href=\"{}\">Multifactor settings</"
+"a>."
+msgstr ""
+"Você agora está multifator-autenticado. <a href=\"{}\">Configurações "
+"multifator</a>."
+
+#: .\django-multifactor\multifactor\apps.py:8
+msgid "Multifactor"
+msgstr "Multifator"
+
+#: .\django-multifactor\multifactor\decorators.py:47
+msgid "Multifactor authentication required"
+msgstr "A autenticação múltipla é obrigatória."
+
+#: .\django-multifactor\multifactor\decorators.py:74
+#, python-format
+msgid ""
+"This page requires secondary authentication every %(seconds)d seconds. "
+"Please re-authenticate."
+msgstr ""
+"Esta página requer autenticação secundária a cada %(seconds)d segundos. Por "
+"favor, re-autentique-se."
+
+#: .\django-multifactor\multifactor\decorators.py:90
+#, python-format
+msgid "This page requires %(count)d active security factor."
+msgid_plural "This page requires %(count)d active security factors."
+msgstr[0] "Esta página requer %(count)d fator de segurança ativo."
+msgstr[1] "Esta página requer %(count)d fatores de segurança ativos."
+
+#: .\django-multifactor\multifactor\decorators.py:104
+#, python-brace-format
+msgid ""
+"Make your account more secure by <a href=\"{}\" class=\"alert-link\">adding "
+"a second security factor</a> such as a USB Security Token, or an "
+"Authenticator App."
+msgstr ""
+"Torne sua conta mais segura <a href=\"{}\" class=\"alert-link\">adicionando "
+"um segundo fator de segurança</a>, como um Token de Segurança USB ou um "
+"Aplicativo Autenticador."
+
+#: .\django-multifactor\multifactor\factors\fallback.py:29
+#, python-format
+msgid "Your one-time-password is: %(otp)s"
+msgstr "Sua senha de uso único é: %(otp)s"
+
+#: .\django-multifactor\multifactor\factors\fallback.py:31
+#, python-format
+msgid ""
+"Dear %(name)s,\n"
+"%(message)s"
+msgstr ""
+"Caro %(name)s,\n"
+"%(message)s"
+
+#: .\django-multifactor\multifactor\factors\fallback.py:52
+msgid ""
+"No fallback one-time-password transport methods worked. Please contact an "
+"administrator."
+msgstr ""
+"Nenhum método de transporte de senha de uso único de fallback funcionou. Por "
+"favor, contate um administrador."
+
+#: .\django-multifactor\multifactor\factors\fallback.py:59
+#, python-format
+msgid "%(items)s and %(last)s"
+msgstr "%(items)s e %(last)s"
+
+#: .\django-multifactor\multifactor\factors\fallback.py:75
+msgid "That key was not correct. Please try again."
+msgstr "Essa chave não está correta. Por favor, tente novamente."
+
+#: .\django-multifactor\multifactor\factors\fallback.py:82
+#: .\django-multifactor\multifactor\templates\multifactor\fallback\email.html:5
+msgid "One Time Password"
+msgstr "Senha de uso único"
+
+#: .\django-multifactor\multifactor\factors\fido2.py:82
+msgid "FIDO2 Token added!"
+msgstr "Token FIDO2 adicionado!"
+
+#: .\django-multifactor\multifactor\factors\fido2.py:90
+msgid "Error on server, please try again later"
+msgstr "Erro no servidor, por favor tente novamente mais tarde"
+
+#: .\django-multifactor\multifactor\factors\totp.py:39
+msgid "TOTP Authenticator added."
+msgstr "Autenticador TOTP adicionado."
+
+#: .\django-multifactor\multifactor\factors\totp.py:42
+#: .\django-multifactor\multifactor\factors\totp.py:55
+msgid "Could not validate key, please try again."
+msgstr "Não foi possível validar a chave, por favor tente novamente."
+
+#: .\django-multifactor\multifactor\models.py:12
+msgid "FIDO2 Security Device"
+msgstr "Dispositivo de Segurança FIDO2"
+
+#: .\django-multifactor\multifactor\models.py:13
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:34
+msgid "TOTP Authenticator"
+msgstr "Autenticador TOTP"
+
+#: .\django-multifactor\multifactor\models.py:24
+msgid ""
+"Easy to remember name to distinguish from any other keys of this sort you "
+"own."
+msgstr ""
+"Nome fácil de lembrar para distinguir de quaisquer outras chaves desse tipo "
+"que você possui."
+
+#: .\django-multifactor\multifactor\models.py:38
+#, python-format
+msgid "%(type)s, aka \"%(name)s\" for %(user)s"
+msgstr "%(type)s, também conhecido como \"%(name)s\" para %(user)s"
+
+#: .\django-multifactor\multifactor\models.py:43
+#, python-format
+msgid "%(type)s for %(user)s"
+msgstr "%(type)s para %(user)s"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:3
+msgid "FIDO2 Security Key"
+msgstr "Chave de Segurança FIDO2"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:7
+msgid "Follow your browser's instructions to continue."
+msgstr "Siga as instruções do seu navegador para continuar."
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:8
+msgid "Click here to Start"
+msgstr "Clique aqui para começar"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:27
+msgid "Error getting registration data!"
+msgstr "Erro ao obter dados de registro!"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:50
+msgid "try again"
+msgstr "tente novamente"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:50
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:52
+msgid "or"
+msgstr "ou"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:50
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:52
+msgid "Go to Multifactor Dashboard"
+msgstr "Ir para o Painel Multifator"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\add.html:52
+msgid "Try again"
+msgstr "Tente novamente"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\check.html:15
+msgid "No credential available to authenticate!"
+msgstr "Nenhuma credencial disponível para autenticar!"
+
+#: .\django-multifactor\multifactor\templates\multifactor\FIDO2\check.html:35
+msgid "Error occured, please reload to try again."
+msgstr "Ocorreu um erro, por favor recarregue para tentar novamente."
+
+#: .\django-multifactor\multifactor\templates\multifactor\TOTP\add.html:3
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:41
+msgid "Add TOTP Authenticator"
+msgstr "Adicionar Autenticador TOTP"
+
+#: .\django-multifactor\multifactor\templates\multifactor\TOTP\add.html:7
+msgid ""
+"Start by downloading an Authenticator App on your phone. <a href='https://"
+"play.google.com/store/apps/details?"
+"id=com.google.android.apps.authenticator2' target='_blank'>Google "
+"Authenticator for Android</a> or <a href='https://itunes.apple.com/us/app/"
+"authy/id494168017' target='_blank'>Authy for iPhones</a>. Use it to scan in "
+"this QR code."
+msgstr ""
+"Comece baixando um aplicativo autenticador no seu telefone. <a href='https://"
+"play.google.com/store/apps/details?"
+"id=com.google.android.apps.authenticator2' target='_blank'>Google "
+"Authenticator para Android</a> ou <a href='https://itunes.apple.com/us/app/"
+"authy/id494168017' target='_blank'>Authy para iPhones</a>. Use-o para "
+"escanear este código QR."
+
+#: .\django-multifactor\multifactor\templates\multifactor\TOTP\add.html:14
+msgid ""
+"Once scanned, your Authenticator will give you a 6-digit, rotating code. "
+"Copy that code into the box below and click Verify."
+msgstr ""
+"Uma vez escaneado, seu Autenticador fornecerá um código de 6 dígitos, "
+"rotativo. Copie esse código na caixa abaixo e clique em Verificar."
+
+#: .\django-multifactor\multifactor\templates\multifactor\TOTP\add.html:22
+msgid "e.g 123456"
+msgstr "Ex: 123456"
+
+#: .\django-multifactor\multifactor\templates\multifactor\TOTP\add.html:26
+#: .\django-multifactor\multifactor\templates\multifactor\fallback\auth.html:16
+msgid "Verify"
+msgstr "Verificar"
+
+#: .\django-multifactor\multifactor\templates\multifactor\TOTP\check.html:3
+msgid "Verify Authenticator"
+msgstr "Verificar Autenticador"
+
+#: .\django-multifactor\multifactor\templates\multifactor\TOTP\check.html:6
+msgid "Enter the current code from one of your authenticators."
+msgstr "Digite o código atual de um dos seus autenticadores."
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:4
+msgid "Add a New Factor"
+msgstr "Adicionar um Novo Fator"
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:9
+msgid ""
+"To protect your account and this system from intrusion we request a second "
+"verification factor."
+msgstr ""
+"Para proteger sua conta e este sistema contra intrusões, solicitamos um "
+"segundo fator de verificação."
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:11
+msgid ""
+"There are a range of options. TOTP authenticators are a good first factor "
+"because most people always have their phone with them. USB and on-device "
+"options might be more secure but have more limited portability."
+msgstr ""
+"Existem várias opções. Autenticadores TOTP são um bom primeiro fator porque "
+"a maioria das pessoas sempre tem seu telefone consigo. Opções USB e no "
+"dispositivo podem ser mais seguras, mas têm portabilidade mais limitada."
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:18
+msgid "FIDO2 Device"
+msgstr "Dispositivo FIDO2"
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:21
+msgid ""
+"A broad range of devices: <a href=\"https://support.microsoft.com/en-gb/help/"
+"4028017/windows-learn-about-windows-hello-and-set-it-up\">Windows Hello</a> "
+"(fingerprint, facial recognition), Google Chrome, Google Android (via "
+"biometrics or location), or FIDO2 USB and NFC keys."
+msgstr ""
+"Uma ampla gama de dispositivos: <a href=\"https://support.microsoft.com/en-"
+"gb/help/4028017/windows-learn-about-windows-hello-and-set-it-up\">Windows "
+"Hello</a> (impressão digital, reconhecimento facial), Google Chrome, Google "
+"Android (via biometria ou localização), ou chaves FIDO2 USB e NFC."
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:22
+msgid ""
+"On-device options are convenient but will lock you to that device. USB keys "
+"are more portable."
+msgstr ""
+"As opções no dispositivo são convenientes, mas irão bloqueá-lo  nesse "
+"dispositivo. As chaves USB são mais portáteis."
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:25
+msgid "Add FIDO2 Device"
+msgstr "Adicionar Dispositivo FIDO2"
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:37
+msgid ""
+"Install an authenticator from your phone's marketplace and get access to a "
+"secure rotating passcode. Once linked, verification is just a matter of "
+"copying that code back into here when prompted."
+msgstr ""
+"Instale um autenticador no mercado do seu telefone e obtenha acesso a uma "
+"senha rotativa segura. Uma vez vinculado, a verificação é apenas uma questão "
+"de copiar esse código de volta para cá quando solicitado."
+
+#: .\django-multifactor\multifactor\templates\multifactor\add.html:38
+msgid "Benefits: free, portable."
+msgstr "Benefícios: gratuito, portátil."
+
+#: .\django-multifactor\multifactor\templates\multifactor\authenticate.html:4
+msgid "Multi-Factor Authentication"
+msgstr "Autenticação Multifator"
+
+#: .\django-multifactor\multifactor\templates\multifactor\authenticate.html:7
+msgid ""
+"You are logged in but you need to verify one of your secondary factors to "
+"continue. Which factor would you like to authenticate with?"
+msgstr ""
+"Você está logado, mas precisa verificar um dos seus fatores secundários para "
+"continuar. Com qual fator você gostaria de autenticar?"
+
+#: .\django-multifactor\multifactor\templates\multifactor\authenticate.html:18
+msgid "Send a one-time-passcode to all your fallback factors."
+msgstr "Enviar um código de uso único para todos os seus fatores de fallback."
+
+#: .\django-multifactor\multifactor\templates\multifactor\authenticate.html:19
+msgid "Request Fallback Token"
+msgstr "Solicitar Token alternativo"
+
+#: .\django-multifactor\multifactor\templates\multifactor\base.html:9
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:4
+msgid "Multi-Factor Verification"
+msgstr "Verificação Multifator"
+
+#: .\django-multifactor\multifactor\templates\multifactor\fallback\auth.html:4
+msgid "Fallback One Time Password"
+msgstr "Senha de uso único alternativa"
+
+#: .\django-multifactor\multifactor\templates\multifactor\fallback\auth.html:7
+#, python-format
+msgid ""
+"A fallback one-time-password has been sent to you via %(succeeded)s. Copy "
+"this code into the box below and click verify."
+msgstr ""
+"Uma senha de uso único alternativa foi enviada para você via %(succeeded)s. "
+"Copie este código na caixa abaixo e clique em verificar."
+
+#: .\django-multifactor\multifactor\templates\multifactor\fallback\auth.html:13
+msgid "e.g 12345678"
+msgstr "Ex: 12345678"
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:4
+msgid "Help with Multifactor"
+msgstr "Ajuda com Multifator"
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:9
+msgid "What is multi-factor authentication?"
+msgstr "O que é autenticação multifator?"
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:10
+msgid ""
+"Traditionally you have logged in with a username and password, maybe "
+"directly, maybe through a single sign-in portal. It's a tried and tested "
+"authentication system but it's weak. People pick bad passwords, enter them "
+"into the wrong places, write them down on paper, give them to the wrong "
+"people."
+msgstr ""
+"Tradicionalmente, você faz login com um nome de usuário e senha, talvez "
+"diretamente, talvez através de um portal de login único. É um sistema de "
+"autenticação testado e comprovado, mas é fraco. As pessoas escolhem senhas "
+"ruins, digitam-nas nos lugares errados, escrevem-nas em papel, dão-nas para "
+"as pessoas erradas."
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:12
+msgid ""
+"Credentials are <strong>something you know</strong>. Multi-factor "
+"authentication adds different types of factor, like <strong>something you "
+"have</strong> (a USB security token, your phone), or <strong>something you "
+"are</strong> (fingerprint, voice scan, location). For somebody to break in, "
+"they would need your credentials <em>and</em> the (eg) Security USB key you "
+"keep on your keychain. It dramatically decreases the threat of phishing and "
+"data breaches."
+msgstr ""
+"Credenciais são <strong>algo que você sabe</strong>. A autenticação "
+"multifatoradiciona diferentes tipos de fatores, como <strong>algo que você "
+"possui</strong>(um token de segurança USB, seu telefone) ou <strong>algo que "
+"você é</strong> (impressão digital, reconhecimento de voz, localização). "
+"Para alguém invadir sua conta, seria necessário ter suas credenciais <em>e</"
+"em> a chave de segurança USB que você mantém no seu chaveiro. Isso diminui "
+"drasticamente a ameaça de phishing e violações de dados."
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:14
+msgid "What are fallback factors?"
+msgstr "O que são fatores alternativos?"
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:15
+msgid ""
+"These are one-time-passcodes over transports like SMS or Email. They "
+"<em>are</em> secondary factors but they are usually weaker, more insecure "
+"and commonly more inconvenient than plugging in a USB key. They are however, "
+"a good defence from getting locked out when your primary factors aren't "
+"available."
+msgstr ""
+"Estes são códigos de uso único enviados por meios como SMS ou Email. Eles "
+"<em>são</em> fatores secundários, mas geralmente são mais fracos, menos "
+"seguros e comumente mais inconvenientes do que conectar uma chave USB. No "
+"entanto, eles são uma boa defesa para evitar ficar bloqueado quando seus "
+"fatores primários não estão disponíveis."
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:16
+msgid ""
+"When you request to authenticate with a secondary factor, we send a the same "
+"OTP to all your devices. If you get a message like this and didn't request "
+"it, it could mean your main account is compromised."
+msgstr ""
+"Quando você solicita autenticar com um fator secundário, enviamos o mesmo "
+"OTP para todos os seus dispositivos. Se você receber uma mensagem como esta "
+"e não a solicitou, isso pode significar que sua conta principal foi "
+"comprometida."
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:18
+msgid ""
+"What happens if I lose my factor or don't have access to it when I need it?"
+msgstr ""
+"O que acontece se eu perder meu fator ou não tiver acesso a ele quando "
+"precisar?"
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:19
+msgid ""
+"<strong>Contact your system administrator immediately.</strong> They can "
+"deactivate or remove your active factors, allowing you to add another."
+msgstr ""
+"<strong>Entre em contato com o administrador do sistema imediatamente.</"
+"strong> Eles podem desativar ou remover seus fatores ativos, permitindo que "
+"você adicione outro."
+
+#: .\django-multifactor\multifactor\templates\multifactor\help.html:20
+msgid ""
+"We recommend you keep a backup secondary factor. Having a FIDO2 token is "
+"convenient (eg just leave your keys plugged in while you're at your "
+"computer) but having a TOTP authenticator will serve as a suitable backup if "
+"you misplace your keys. Additional factors can dilute over-all security."
+msgstr ""
+"Recomendamos que você mantenha um fator secundário de backup. Ter um token "
+"FIDO2 é conveniente (por exemplo, basta deixar suas chaves conectadas "
+"enquanto você está no computador), mas ter um autenticador TOTP servirá como "
+"um backup adequado se você perder suas chaves. Fatores adicionais podem "
+"diluir a segurança geral."
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:9
+msgid "Add New Factor"
+msgstr "Adicionar Novo Fator"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:12
+msgid ""
+"To keep your account secure, you can add one or more secondary "
+"authentication factors. These are commonly USB keys, or codes acquired "
+"through a secure mechanism like an authenticator."
+msgstr ""
+"Para manter sua conta segura, você pode adicionar um ou mais fatores de "
+"autenticação secundários. Estes são comumente chaves USB ou códigos "
+"adquiridos através de um mecanismo seguro, como um autenticador."
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:19
+msgid "Click to rename"
+msgstr "Clique para renomear"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:22
+#, python-format
+msgid "Added %(added)s."
+msgstr "Adicionado %(added)s."
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:22
+#, python-format
+msgid "Used %(used)s ago."
+msgstr "Usado %(used)s atrás."
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:22
+msgid "Never used."
+msgstr "Nunca usado."
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:26
+msgid "Unlocked"
+msgstr "Desbloqueado"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:28
+msgid "Locked, click to authenticate"
+msgstr "Bloqueado, clique para autenticar"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:33
+msgid "Enabled"
+msgstr "Ativado"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:33
+msgid "Disabled"
+msgstr "Desativado"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:37
+msgid "Delete"
+msgstr "Excluir"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:45
+msgid "Fallback verification factors"
+msgstr "Fatores de verificação alternativos"
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:46
+msgid "Consider turning these off for higher security."
+msgstr "Considere desativá-los para maior segurança."
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:53
+#, python-format
+msgid "%(name)s fallback enabled, click to toggle."
+msgstr "%(name)s alternativo ativado, clique para alternar."
+
+#: .\django-multifactor\multifactor\templates\multifactor\home.html:53
+#, python-format
+msgid "%(name)s fallback disabled, click to toggle."
+msgstr "%(name)s alternativo desativado, clique para alternar."
+
+#: .\django-multifactor\multifactor\templates\multifactor\userkey_form.html:4
+#, python-format
+msgid "Rename %(type)s"
+msgstr "Renomear %(type)s"
+
+#: .\django-multifactor\multifactor\templates\multifactor\userkey_form.html:8
+#, python-format
+msgid ""
+"This step is completely optional. Give your %(type)s a better name to help "
+"you distinguish it from your other keys."
+msgstr ""
+"Esta etapa é completamente opcional. Dê ao seu %(type)s um nome melhor para "
+"ajudá-lo a distingui-lo de suas outras chaves."
+
+#: .\django-multifactor\multifactor\templates\multifactor\userkey_form.html:14
+msgid "e.g Keyring USB"
+msgstr "Ex: Chaveiro USB"
+
+#: .\django-multifactor\multifactor\templates\multifactor\userkey_form.html:17
+msgid "Update"
+msgstr "Atualizar"
+
+#: .\django-multifactor\multifactor\views.py:30
+#, python-brace-format
+msgid ""
+"You will not be able to change these settings or add new factors until until "
+"you <a href=\"{}\" class=\"alert-link\">authenticate</a> with one of your "
+"existing secondary factors."
+msgstr ""
+"Você não poderá alterar essas configurações ou adicionar novos fatores até "
+"que você <a href=\"{}\" class=\"alert-link\">autentique</a> com um de seus "
+"fatores secundários existentes."
+
+#: .\django-multifactor\multifactor\views.py:75
+#, python-format
+msgid "%(factor)s has been enabled."
+msgstr "%(factor)s foi ativado."
+
+#: .\django-multifactor\multifactor\views.py:77
+#, python-format
+msgid "%(factor)s has been disabled."
+msgstr "%(factor)s foi desativado."
+
+#: .\django-multifactor\multifactor\views.py:81
+#, python-format
+msgid "%(factor)s not found."
+msgstr "%(factor)s não encontrado."
+
+#: .\django-multifactor\multifactor\views.py:89
+#, python-format
+msgid "%(factor)s has been deleted."
+msgstr "%(factor)s foi excluído."
+
+#: .\django-multifactor\multifactor\views.py:93
+msgid "Couldn't find that factor."
+msgstr "Não foi possível encontrar esse fator."
+
+#: .\django-multifactor\multifactor\views.py:97
+msgid "Invalid fallback."
+msgstr "Alternativo inválido."
+
+#: .\django-multifactor\multifactor\views.py:103
+#, python-format
+msgid "%(name)s fallback factor has been re-enabled."
+msgstr "Fator alternativo %(name)s foi reativado."
+
+#: .\django-multifactor\multifactor\views.py:108
+#, python-format
+msgid "%(name)s fallback factor has been disabled."
+msgstr "Fator alternativo %(name)s foi desativado."
+
+#: .\django-multifactor\multifactor\views.py:171
+#, python-brace-format
+msgid "You also have active domain-locked factors available on: {}"
+msgstr ""
+"Você também tem fatores bloqueados por domínio ativos disponíveis em: {}"
+
+#: .\django-multifactor\multifactor\views.py:189
+#, python-format
+msgid "%(count)d available"
+msgid_plural "%(count)d available"
+msgstr[0] "%(count)d disponível"
+msgstr[1] "%(count)d disponíveis"
+
+#: .\django-multifactor\multifactor\views.py:198
+#, python-format
+msgid "%(count)d other"
+msgid_plural "%(count)d others"
+msgstr[0] "%(count)d outro"
+msgstr[1] "%(count)d outros"
+
+#: .\django-multifactor\multifactor\views.py:202
+#, python-format
+msgid "%(named)s or %(others)s"
+msgstr "%(named)s ou %(others)s"
+
+#: .\django-multifactor\multifactor\views.py:207
+#, python-format
+msgid "%(first)s or %(last)s"
+msgstr "%(first)s ou %(last)s"
