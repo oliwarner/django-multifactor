@@ -41,10 +41,11 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">=3.10, <4.0"
-Django = ">=5.2,<7"
+Django = "5.2.18"
 pyotp = "^2.9"
 fido2 = ">=2.2.1"
 cryptography = ">=49.0.0"
+sqlparse = "0.6.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7,<10"
