@@ -117,8 +117,10 @@ For a step-by-step view of either story, see [Authentication flow](auth-flow.md)
 
 - It is **not** a primary authentication system. Users must already be
   authenticated by Django's normal `login()` before any MFA happens.
-- It does **not** rate-limit OTP attempts itself. Put a generic rate limiter
-  (django-ratelimit, django-axes, your CDN) in front of `multifactor:*` URLs.
+- It limits failed TOTP and fallback OTP attempts **per user** (see
+  [attempt limiting](../reference/settings.md#attempt-limiting)) but does not
+  limit by IP or limit FIDO2. Put a generic rate limiter (django-ratelimit,
+  django-axes, your CDN) in front of `multifactor:*` URLs as well.
 - It does **not** notify users of new factor registrations. If you want a
   "your account just had a new security key added" email, hook
   `signals.post_save` on `UserKey`.

@@ -30,7 +30,58 @@ need to set keys you're not changing.
 | `FACTORS` | `list[str]` | `["FIDO2", "TOTP"]` | Factor types offered on the **Add factor** page. Removing a value here does not disable existing keys of that type. |
 | `FALLBACKS` | `dict[str, tuple[callable, str]]` | `{"email": (lambda u: u.email, "multifactor.factors.fallback.send_email")}` | Out-of-band OTP transports. Keys are short names, values are `(predicate, dotted_path_to_sender)`. Set to `{}` to disable fallback. |
 | `HTML_EMAIL` | `bool` | `True` | Send a multipart text+HTML email when the email fallback transport is used. Set to `False` for text-only. |
+| `TOTP_WINDOW` | `int` (steps) | `1` | How many 30-second TOTP steps either side of "now" are accepted. `1` accepts 3 codes (±30 s) and is the RFC 6238 recommendation. The pre-security-release behaviour was a hard-coded `60` (121 codes, ±30 minutes). See [TOTP window](#totp-window). |
+| `MAX_ATTEMPTS` | `int` | `5` | Failed TOTP / fallback OTP attempts allowed per user within `ATTEMPT_PERIOD` before the user is logged out and locked out of further attempts. `0` disables the limit. Needs a real [cache](#attempt-limiting). |
+| `ATTEMPT_PERIOD` | `int` (seconds) | `300` | How long failed attempts are counted for, and therefore how long a lockout lasts. The clock starts at the first failure. |
 | `BYPASS` | `str \| None` | `None` | Dotted import path of a callable `(request)` that returns truthy to skip MFA for this request. See [conditional bypass](../guides/conditional-bypass.md). |
+
+## TOTP window
+
+`TOTP_WINDOW` is the number of 30-second steps accepted either side of the
+current one.
+
+| `TOTP_WINDOW` | Valid codes at once | Device clock tolerance | Guesses for a 50% chance (1,000,000 codes) |
+| --- | --- | --- | --- |
+| `1` (default) | 3 | ±30 s | ~231,000 |
+| `3` | 7 | ±90 s | ~99,000 |
+| `60` (old behaviour) | 121 | ±30 min | ~5,700 |
+
+Keep it at `1` unless you have users with demonstrably drifting clocks, and
+fix the clock (NTP on the server, automatic time on the device) before raising
+it. Each increase makes guessing proportionally easier. The same value is used
+when enrolling a new authenticator.
+
+Each accepted code is also recorded against the key (`properties["last_step"]`)
+and cannot be used again, nor can any earlier code.
+
+## Attempt limiting
+
+Failed TOTP and fallback-OTP attempts are counted **per user**, in a single
+shared counter, so alternating between the two factors doesn't give extra
+guesses. When `MAX_ATTEMPTS` failures happen within `ATTEMPT_PERIOD` seconds
+the user is logged out, a `WARNING` is logged to `multifactor.throttle`, and
+every further attempt is refused until the period ends, even with a correct
+code. A successful verification resets the counter.
+
+- **Needs a cache.** Counters use Django's default cache. `DummyCache` forgets
+  everything (a system check, `multifactor.W001`, warns about this) and
+  `LocMemCache` is per-process, so with several workers the effective limit is
+  multiplied. Use Redis, Memcached or the database cache in production.
+- **A cache outage blocks OTP logins.** The counters are read and written on
+  every TOTP and fallback attempt. If the cache backend is unreachable (for
+  example Redis is down) and raises, those views return a 500 and users can't
+  complete a TOTP or fallback challenge until it recovers. This fails closed
+  on purpose: swallowing the error would let anyone who can disrupt the cache
+  guess codes without limit. FIDO2 does not use the cache and is unaffected.
+  Monitor your cache as you would a database, and if you need to keep logins
+  working through an outage, set `MAX_ATTEMPTS` to `0` and rate-limit at the
+  edge instead.
+- **Per user, not per IP.** Someone who knows a user's password can therefore
+  lock that user out of MFA for `ATTEMPT_PERIOD`. This is the usual trade-off;
+  the alternative is unlimited guessing. Add per-IP limiting at your proxy or
+  with `django-ratelimit` as well.
+- **Not a replacement** for a rate limit in front of your application. See
+  [best practices](../security/best-practices.md#4-rate-limit-the-mfa-endpoints).
 
 ## Common patterns
 

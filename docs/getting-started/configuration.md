@@ -19,6 +19,9 @@ MULTIFACTOR = {
     "FIDO_SERVER_ICON": None,
     # ---- TOTP authenticator apps ----
     "TOKEN_ISSUER_NAME": "My Django App",
+    "TOTP_WINDOW": 1,  # 30 s steps accepted either side of now; was 60 before the security update
+    "MAX_ATTEMPTS": 5,  # failed TOTP/fallback attempts per user before lockout (0 = off)
+    "ATTEMPT_PERIOD": 60 * 5,  # seconds failures are counted for / lockout lasts
     # ---- Available factor types ----
     "FACTORS": ["FIDO2", "TOTP"],
     # ---- Fallback OTP transports ----

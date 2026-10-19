@@ -224,6 +224,10 @@ pattern.
 - **Rate-limit `/admin/multifactor/fallback/auth/`.** Generating fresh OTPs
   is essentially free for an attacker; sending hundreds of emails is not
   free for *you*. Cap per-IP and per-user.
+  Guessing is limited per user by `MAX_ATTEMPTS`; sending is not.
+- **Know when the route disappears.** With `FALLBACKS = {}` the fallback URL
+  returns 404. An OTP is only kept in the session once a transport has
+  delivered it.
 - **Log every dispatch.** Both successes and failures. A spike in fallback
   use across many users is a phishing-campaign signature.
 - **Audit your predicates.** A predicate that returns a phone number copied

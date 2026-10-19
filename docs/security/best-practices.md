@@ -43,8 +43,15 @@ existing FIDO2 key.
 
 ## 4. Rate-limit the MFA endpoints
 
-The package does not rate-limit on its own. Without this, an attacker with
-a leaked session can brute-force a 6-digit TOTP or the 8-digit fallback OTP.
+The package limits failed TOTP and fallback attempts **per user**
+(`MAX_ATTEMPTS`, default 5 per `ATTEMPT_PERIOD` of 5 minutes), using Django's
+cache. Make sure your default cache is shared between workers (Redis,
+Memcached or the database cache). `DummyCache` disables the limit, and the
+`multifactor.W001` system check warns about it.
+
+That built-in limit is keyed on the user only. You should still add per-IP
+limiting, and limit FIDO2, because without it an attacker can spread guesses
+across many accounts and a locked-out user is a denial of service.
 
 Two options:
 

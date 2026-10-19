@@ -44,9 +44,15 @@ See [FIDO2 troubleshooting](fido2-troubleshooting.md).
   algorithm depends on synchronised clocks (within a few seconds).
 - **Wrong secret** — the user scanned an old QR, or has two accounts and
   scanned the wrong one.
-- **Window too tight** — the package ships with `valid_window=60` (very
-  generous). If you've subclassed to tighten it, loosen it again until you
-  isolate the cause.
+- **Window too tight** — `TOTP_WINDOW` defaults to `1` (±30 seconds). If
+  you're sure the clocks are right, temporarily set `TOTP_WINDOW` to `3`
+  to confirm drift is the cause, then fix the clock. Releases before the
+  security update accepted ±30 minutes, so drift that used to go unnoticed
+  can now fail.
+- **Locked out** — after `MAX_ATTEMPTS` (default 5) failures the user is logged
+  out and further attempts are refused for `ATTEMPT_PERIOD` (default 5
+  minutes). Wait, or clear the cache entry (see
+  [TOTP troubleshooting](totp-troubleshooting.md#symptom-too-many-failed-attempts)).
 
 Full triage: [TOTP troubleshooting](totp-troubleshooting.md).
 
