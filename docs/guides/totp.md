@@ -119,10 +119,10 @@ loss: delete the old `UserKey` via the admin and have them re-enrol.
 
 ## Hardening recommendations
 
-- **Use a real cache for attempt limiting.** A 6-digit code has only
-  1,000,000 possibilities. The built-in limit (`MAX_ATTEMPTS`, default 5 per
-  5 minutes per user) relies on Django's cache, so it needs one shared between
-  workers. See [attempt limiting](../reference/settings.md#attempt-limiting).
+- **Keep attempt limiting on.** A 6-digit code has only 1,000,000
+  possibilities. The built-in limit (5 failures in 5 minutes locks the user out
+  for 30, per user) is recorded in the database; see
+  [attempt limiting](../reference/settings.md#attempt-limiting).
 - **Also rate-limit `multifactor:totp_auth` per IP** with
   [`django-ratelimit`](https://django-ratelimit.readthedocs.io/) or your CDN.
   The built-in limit is per user.

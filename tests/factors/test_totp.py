@@ -2,12 +2,11 @@ from unittest.mock import patch
 
 import pyotp
 from django.contrib.auth import get_user_model
-from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from multifactor.factors.totp import matching_step
-from multifactor.models import KeyTypes, UserKey
+from multifactor.models import AuthAttempt, KeyTypes, UserKey
 
 SECRET = "JBSWY3DPEHPK3PXP"
 NOW = 1_700_000_000  # arbitrary fixed instant
@@ -26,11 +25,9 @@ def at_now(test):
 @override_settings(
     ROOT_URLCONF="testsite.testsite.urls",
     MULTIFACTOR={"TOKEN_ISSUER_NAME": "Django App"},
-    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
 )
 class TOTPTests(TestCase):
     def setUp(self):
-        cache.clear()
         self.user = get_user_model().objects.create_user(
             username="alice",
             email="alice@example.com",
@@ -153,9 +150,23 @@ class TOTPTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    # Throttling
+    # Attempt logging and lockout
 
-    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 3, "ATTEMPT_PERIOD": 300})
+    def attempts(self, outcome):
+        return AuthAttempt.objects.filter(user=self.user, factor="TOTP", outcome=outcome).count()
+
+    def test_attempts_are_logged(self):
+        self.make_key()
+        url = reverse("multifactor:totp_auth")
+
+        with at_now(self):
+            self.client.post(url, {"answer": "000000"})
+            self.client.post(url, {"answer": code_at(STEP)})
+
+        self.assertEqual(self.attempts("failure"), 1)
+        self.assertEqual(self.attempts("success"), 1)
+
+    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 3})
     def test_lockout_after_max_failures_logs_user_out(self):
         self.make_key()
         url = reverse("multifactor:totp_auth")
@@ -168,7 +179,7 @@ class TOTPTests(TestCase):
         self.assertEqual(locked.status_code, 302)
         self.assertNotIn("_auth_user_id", self.client.session)
 
-    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 2, "ATTEMPT_PERIOD": 300})
+    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 2})
     def test_locked_user_cannot_pass_with_a_valid_code(self):
         self.make_key()
         url = reverse("multifactor:totp_auth")
@@ -183,8 +194,30 @@ class TOTPTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertNotIn("_auth_user_id", self.client.session)
         self.assertFalse(self.client.session.get("multifactor"))
+        self.assertEqual(self.attempts("blocked"), 1)
+        self.assertEqual(self.attempts("success"), 0)
 
-    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 3, "ATTEMPT_PERIOD": 300})
+    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 3})
+    def test_blocked_attempts_do_not_extend_the_lockout(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        self.make_key()
+        now = timezone.now()
+        for seconds_ago in (3000, 2900, 2800):  # lockout (30 min) ended well before now
+            AuthAttempt.objects.create(
+                user=self.user, factor="TOTP", outcome="failure", timestamp=now - timedelta(seconds=seconds_ago)
+            )
+        AuthAttempt.objects.create(user=self.user, factor="TOTP", outcome="blocked")
+
+        with at_now(self):
+            response = self.client.post(reverse("multifactor:totp_auth"), {"answer": code_at(STEP)})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(self.client.session["multifactor"])
+
+    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 3})
     def test_success_resets_the_failure_count(self):
         self.make_key()
         url = reverse("multifactor:totp_auth")
@@ -206,3 +239,5 @@ class TOTPTests(TestCase):
         with at_now(self):
             for _ in range(20):
                 self.assertEqual(self.client.post(url, {"answer": "000000"}).status_code, 200)
+
+        self.assertEqual(AuthAttempt.objects.count(), 0)

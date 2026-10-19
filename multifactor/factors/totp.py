@@ -13,7 +13,7 @@ from ..app_settings import mf_settings
 from ..common import login, write_session
 from ..mixins import PreferMultiAuthMixin
 from ..models import KeyTypes, UserKey
-from ..throttle import is_locked, lock_out, record_failure, reset
+from ..throttle import begin_attempt, is_locked, lock_out, succeed
 
 
 def matching_step(totp, token, last_step=None):
@@ -70,16 +70,17 @@ class Auth(LoginRequiredMixin, TemplateView):
     template_name = "multifactor/TOTP/check.html"
 
     def post(self, request, *args, **kwargs):
-        if is_locked(request.user):
+        attempt = begin_attempt(request.user, str(KeyTypes.TOTP))
+        if attempt is None:
             return lock_out(request)
 
         key = self.verify_login(token=request.POST.get("answer", ""))
         if key:
-            reset(request.user)
+            succeed(attempt)
             write_session(request, key)
             return login(request)
 
-        if record_failure(request.user):
+        if is_locked(request.user):  # this failure was the one that tripped the limit
             return lock_out(request)
 
         messages.error(request, _("Could not validate key, please try again."))

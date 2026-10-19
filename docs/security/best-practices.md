@@ -43,11 +43,11 @@ existing FIDO2 key.
 
 ## 4. Rate-limit the MFA endpoints
 
-The package limits failed TOTP and fallback attempts **per user**
-(`MAX_ATTEMPTS`, default 5 per `ATTEMPT_PERIOD` of 5 minutes), using Django's
-cache. Make sure your default cache is shared between workers (Redis,
-Memcached or the database cache). `DummyCache` disables the limit, and the
-`multifactor.W001` system check warns about it.
+The package limits failed TOTP and fallback attempts **per user**: 5 failures
+within 5 minutes (`MAX_ATTEMPTS`, `ATTEMPT_PERIOD`) lock the user out for 30
+minutes (`LOCKOUT_PERIOD`). Attempts are stored in the database, so this works
+with any cache configuration and is visible in the admin. Schedule
+`manage.py prune_mfa_attempts` to keep the table small.
 
 That built-in limit is keyed on the user only. You should still add per-IP
 limiting, and limit FIDO2, because without it an attacker can spread guesses

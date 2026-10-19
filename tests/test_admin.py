@@ -157,3 +157,14 @@ class AdminTests(TestCase):
         self.assertTrue(instances)
         self.assertIn(MultiFactorInline, ma.inlines)
         self.assertEqual(ma.inlines.count(MultiFactorInline), 1)
+
+
+class AuthAttemptAdminTests(TestCase):
+    def test_attempt_log_is_registered_and_read_only(self):
+        from multifactor.models import AuthAttempt
+
+        model_admin = admin.site._registry[AuthAttempt]
+        request = RequestFactory().get("/")
+
+        self.assertFalse(model_admin.has_add_permission(request))
+        self.assertFalse(model_admin.has_change_permission(request))

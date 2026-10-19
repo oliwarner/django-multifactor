@@ -18,23 +18,30 @@ class InitTests(SimpleTestCase):
         self.assertFalse(hasattr(module, "default_app_config"))
 
 
-class AttemptCacheCheckTests(SimpleTestCase):
-    DUMMY = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
-    LOCMEM = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+class LockoutPeriodCheckTests(SimpleTestCase):
+    def run_check(self, **overrides):
+        from multifactor.checks import check_lockout_period
 
-    def run_check(self):
-        from multifactor.apps import check_attempt_cache
+        with patch.dict("multifactor.app_settings.mf_settings", overrides):
+            return check_lockout_period()
 
-        return check_attempt_cache()
+    def test_warns_when_lockout_is_shorter_than_attempt_period(self):
+        warnings = self.run_check(ATTEMPT_PERIOD=300, LOCKOUT_PERIOD=60)
 
-    def test_warns_when_cache_is_dummy(self):
-        with self.settings(CACHES=self.DUMMY):
-            self.assertEqual([w.id for w in self.run_check()], ["multifactor.W001"])
+        self.assertEqual([w.id for w in warnings], ["multifactor.W001"])
 
-    def test_silent_with_a_real_cache(self):
-        with self.settings(CACHES=self.LOCMEM):
-            self.assertEqual(self.run_check(), [])
+    def test_silent_when_lockout_equals_attempt_period(self):
+        self.assertEqual(self.run_check(ATTEMPT_PERIOD=300, LOCKOUT_PERIOD=300), [])
 
-    def test_silent_when_attempt_limiting_disabled(self):
-        with self.settings(CACHES=self.DUMMY), patch.dict("multifactor.app_settings.mf_settings", {"MAX_ATTEMPTS": 0}):
-            self.assertEqual(self.run_check(), [])
+    def test_silent_with_the_defaults(self):
+        self.assertEqual(self.run_check(ATTEMPT_PERIOD=300, LOCKOUT_PERIOD=1800), [])
+
+    def test_silent_when_attempt_limiting_is_disabled(self):
+        self.assertEqual(self.run_check(MAX_ATTEMPTS=0, ATTEMPT_PERIOD=300, LOCKOUT_PERIOD=60), [])
+
+    def test_check_is_registered(self):
+        from django.core.checks import registry
+
+        from multifactor.checks import check_lockout_period
+
+        self.assertIn(check_lockout_period, registry.registry.registered_checks)

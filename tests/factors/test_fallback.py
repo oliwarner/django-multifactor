@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.core.cache import cache
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
@@ -12,15 +11,11 @@ from multifactor.factors.fallback import (
     debug_print_console,
     send_email,
 )
-from multifactor.models import DisabledFallback
-
-LOCMEM_CACHE = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+from multifactor.models import AuthAttempt, DisabledFallback
 
 
-@override_settings(CACHES=LOCMEM_CACHE)
 class FallbackTests(TestCase):
     def setUp(self):
-        cache.clear()
         self.user = get_user_model().objects.create_user(
             username="alice",
             email="alice@example.com",
@@ -114,7 +109,7 @@ class FallbackTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 3, "ATTEMPT_PERIOD": 300})
+    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 3})
     def test_lockout_after_max_failures_invalidates_otp_and_logs_out(self):
         session = self.client.session
         session[SESSION_KEY] = "12345678"
@@ -130,7 +125,7 @@ class FallbackTests(TestCase):
         self.assertEqual(locked.status_code, 302)
         self.assertNotIn("_auth_user_id", self.client.session)
 
-    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 2, "ATTEMPT_PERIOD": 300})
+    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 2})
     def test_locked_user_cannot_pass_with_the_correct_otp(self):
         url = "/admin/multifactor/fallback/auth/"
 
@@ -151,11 +146,9 @@ class FallbackTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertNotIn("_auth_user_id", self.client.session)
 
-    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 2, "ATTEMPT_PERIOD": 300})
+    @patch.dict("multifactor.throttle.mf_settings", {"MAX_ATTEMPTS": 2})
     def test_failures_are_shared_with_totp(self):
-        from multifactor.throttle import record_failure
-
-        record_failure(self.user)  # one failed TOTP attempt
+        AuthAttempt.objects.create(user=self.user, factor="TOTP", outcome="failure")  # one failed TOTP attempt
         session = self.client.session
         session[SESSION_KEY] = "12345678"
         session[SESSION_KEY_SUCCEEDED] = "email"

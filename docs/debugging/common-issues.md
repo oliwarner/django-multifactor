@@ -49,9 +49,9 @@ See [FIDO2 troubleshooting](fido2-troubleshooting.md).
   to confirm drift is the cause, then fix the clock. Releases before the
   security update accepted ±30 minutes, so drift that used to go unnoticed
   can now fail.
-- **Locked out** — after `MAX_ATTEMPTS` (default 5) failures the user is logged
-  out and further attempts are refused for `ATTEMPT_PERIOD` (default 5
-  minutes). Wait, or clear the cache entry (see
+- **Locked out** — `MAX_ATTEMPTS` (default 5) failures within
+  `ATTEMPT_PERIOD` (5 minutes) log the user out and refuse further attempts for
+  `LOCKOUT_PERIOD` (30 minutes). Wait, or delete their failed attempts (see
   [TOTP troubleshooting](totp-troubleshooting.md#symptom-too-many-failed-attempts)).
 
 Full triage: [TOTP troubleshooting](totp-troubleshooting.md).

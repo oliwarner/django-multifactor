@@ -14,7 +14,7 @@ from django.views.generic import TemplateView
 
 from ..app_settings import mf_settings
 from ..common import disabled_fallbacks, login, write_session
-from ..throttle import is_locked, lock_out, record_failure, reset
+from ..throttle import begin_attempt, is_locked, lock_out, succeed
 
 logger = logging.getLogger(__name__)
 
@@ -78,21 +78,23 @@ class Auth(LoginRequiredMixin, TemplateView):
         )
 
     def post(self, request):
-        if is_locked(request.user):
-            return lock_out(request)
-
         expected = request.session.get(SESSION_KEY)
         if not expected:
             messages.error(request, _("No one-time-password has been sent. Please request a new one."))
             return redirect("multifactor:fallback_auth")
 
+        attempt = begin_attempt(request.user, "FALLBACK")
+        if attempt is None:
+            request.session.pop(SESSION_KEY, None)
+            return lock_out(request)
+
         if secrets.compare_digest(expected.encode(), request.POST.get("otp", "").strip().encode()):
+            succeed(attempt)
             request.session.pop(SESSION_KEY)
-            reset(request.user)
             write_session(request, key=None)
             return login(request)
 
-        if record_failure(request.user):
+        if is_locked(request.user):
             request.session.pop(SESSION_KEY, None)
             return lock_out(request)
 

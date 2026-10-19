@@ -61,19 +61,19 @@ reused to log in straight away, must wait for the next 30-second code.
 ## Symptom: "Too many failed attempts"
 
 After `MAX_ATTEMPTS` failed TOTP or fallback attempts within `ATTEMPT_PERIOD`
-the user is logged out and locked out until the period expires. The failures are
-logged at `WARNING` on the `multifactor.throttle` logger. To clear a lockout
-early from a Django shell:
+the user is logged out and locked out until `LOCKOUT_PERIOD` has passed since
+their latest failure. Every attempt is stored as an `AuthAttempt` (visible in
+the Django admin) and lockouts are logged at `WARNING` on the
+`multifactor.throttle` logger.
+
+To lift a lockout early, delete that user's recent failures, in the admin or
+from a Django shell:
 
 ```python
-from django.contrib.auth import get_user_model
-from multifactor.throttle import reset
+from multifactor.models import AuthAttempt
 
-reset(get_user_model().objects.get(username="alice"))
+AuthAttempt.objects.filter(user__username="alice", outcome="failure").delete()
 ```
-
-If you never see lockouts, check you have a real cache configured; the
-`multifactor.W001` system check warns when you don't.
 
 ## Symptom: QR code won't scan
 

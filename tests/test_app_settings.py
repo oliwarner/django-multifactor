@@ -31,6 +31,8 @@ class AppSettingsTests(SimpleTestCase):
         self.assertEqual(app_settings.mf_settings["TOTP_WINDOW"], 1)
         self.assertEqual(app_settings.mf_settings["MAX_ATTEMPTS"], 5)
         self.assertEqual(app_settings.mf_settings["ATTEMPT_PERIOD"], 300)
+        self.assertEqual(app_settings.mf_settings["LOCKOUT_PERIOD"], 1800)
+        self.assertEqual(app_settings.mf_settings["ATTEMPT_RETENTION_DAYS"], 90)
         self.assertEqual(
             app_settings.mf_settings["FALLBACKS"]["email"][1],
             "multifactor.factors.fallback.send_email",

@@ -35,9 +35,12 @@ mf_settings["BYPASS"] = mf_settings.get("BYPASS", None)
 # device clock drift: 60 (the old behaviour) accepts 121 codes, ie +/-30 minutes.
 mf_settings["TOTP_WINDOW"] = mf_settings.get("TOTP_WINDOW", 1)
 
-# Failed TOTP / fallback OTP attempts allowed per user within ATTEMPT_PERIOD seconds
-# before the user is logged out and further attempts are refused until the period
-# expires. Set MAX_ATTEMPTS to 0 to disable. Counters live in Django's cache, so
-# production needs a cache shared between workers (Redis, Memcached, database).
+# Every TOTP / fallback OTP attempt is stored in the database (AuthAttempt). A user is
+# locked out once they have MAX_ATTEMPTS failures, since their last success, that all fall
+# within ATTEMPT_PERIOD seconds of each other. The lockout lasts LOCKOUT_PERIOD seconds from
+# the most recent failure. Set MAX_ATTEMPTS to 0 to disable. Rows older than
+# ATTEMPT_RETENTION_DAYS are removed by the `prune_mfa_attempts` management command.
 mf_settings["MAX_ATTEMPTS"] = mf_settings.get("MAX_ATTEMPTS", 5)
 mf_settings["ATTEMPT_PERIOD"] = mf_settings.get("ATTEMPT_PERIOD", 60 * 5)
+mf_settings["LOCKOUT_PERIOD"] = mf_settings.get("LOCKOUT_PERIOD", 60 * 30)
+mf_settings["ATTEMPT_RETENTION_DAYS"] = mf_settings.get("ATTEMPT_RETENTION_DAYS", 90)

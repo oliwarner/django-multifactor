@@ -31,8 +31,10 @@ need to set keys you're not changing.
 | `FALLBACKS` | `dict[str, tuple[callable, str]]` | `{"email": (lambda u: u.email, "multifactor.factors.fallback.send_email")}` | Out-of-band OTP transports. Keys are short names, values are `(predicate, dotted_path_to_sender)`. Set to `{}` to disable fallback. |
 | `HTML_EMAIL` | `bool` | `True` | Send a multipart text+HTML email when the email fallback transport is used. Set to `False` for text-only. |
 | `TOTP_WINDOW` | `int` (steps) | `1` | How many 30-second TOTP steps either side of "now" are accepted. `1` accepts 3 codes (±30 s) and is the RFC 6238 recommendation. The pre-security-release behaviour was a hard-coded `60` (121 codes, ±30 minutes). See [TOTP window](#totp-window). |
-| `MAX_ATTEMPTS` | `int` | `5` | Failed TOTP / fallback OTP attempts allowed per user within `ATTEMPT_PERIOD` before the user is logged out and locked out of further attempts. `0` disables the limit. Needs a real [cache](#attempt-limiting). |
-| `ATTEMPT_PERIOD` | `int` (seconds) | `300` | How long failed attempts are counted for, and therefore how long a lockout lasts. The clock starts at the first failure. |
+| `MAX_ATTEMPTS` | `int` | `5` | Failures (since the user's last success) that, if they all fall within `ATTEMPT_PERIOD`, lock the user out. Applies to TOTP and fallback OTP together. `0` disables attempt logging and lockout. See [attempt limiting](#attempt-limiting). |
+| `ATTEMPT_PERIOD` | `int` (seconds) | `300` | The sliding window in which `MAX_ATTEMPTS` failures trigger a lockout. |
+| `LOCKOUT_PERIOD` | `int` (seconds) | `1800` | How long a lockout lasts, measured from the user's most recent failure. Keep it **at least as long as `ATTEMPT_PERIOD`**; see [the lockout length caveat](#keep-lockout_period-at-least-attempt_period). |
+| `ATTEMPT_RETENTION_DAYS` | `int` (days) | `90` | Age after which `manage.py prune_mfa_attempts` deletes logged attempts. |
 | `BYPASS` | `str \| None` | `None` | Dotted import path of a callable `(request)` that returns truthy to skip MFA for this request. See [conditional bypass](../guides/conditional-bypass.md). |
 
 ## TOTP window
@@ -56,32 +58,62 @@ and cannot be used again, nor can any earlier code.
 
 ## Attempt limiting
 
-Failed TOTP and fallback-OTP attempts are counted **per user**, in a single
-shared counter, so alternating between the two factors doesn't give extra
-guesses. When `MAX_ATTEMPTS` failures happen within `ATTEMPT_PERIOD` seconds
-the user is logged out, a `WARNING` is logged to `multifactor.throttle`, and
-every further attempt is refused until the period ends, even with a correct
-code. A successful verification resets the counter.
+Every TOTP and fallback-OTP attempt is stored in the database as an
+`AuthAttempt` row (`user`, `factor`, `outcome`, `timestamp`). There is no
+separate counter: whether a user is locked out is worked out from those rows.
 
-- **Needs a cache.** Counters use Django's default cache. `DummyCache` forgets
-  everything (a system check, `multifactor.W001`, warns about this) and
-  `LocMemCache` is per-process, so with several workers the effective limit is
-  multiplied. Use Redis, Memcached or the database cache in production.
-- **A cache outage blocks OTP logins.** The counters are read and written on
-  every TOTP and fallback attempt. If the cache backend is unreachable (for
-  example Redis is down) and raises, those views return a 500 and users can't
-  complete a TOTP or fallback challenge until it recovers. This fails closed
-  on purpose: swallowing the error would let anyone who can disrupt the cache
-  guess codes without limit. FIDO2 does not use the cache and is unaffected.
-  Monitor your cache as you would a database, and if you need to keep logins
-  working through an outage, set `MAX_ATTEMPTS` to `0` and rate-limit at the
-  edge instead.
-- **Per user, not per IP.** Someone who knows a user's password can therefore
-  lock that user out of MFA for `ATTEMPT_PERIOD`. This is the usual trade-off;
-  the alternative is unlimited guessing. Add per-IP limiting at your proxy or
-  with `django-ratelimit` as well.
-- **Not a replacement** for a rate limit in front of your application. See
+A user is **locked out** when their most recent `MAX_ATTEMPTS` failures since
+their last success all fall within `ATTEMPT_PERIOD` seconds of each other (a
+sliding window, not one that resets on a timer). The lockout lasts until
+`LOCKOUT_PERIOD` seconds after their latest failure. While locked out:
+
+- the user is logged out and a `WARNING` is logged to `multifactor.throttle`;
+- every attempt is refused, even with a correct code, and recorded with outcome
+  `blocked`. Blocked attempts are **not** counted as failures, so hammering the
+  endpoint can't extend a lockout indefinitely.
+
+A successful verification ends the run of failures. TOTP and fallback share the
+one log, so alternating between them doesn't give extra guesses.
+
+With the defaults, an attacker gets 5 guesses and is then locked out for 30
+minutes, about 240 guesses a day against one account.
+
+#### Keep `LOCKOUT_PERIOD` at least `ATTEMPT_PERIOD`
+
+When a lockout ends, the failures that caused it are still in the log. They
+only stop counting against the user because the newest `MAX_ATTEMPTS` failures,
+which now include an old one, span more than `ATTEMPT_PERIOD`. That holds only
+if `LOCKOUT_PERIOD >= ATTEMPT_PERIOD`.
+
+If you set `LOCKOUT_PERIOD` **shorter** than `ATTEMPT_PERIOD` (say a 60 second
+lockout with a 300 second window), the old failures are still inside the window
+when the lockout ends. A single new failure then makes the latest
+`MAX_ATTEMPTS` failures fit in the window again, and the user is locked out
+straight away, with no fresh set of attempts. Don't configure it that way unless
+you intend a very strict "one strike" policy after a lockout.
+The system check `multifactor.W001` (shown by `manage.py check`) warns when
+the settings are configured this way.
+
+- **Uses the database, not the cache.** Nothing depends on how your cache is
+  configured or whether it is shared between workers. It adds one small write
+  per attempt (plus one more when the code is accepted) and a lockout lookup.
+  The user's row is locked while an attempt is reserved so parallel requests
+  can't all slip past the limit.
+- **Admins can see it.** `AuthAttempt` is registered in the Django admin as a
+  read-only log, filterable by outcome and factor. To lift a lockout early,
+  delete that user's recent `failure` rows there.
+- **Prune it.** Run `manage.py prune_mfa_attempts` periodically (cron or a
+  scheduler); it removes rows older than `ATTEMPT_RETENTION_DAYS`, or pass
+  `--days N`. The log stores usernames and timestamps only, no IP addresses.
+- **Per user, not per IP.** Someone who knows a user's password can lock that
+  user out of MFA for `LOCKOUT_PERIOD` by failing deliberately. That is the
+  trade-off against unlimited guessing; shorten `LOCKOUT_PERIOD` if it worries
+  you more than guessing. Add per-IP limiting at your proxy or with
+  `django-ratelimit` as well.
+- **Not a replacement** for a rate limit in front of your application, and it
+  does not cover FIDO2. See
   [best practices](../security/best-practices.md#4-rate-limit-the-mfa-endpoints).
+- **Needs a migration** (`python manage.py migrate multifactor`).
 
 ## Common patterns
 
