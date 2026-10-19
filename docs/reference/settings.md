@@ -78,7 +78,7 @@ one log, so alternating between them doesn't give extra guesses.
 With the defaults, an attacker gets 5 guesses and is then locked out for 30
 minutes, about 240 guesses a day against one account.
 
-#### Keep `LOCKOUT_PERIOD` at least `ATTEMPT_PERIOD`
+### Keep `LOCKOUT_PERIOD` at least `ATTEMPT_PERIOD`
 
 When a lockout ends, the failures that caused it are still in the log. They
 only stop counting against the user because the newest `MAX_ATTEMPTS` failures,
