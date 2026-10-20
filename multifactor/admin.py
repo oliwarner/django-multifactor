@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Exists, OuterRef
 from django.utils.translation import gettext_lazy as _
 
-from .models import UserKey
+from .models import AuthAttempt, UserKey
 
 
 class HasMultifactorFilter(admin.SimpleListFilter):
@@ -68,3 +68,23 @@ class MultifactorUserAdmin(admin.ModelAdmin):
             )
 
         return super().get_inline_instances(request, obj)
+
+
+@admin.register(AuthAttempt)
+class AuthAttemptAdmin(admin.ModelAdmin):
+    """Read-only log of TOTP / fallback OTP attempts.
+
+    Deleting a user's recent failures is how an administrator lifts a lockout early.
+    """
+
+    list_display = ("timestamp", "user", "factor", "outcome")
+    list_filter = ("outcome", "factor")
+    search_fields = ("user__username",)
+    date_hierarchy = "timestamp"
+    raw_id_fields = ("user",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

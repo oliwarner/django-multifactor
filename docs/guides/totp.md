@@ -30,16 +30,33 @@ recognisable — "Acme HR Portal" rather than "django".
 5. The user scans the QR. Their app now generates a fresh 6-digit code every
    30 seconds derived from `HMAC-SHA1(secret, floor(time/30))`.
 6. The user types the current code; the server runs
-   `pyotp.TOTP(secret).verify(token, valid_window=60)` and, on success,
+   checks it against the codes for the current time step and
+   `MULTIFACTOR["TOTP_WINDOW"]` steps either side of it, and on success
    creates a `UserKey` row with the secret in `properties["secret_key"]`.
 
-The `valid_window=60` value is 60 *steps* either side of "now" — about ±30
-minutes. That's deliberately generous so users with bad device clocks aren't
-locked out. Source: `multifactor/factors/totp.py:13`.
+`TOTP_WINDOW` defaults to `1` — the previous, current and next 30-second step,
+so about ±30 seconds of clock drift — as recommended by RFC 6238. Earlier
+releases hard-coded 60 steps (±30 minutes, 121 valid codes), which made
+guessing a code about 40 times easier. If you relied on that tolerance, see
+[Upgrading](upgrading.md) and the [settings reference](../reference/settings.md#totp-window).
 
-## Tightening the verification window
+Every accepted code is stored as `properties["last_step"]` on the key. A code
+for that step, or an earlier one, is rejected, so a code that was observed
+can't be replayed.
 
-If you want stricter timing, subclass `Create` and `Auth`:
+## Changing the verification window
+
+Set it in your settings; no subclassing is needed:
+
+```python
+MULTIFACTOR = {
+    "TOTP_WINDOW": 3,  # ±90 seconds. Default is 1.
+}
+```
+
+## Customising verification further
+
+If you need different behaviour entirely, subclass `Create` and `Auth`:
 
 ```python
 # myapp/totp_strict.py
@@ -63,8 +80,9 @@ class StrictAuth(totp.Auth):
 ```
 
 Then mount your URL ahead of `multifactor.urls` to override the named routes.
-A `valid_window=1` (±30 seconds) is the RFC-recommended default; anything
-larger trades security for clock-drift forgiveness.
+A subclass that replaces `verify_login` bypasses the replay protection in the
+stock `Auth`, so only do this if you have a reason the settings can't cover.
+The attempt limiting still applies because it lives in `Auth.post`.
 
 ## Where the secret lives
 
@@ -101,11 +119,13 @@ loss: delete the old `UserKey` via the admin and have them re-enrol.
 
 ## Hardening recommendations
 
-- **Rate-limit `multifactor:totp_auth`.** A 6-digit code has only 1,000,000
-  possibilities, and the `valid_window=60` means each verification check
-  covers many of them. Without rate-limiting, brute force is feasible.
-  [`django-ratelimit`](https://django-ratelimit.readthedocs.io/) or your CDN
-  is fine.
+- **Keep attempt limiting on.** A 6-digit code has only 1,000,000
+  possibilities. The built-in limit (5 failures in 5 minutes locks the user out
+  for 30, per user) is recorded in the database; see
+  [attempt limiting](../reference/settings.md#attempt-limiting).
+- **Also rate-limit `multifactor:totp_auth` per IP** with
+  [`django-ratelimit`](https://django-ratelimit.readthedocs.io/) or your CDN.
+  The built-in limit is per user.
 - **Don't display the secret after registration.** The default template does
   not, but a custom template might. Resist.
 - **Pair with fallback OTP** for the "I lost my phone" case (else you have

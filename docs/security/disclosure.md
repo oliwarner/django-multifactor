@@ -40,8 +40,9 @@ requests — open a regular GitHub issue instead.
 - "Email fallback can be intercepted." Email is intentionally a weak
   transport; that's why the system fans out — see
   [fallback risks](fallback-risks.md).
-- "No built-in rate-limiting." Documented as a deployment responsibility
-  in [best practices](best-practices.md).
+- "No per-IP or FIDO2 rate-limiting." Per-user limiting of TOTP and fallback
+  OTP attempts is built in; anything beyond that is a deployment
+  responsibility documented in [best practices](best-practices.md).
 - "FIDO2 keys are domain-bound." Required by the WebAuthn spec.
 
 ## Defensive disclosure to other users

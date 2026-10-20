@@ -88,7 +88,7 @@ Source: `multifactor/factors/fallback.py:38-67`.
 
 | Mitigation | Cost / benefit |
 | --- | --- |
-| **Rate-limit `multifactor:fallback_auth`** | Cheap. Prevents OTP-flood denial-of-service against your SMS bill and the user's inbox. |
+| **Rate-limit `multifactor:fallback_auth`** | Cheap. Prevents OTP-flood denial-of-service against your SMS bill and the user's inbox. Guessing the OTP is already limited per user by `MAX_ATTEMPTS` / `LOCKOUT_PERIOD`, but *sending* OTPs is not limited by the package. |
 | **Send a "fallback was used" notification** through a separate channel | Moderate effort. Hook `factors.fallback.Auth.post` post-success to push a notification via your usual user-notification pipeline. |
 | **Require fallback OTP + a primary factor for high-risk views** | `@multifactor_protected(factors=2)` — fallback counts as one factor; the user needs another verified factor to reach 2. Forces a fallback user to have at least one primary factor remaining. |
 | **Email verification on profile changes** | Stops the "attacker rewrites email and recovers" path. |

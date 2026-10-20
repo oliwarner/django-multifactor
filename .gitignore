@@ -27,7 +27,6 @@ wheels/
 *.egg
 MANIFEST
 
-
 # MacOS files to ignore
 .DS_Store
 */.DS_Store

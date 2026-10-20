@@ -56,7 +56,9 @@ hit, they are still "logged in" from Django's perspective. If you want
 
 - [ ] HTTPS everywhere (HSTS preload if possible).
 - [ ] `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT = True`.
-- [ ] Rate limiter on `multifactor:*` URLs.
+- [ ] Rate limiter (per IP) on `multifactor:*` URLs.
+- [ ] `prune_mfa_attempts` scheduled, and `AuthAttempt` failures reviewed or alerted on.
+- [ ] `TOTP_WINDOW` left at its default of `1`.
 - [ ] `RECHECK = True` with a `RECHECK_MAX` matching your risk appetite.
 - [ ] `max_age` on the most sensitive views.
 - [ ] Email verification for the email-fallback path.

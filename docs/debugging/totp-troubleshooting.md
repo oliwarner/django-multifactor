@@ -10,9 +10,11 @@ likelihood:
 
 ### 1. Clock drift on the server
 
-`pyotp.TOTP(...).verify(code, valid_window=60)` allows ±60 thirty-second
-steps (~30 minutes either side). If verification still fails, your server
-clock is more than 30 minutes off.
+By default only the previous, current and next 30-second step are accepted
+(`MULTIFACTOR["TOTP_WINDOW"] = 1`, ±30 seconds). If verification fails, your
+server clock, or the user's, is probably more than 30 seconds off. Releases
+before the security update accepted ±30 minutes, so drift that used to be
+tolerated now fails.
 
 Check:
 
@@ -22,9 +24,10 @@ date --utc
 date -u
 ```
 
-Compare with <https://time.is/>. If it's wrong, fix NTP. Don't increase
-`valid_window` further as a workaround — at large values you weaken the
-factor (more codes are valid simultaneously).
+Compare with <https://time.is/>. If it's wrong, fix NTP. Avoid raising
+`TOTP_WINDOW` as a workaround — each step you add makes more codes valid
+simultaneously and so makes guessing easier. If you must, `3` (±90 seconds) is
+the most we'd suggest, and `60` restores the old, weak behaviour.
 
 ### 2. Clock drift on the user's device
 
@@ -49,11 +52,28 @@ If the user reloaded `/multifactor/totp/new/` mid-setup, the generated
 secret changed but their phone is still trying the old one. Have them
 delete the entry in their authenticator and re-scan the current QR.
 
-### 5. The window has been tightened in a subclass
+### 5. The code was already used
 
-If you've subclassed `factors.totp.Auth` to enforce `valid_window=1`, you've
-got a much tighter timing window (±30 s instead of ±30 min) and will see
-more rejections. Verify your override.
+Each accepted code, and every earlier one, is rejected afterwards to prevent
+replay. A user who types the same code twice, or whose enrolment code is
+reused to log in straight away, must wait for the next 30-second code.
+
+## Symptom: "Too many failed attempts"
+
+After `MAX_ATTEMPTS` failed TOTP or fallback attempts within `ATTEMPT_PERIOD`
+the user is logged out and locked out until `LOCKOUT_PERIOD` has passed since
+their latest failure. Every attempt is stored as an `AuthAttempt` (visible in
+the Django admin) and lockouts are logged at `WARNING` on the
+`multifactor.throttle` logger.
+
+To lift a lockout early, delete that user's recent failures, in the admin or
+from a Django shell:
+
+```python
+from multifactor.models import AuthAttempt
+
+AuthAttempt.objects.filter(user__username="alice", outcome="failure").delete()
+```
 
 ## Symptom: QR code won't scan
 
@@ -99,8 +119,8 @@ over.
 Mitigation:
 
 - Display a countdown alongside the input.
-- Increase `valid_window` from its default 60 to give more leeway (the
-  package's default is already very generous).
+- Raise `MULTIFACTOR["TOTP_WINDOW"]` from its default of `1` to `3` for a little
+  more leeway. Don't go much higher; see [clock drift](#1-clock-drift-on-the-server).
 
 ## Inspecting from a Django shell
 

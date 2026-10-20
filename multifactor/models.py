@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 try:
@@ -66,3 +67,29 @@ class UserKey(models.Model):
 class DisabledFallback(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name="+")
     fallback = models.CharField(max_length=50)
+
+
+class AuthAttempt(models.Model):
+    """One attempt to pass a one-time-code factor (TOTP or fallback OTP).
+
+    This is both the audit trail and the source of truth for lockouts: whether a user is
+    locked out is derived from these rows (see `multifactor.throttle`), so there is no
+    separate counter to get out of step with them.
+    """
+
+    class Outcomes(models.TextChoices):
+        SUCCESS = "success", _("Success")
+        FAILURE = "failure", _("Failure")
+        BLOCKED = "blocked", _("Blocked (user was locked out)")
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name="+")
+    factor = models.CharField(max_length=25)
+    outcome = models.CharField(max_length=10, choices=Outcomes.choices, default=Outcomes.FAILURE)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ("-timestamp",)
+        indexes = [models.Index(fields=["user", "outcome", "-timestamp"])]
+
+    def __str__(self):
+        return f"{self.user} {self.factor} {self.outcome} at {self.timestamp:%Y-%m-%d %H:%M:%S}"

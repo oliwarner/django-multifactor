@@ -18,6 +18,35 @@ release notes on the GitHub releases page before upgrading production.
 
 ## Specific upgrade notes
 
+### Security update — TOTP window, attempt limiting, fallback route
+
+This release hardens one-time-code authentication. It changes behaviour, so
+read it before upgrading.
+
+| Change | Before | Now |
+| --- | --- | --- |
+| TOTP window | hard-coded `60` steps (±30 min, 121 valid codes) | `MULTIFACTOR["TOTP_WINDOW"]`, default **`1`** (±30 s, 3 codes) |
+| Replay of a used TOTP code | accepted within the window | rejected (`last_step` stored on the key) |
+| Failed TOTP / fallback attempts | unlimited, unlogged | every attempt stored in the new `AuthAttempt` table; `MAX_ATTEMPTS` (default **5**) failures within `ATTEMPT_PERIOD` (**300 s**) log the user out and lock them out for `LOCKOUT_PERIOD` (**1800 s**) |
+| Fallback route with `FALLBACKS = {}` | still mounted and accepting OTPs | returns **404** |
+| Fallback OTP | variable-length, `random` | 8 digits, `secrets` |
+
+What you need to do:
+
+1. **Run `python manage.py migrate multifactor`.** It adds the `AuthAttempt`
+   table. Attempt limiting needs no cache. Schedule
+   `python manage.py prune_mfa_attempts` (e.g. daily) so the table doesn't grow
+   without bound; `ATTEMPT_RETENTION_DAYS` defaults to 90. Set
+   `MAX_ATTEMPTS: 0` only if you rate-limit elsewhere; it turns off logging too.
+2. **Expect more TOTP rejections from users with drifting clocks.** Fix the
+   clocks first. If you have to, set `TOTP_WINDOW` to `3`. To restore the old
+   behaviour exactly (not recommended) set it to `60`.
+3. **If you subclassed `totp.Auth` or `Create`**, note that `WINDOW` is gone from
+   `multifactor.factors.totp`; read `mf_settings["TOTP_WINDOW"]` instead.
+4. **If you disabled fallback with `FALLBACKS = {}`**, links to
+   `multifactor:fallback_auth` will now 404. This is intended.
+5. Existing TOTP keys need no data migration; `last_step` is added on first use.
+
 ### 0.6 — U2F removal
 
 U2F (the predecessor to FIDO2/WebAuthn) was removed entirely in 0.6. If you
