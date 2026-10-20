@@ -14,7 +14,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import F, Q, Subquery
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -33,20 +33,35 @@ def locked_until(user):
     if not limit:
         return None
 
-    attempts = AuthAttempt.objects.filter(user=user)
-    last_success = attempts.filter(outcome=Outcomes.SUCCESS).aggregate(t=Max("timestamp"))["t"]
-    failures = attempts.filter(outcome=Outcomes.FAILURE)
-    if last_success:
-        failures = failures.filter(timestamp__gt=last_success)
+    last_success = AuthAttempt.objects.filter(
+        user=user,
+        outcome=Outcomes.SUCCESS,
+    ).order_by("-timestamp").values("timestamp")[:1]
 
-    recent = list(failures.order_by("-timestamp").values_list("timestamp", flat=True)[:limit])
-    if len(recent) < limit:
+    # Find the most recent failures since the last success
+    recent_failures = list(
+        AuthAttempt.objects
+        .annotate(last_success_timestamp=Subquery(last_success))
+        .filter(
+            Q(timestamp__gt=F("last_success_timestamp")) |
+            Q(last_success_timestamp__isnull=True),
+            user=user,
+            outcome=Outcomes.FAILURE,
+        )
+        .order_by("-timestamp")
+        .values_list("timestamp", flat=True)[:limit]
+    )
+
+    # If they have fewer than the maximum allowed attempts, they aren't locked out yet.
+    if len(recent_failures) < limit:
         return None
 
-    if recent[0] - recent[-1] > timedelta(seconds=mf_settings["ATTEMPT_PERIOD"]):
+    # If the time between the most recent and oldest of the last `limit` failures exceeds the attempt period, they aren't locked out yet.
+    if recent_failures[0] - recent_failures[-1] > timedelta(seconds=mf_settings["ATTEMPT_PERIOD"]):
         return None
 
-    until = recent[0] + timedelta(seconds=mf_settings["LOCKOUT_PERIOD"])
+    # Otherwise, they are locked out until the lockout period has passed since the most recent failure.
+    until = recent_failures[0] + timedelta(seconds=mf_settings["LOCKOUT_PERIOD"])
     return until if until > timezone.now() else None
 
 
